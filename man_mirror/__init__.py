@@ -1,4 +1,5 @@
 """Module providingFunction printing python version."""
+import os
 import random
 from time import process_time, sleep
 import requests
@@ -12,6 +13,13 @@ from PIL import Image
 HOST = 'https://www.manmirror.net'
 
 
+class RequestError(Exception):
+    """ RequestError """
+
+    def __init__(self, *args: object):
+        self.args = args
+
+
 class ManMirror:
     """ class """
 
@@ -21,15 +29,15 @@ class ManMirror:
         mkdir(main_dir)
         first_chapter = 1
         max_chapter = 92
-        chapters = range(first_chapter, max_chapter+1)
+        chapters = range(first_chapter, max_chapter + 1)
         for chapter in chapters:
             time_start = process_time()
             self.download_cartoon(post_id, chapter)
             time_end = process_time()
-            sleep_time = (random.uniform(0.3, 2)) * 1000
+            sleep_time = random.uniform(0.3, 1)
             sleep(sleep_time)
             print(
-                f'download post_id: {post_id}\tchapter: {chapter}/{max_chapter}\t time: {time_end-time_start}+({sleep_time})', end="\r", flush=True)
+                f'download post_id: {post_id}\tchapter: {chapter} of {max_chapter}\ttime: {time_end - time_start}(+{sleep_time})')
 
     def download_cartoon(self, post_id: int, chapter: int) -> None:
         """ download man mirror by post id with page"""
@@ -40,18 +48,27 @@ class ManMirror:
 
         while not is_error:
             try:
-                image_json = self.__get_json(post_id, chapter, page)
-                image = self.__get_image(post_id, chapter, page)
-                new_image = self.__re_order_images(image, image_json)
-                print('new_image: processed')
-                # old_image_file = Image.fromarray(image)
-                # old_image_file.save(f'{main_dir}/{page}-old.png')
+                image_path = f'{main_dir}/{page}.png'
+                is_file_exists = os.path.isfile(image_path)
+                if not is_file_exists:
+                    time_start = process_time()
+                    image_json = self.__get_json(post_id, chapter, page)
+                    image = self.__get_image(post_id, chapter, page)
+                    new_image = self.__re_order_images(image, image_json)
+                    # old_image_file = Image.fromarray(image)
+                    # old_image_file.save(f'{main_dir}/{page}-old.png')
 
-                new_image_file = Image.fromarray(new_image)
-                new_image_file.save(f'{main_dir}/{page}.png')
+                    new_image_file = Image.fromarray(new_image)
+                    new_image_file.save(image_path)
+                    time_end = process_time()
+                    print(
+                        f'download post_id: {post_id}\tchapter: {chapter}\tpage: {page}\ttime: {time_end-time_start}')
 
                 page += 1
+            except RequestError:
+                is_error = True
             except Exception as error:
+                print('loop page error')
                 print(error)
                 is_error = True
 
@@ -74,24 +91,35 @@ class ManMirror:
         """
 
         url = f'https://www.manmirror.net/test/{post_id}/{chapter}/{page}.json'
-        print(f'get json {url}')
+        # print(f'get json {url}')
         response = requests.get(url, timeout=60*1000)
-        data = response.json()
-        return ImageJsonShuffle(
-            data['width'],
-            data['height'],
-            data['all_row'],
-            data['all_col'],
-            data['shuffles'],
-        )
+        if (response.status_code == 200):
+            data = response.json()
+            return ImageJsonShuffle(
+                data['width'] or 0,
+                data['height'] or 0,
+                data['all_row'],
+                data['all_col'],
+                data['shuffles'],
+            )
+
+        # print(response.status_code)
+        raise RequestError(
+            {"message": 'can get json', "response": response})
 
     def __get_image(self, post_id: int, chapter: int, page: int) -> np.ndarray:
         """function for get man mirror image"""
 
         url = f'https://www.manmirror.net/test/{post_id}/{chapter}/{page}.png'
-        print(f'get image {url}')
-        response = iio.imread(url)
-        return response
+        # print(f'get image {url}')
+        response = requests.get(url, timeout=60*1000)
+        if (response.status_code == 200):
+            response = iio.imread(url)
+            return response
+
+        # print(response.status_code)
+        raise RequestError(
+            {"message": 'can get json', "response": response})
 
     def __re_order_images(self, image: np.ndarray, image_json: ImageJsonShuffle):
         new_image = np.zeros_like(image)

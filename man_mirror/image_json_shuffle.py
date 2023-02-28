@@ -37,13 +37,24 @@ class ImageJsonShuffle:
     """ interface of man mirror image json """
 
     def __init__(self, width: int, height: int, all_row: int, all_col: int, shuffles: List[int]):
-        self.width = width
-        self.height = height
-        self.all_row = all_row
-        self.all_col = all_col
-        self.shuffles = np.reshape(shuffles, (all_row, all_col))
-        self.sub_height = int(round(height / all_row, 0))
-        self.sub_width = int(round(width / all_col, 0))
+        try:
+            self.width = width
+            self.height = height
+            self.all_row = all_row
+            self.all_col = all_col
+            self.shuffles = np.reshape(shuffles, (all_row, all_col))
+            self.sub_height = int(round(height / all_row, 0))
+            self.sub_width = int(round(width / all_col, 0))
+        except Exception:
+            print(
+                {
+                    "width": width,
+                    "height": height,
+                    "all_row": all_row,
+                    "all_col": all_col,
+                    "shuffles": shuffles
+                }
+            )
 
     def get_coord_from_index(self, sort_index: int) -> Tuple[int, int]:
         """ for get new coordinates from index """
