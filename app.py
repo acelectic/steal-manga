@@ -1,6 +1,7 @@
 """ Main Module """
-from man_mirror import get_json
+from man_mirror import ManMirror
 
 
 if __name__ == "__main__":
-    get_json(10, 1, 2)
+    man_mirror = ManMirror()
+    man_mirror.download_cartoons(10)
