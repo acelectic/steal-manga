@@ -2,6 +2,7 @@
 import os
 import random
 from time import process_time, sleep
+from typing import Any, Tuple
 import requests
 import imageio.v3 as iio
 from man_mirror.image_json_shuffle import ImageJsonShuffle
@@ -9,6 +10,8 @@ from utils.constants import CARTOON_DIR
 import numpy as np
 from utils.file_helper import mkdir
 from PIL import Image
+
+from utils.pdf_helper import merge_images_to_pdf
 
 HOST = 'https://www.manmirror.net'
 
@@ -31,17 +34,22 @@ class ManMirror:
         max_chapter = 92
         chapters = range(first_chapter, max_chapter + 1)
         for chapter in chapters:
+            chapter_dir = self.__get_chapter_dir(post_id, chapter)
+
             time_start = process_time()
-            self.download_cartoon(post_id, chapter)
+
+            self._download_cartoon(post_id, chapter)
+            self.__merge_to_pdf(chapter_dir)
+
             time_end = process_time()
             sleep_time = random.uniform(0.3, 1)
             sleep(sleep_time)
             print(
                 f'download post_id: {post_id}\tchapter: {chapter} of {max_chapter}\ttime: {time_end - time_start}(+{sleep_time})')
 
-    def download_cartoon(self, post_id: int, chapter: int) -> None:
+    def _download_cartoon(self, post_id: int, chapter: int) -> None:
         """ download man mirror by post id with page"""
-        main_dir = f'{CARTOON_DIR}/man-mirror/{post_id}/chapter-{chapter}'
+        main_dir = self.__get_chapter_dir(post_id, chapter)
         mkdir(main_dir)
         page = 0
         is_error = False
@@ -72,11 +80,21 @@ class ManMirror:
                 print(error)
                 is_error = True
 
-        # if image.status_code == 200:
-        # print(image.json())
-        #     with open(f'{main_dir}/{page}.png', 'wb') as f:
-        #         image.raw.decode_content = True
-        #         shutil.copyfileobj(image.raw, f)
+    def __merge_to_pdf(self, target_image_dir: str) -> Tuple[Any, bool]:
+        output_pdf = f'{target_image_dir}/full.pdf'
+        is_file_exists = os.path.isfile(output_pdf)
+        if not is_file_exists:
+            image_paths = []
+            for file in os.listdir(target_image_dir):
+                if file.endswith('.png'):
+                    image_paths.append(f'{target_image_dir}/{file}')
+            merge_images_to_pdf(image_paths, output_pdf)
+            return None, True
+
+        return 'is_file_exists', False
+
+    def __get_chapter_dir(self, post_id: int, chapter: int):
+        return f'{CARTOON_DIR}/man-mirror/{post_id}/chapter-{chapter}'
 
     def __get_json(self, post_id: int, chapter: int, page: int) -> ImageJsonShuffle:
         """function for get man mirror json suffer
