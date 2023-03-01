@@ -2,5 +2,5 @@
   "python.analysis.typeCheckingMode": "basic",
   "python.linting.pylintEnabled": true,
   "python.linting.enabled": true,
-  "python.linting.pylintArgs": []
+  "cSpell.words": ["fromarray", "imageio", "imread", "ndarray"]
 }

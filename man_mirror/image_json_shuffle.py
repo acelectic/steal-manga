@@ -1,36 +1,8 @@
 """ module mam mirror image json meta """
 
+from typing import List, Tuple
 import json
 import numpy as np
-from typing import List, Tuple
-
-
-class Coord:
-    """ coord interface """
-
-    def __init__(self, key: str, col: int, row: int, new_row: int, new_col: int, sort: int, top: int, left: int, bottom: int, right: int):
-        self.new_row = new_row
-        self.new_col = new_col
-        self.key = key
-        self.col = col
-        self.row = row
-        self.sort = sort
-        self.top = top
-        self.left = left
-        self.bottom = bottom
-        self.right = right
-
-    def __str__(self) -> str:
-        return json.dumps({
-            "key": self.key,
-            "col": self.col,
-            "row": self.row,
-            "sort": self.sort,
-            "top": self.top,
-            "left": self.left,
-            "bottom": self.bottom,
-            "right": self.right,
-        }, indent=4)
 
 
 class ImageJsonShuffle:

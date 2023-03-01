@@ -13,6 +13,7 @@ from utils.constants import CARTOON_DIR
 import numpy as np
 from utils.file_helper import mkdir
 from PIL import Image, ImageFile
+import concurrent.futures
 
 from utils.pdf_helper import merge_images_to_pdf
 
@@ -30,6 +31,7 @@ class RequestError(Exception):
 
 class ManMirror:
     """ class """
+    root = 'man-mirror'
 
     def download_cartoons(self, post_id: int,  max_chapter: int, first_chapter: int = 1) -> None:
         """ 
@@ -39,26 +41,27 @@ class ManMirror:
         main_dir = self.__get_main_dir(post_id)
         mkdir(main_dir)
 
+        # create a thread pool with 2 threads
+        pool = concurrent.futures.ThreadPoolExecutor(max_workers=2)
+
         chapters = range(first_chapter, max_chapter + 1)
 
         for chapter in tqdm(chapters):
-            time_start = process_time()
 
             chapter_dir = self.__get_chapter_dir(post_id, chapter)
             output_pdf_path = f'{main_dir}/{chapter}.pdf'
             is_file_exists = os.path.isfile(output_pdf_path)
 
             if not is_file_exists:
-                self._download_cartoon_chapter(post_id, chapter)
-                self.__merge_to_pdf(chapter_dir, output_pdf_path)
-                self.__remove_chapter_dir(chapter_dir)
+                pool.submit(self.__perform_download_chapter, post_id,
+                            chapter, chapter_dir, output_pdf_path)
                 # self.__clean_image_png(chapter_dir)
+        pool.shutdown(wait=True)
 
-            time_end = process_time()
-            sleep_time = random.uniform(0.3, 1)
-            sleep(sleep_time)
-            print(
-                f'download post_id: {post_id}\tchapter: {chapter} of {max_chapter}\ttime: {time_end - time_start}(+{sleep_time})')
+    def __perform_download_chapter(self, post_id: int, chapter: int, chapter_dir: str, output_pdf_path: str):
+        self._download_cartoon_chapter(post_id, chapter)
+        self.__merge_to_pdf(chapter_dir, output_pdf_path)
+        self.__remove_chapter_dir(chapter_dir)
 
     def _download_cartoon_chapter(self, post_id: int, chapter: int) -> None:
         """ download man mirror by post id with page"""
@@ -109,15 +112,6 @@ class ManMirror:
 
         return 'is_file_exists', False
 
-    def __clean_image_png(self, target_image_dir: str) -> int:
-        image_paths = glob.glob(f'{target_image_dir}/*.png', recursive=False)
-        for file_path in image_paths:
-            try:
-                os.remove(file_path)
-            except Exception as error:
-                print("Error while deleting file : ", file_path, error)
-        return len(image_paths)
-
     def __remove_chapter_dir(self, target_image_dir: str) -> bool:
         is_file_exists = os.path.exists(target_image_dir)
         if is_file_exists:
@@ -126,7 +120,7 @@ class ManMirror:
         return False
 
     def __get_main_dir(self, post_id: int) -> str:
-        return f'{CARTOON_DIR}/man-mirror/{post_id}'
+        return f'{CARTOON_DIR}/{self.root}/{post_id}'
 
     def __get_chapter_dir(self, post_id: int, chapter: int) -> str:
         main_dir = self.__get_main_dir(post_id)
