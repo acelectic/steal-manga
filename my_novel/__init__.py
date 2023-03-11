@@ -34,10 +34,11 @@ class MyNovel:
     root = 'my-novel'
     app_key = "xdde8cNN5k7AuVTMgz7b"
 
-    def download_cartoons(self, product_id: str, ) -> None:
+    def download_cartoons(self, product_id: str, start_ep_index: int = 1) -> None:
         """
         download man mirror by post id
         """
+        start_ep_index = max(start_ep_index, 0)
 
         product_ep_list_res = self.__get_product_ep_list(product_id)
         product_ep_list = product_ep_list_res['EpTopic']
@@ -82,16 +83,33 @@ class MyNovel:
             #     product_ep_list)),
             #     desc=f'{product_name}',
             #     total=len(product_ep_list))
-            for i, product_ep in tqdm(enumerate(product_ep_list),
+
+            start_index = 0
+            for i, product_ep in enumerate(product_ep_list):
+                if str(start_ep_index) in product_ep['EpName']:
+                    start_index = i
+                    break
+
+            product_ep_list_split = product_ep_list[start_index:]
+            # print(
+            #     f'{len(product_ep_list)} {len(product_ep_list_split)} {start_index} {start_ep_index}')
+
+            for i, product_ep in tqdm(enumerate(product_ep_list_split, start=start_ep_index),
                                       desc=f'{product_name}',
-                                      total=len(product_ep_list)):
-                ep_index = i + 1
+                                      total=len(product_ep_list_split)):
+                raw_ep_name = product_ep['EpName']
+                ep_index = i
+                ep_name = raw_ep_name or f'chapter-{ep_index}'
+                # continue
+
                 ep_id = product_ep["EpId"]
-                ep_name = f'chapter-{ep_index}'
                 ep_dir = self.__get_ep_dir(product_name, ep_name)
 
                 output_pdf_path = f'{main_dir}/{ep_name}.pdf'
                 is_file_exists = os.path.isfile(output_pdf_path)
+
+                print(
+                    f'\nexists: {is_file_exists} | {i} | {ep_index} {raw_ep_name} {ep_name}')
 
                 if not is_file_exists:
                     # Create two threads as follows
@@ -171,7 +189,7 @@ class MyNovel:
             {"message": 'can get product rp list', "response": response})
 
     def __get_product_ep_images(self, ep_id: str):
-        url = f'https://asia-southeast2-mynovel01.cloudfunctions.net/productEP/getProductEpById'
+        url = 'https://asia-southeast2-mynovel01.cloudfunctions.net/productEP/getProductEpById'
         response = requests.post(url, {
             "id": ep_id,
             "fontCustom": "Sarabun",
