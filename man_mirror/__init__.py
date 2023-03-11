@@ -71,13 +71,33 @@ class ManMirror:
         main_dir = self.__get_chapter_dir(cartoon_name, chapter)
         mkdir(main_dir)
         page = 0
+        max_page = 0
         is_error = False
         is_some_page_error = False
+        # print(f'{cartoon_name} chapter {chapter}')
+        # print('')
 
+        image_json_list = []
         while not is_error:
             try:
+                image_json = self.__get_json(post_id, chapter, max_page)
+                image_json_list.append(image_json)
+                # print(f'get image json page: {max_page}', end='\r')
+                max_page += 1
+            except RequestError:
+                is_error = True
+            except Exception as error:
+                # print('loop page error')
+                # print(error)
+                is_error = True
+
+        pages = range(0, max_page + 1)
+
+        for i, page in tqdm(enumerate(pages), desc=f'{cartoon_name} | chapter {chapter}', total=max_page):
+            try:
+                image_json = image_json_list[i]
                 some_error = self._download_cartoon_chapter_page(
-                    post_id, chapter, main_dir, page)
+                    post_id=post_id, chapter=chapter, main_dir=main_dir, page=page, image_json=image_json)
                 if some_error:
                     is_some_page_error = some_error
             except RequestError:
@@ -86,18 +106,15 @@ class ManMirror:
                 print('loop page error')
                 print(error)
                 is_error = True
-            finally:
-                page += 1
 
         return is_some_page_error
 
-    def _download_cartoon_chapter_page(self, post_id, chapter, main_dir, page):
+    def _download_cartoon_chapter_page(self, post_id: int, chapter: int, main_dir: str, page: int, image_json: ImageJsonShuffle):
         image_path = f'{main_dir}/{page}.png'
         is_file_exists = os.path.isfile(image_path)
         has_some_error = False
         if not is_file_exists:
             time_start = process_time()
-            image_json = self.__get_json(post_id, chapter, page)
             image = self.__get_image(post_id, chapter, page)
             # if (image.shape[0] < image.shape[1]):
             #     old_image_file = Image.fromarray(image)
