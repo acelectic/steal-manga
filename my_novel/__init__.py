@@ -95,7 +95,7 @@ class MyNovel:
             #     f'{len(product_ep_list)} {len(product_ep_list_split)} {start_index} {start_ep_index}')
 
             for i, product_ep in tqdm(enumerate(product_ep_list_split, start=start_ep_index),
-                                      desc=f'{product_name}',
+                                      desc=f'Main | {product_name}',
                                       total=len(product_ep_list_split)):
                 raw_ep_name = product_ep['EpName']
                 ep_index = i

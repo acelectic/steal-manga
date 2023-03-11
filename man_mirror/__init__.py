@@ -33,12 +33,12 @@ class ManMirror:
     """ class """
     root = 'man-mirror'
 
-    def download_cartoons(self, post_id: int,  max_chapter: int, first_chapter: int = 1) -> None:
+    def download_cartoons(self, cartoon_name: str, post_id: int,  max_chapter: int, first_chapter: int = 1) -> None:
         """ 
         download man mirror by post id 
         """
 
-        main_dir = self.__get_main_dir(post_id)
+        main_dir = self.__get_main_dir(cartoon_name)
         mkdir(main_dir)
 
         # create a thread pool with 2 threads
@@ -48,32 +48,38 @@ class ManMirror:
 
         for chapter in tqdm(chapters):
 
-            chapter_dir = self.__get_chapter_dir(post_id, chapter)
+            chapter_dir = self.__get_chapter_dir(cartoon_name, chapter)
             output_pdf_path = f'{main_dir}/{chapter}.pdf'
             is_file_exists = os.path.isfile(output_pdf_path)
 
             if not is_file_exists:
-                pool.submit(self.__perform_download_chapter, post_id,
+                pool.submit(self.__perform_download_chapter, cartoon_name, post_id,
                             chapter, chapter_dir, output_pdf_path)
                 # self.__clean_image_png(chapter_dir)
         pool.shutdown(wait=True)
 
-    def __perform_download_chapter(self, post_id: int, chapter: int, chapter_dir: str, output_pdf_path: str):
-        self._download_cartoon_chapter(post_id, chapter)
-        self.__merge_to_pdf(chapter_dir, output_pdf_path)
-        self.__remove_chapter_dir(chapter_dir)
+    def __perform_download_chapter(self, cartoon_name: str, post_id: int, chapter: int, chapter_dir: str, output_pdf_path: str):
+        some_error = self._download_cartoon_chapter(
+            cartoon_name, post_id, chapter)
+        self.__merge_to_pdf(
+            chapter_dir, output_pdf_path)
+        if not some_error:
+            self.__remove_chapter_dir(chapter_dir)
 
-    def _download_cartoon_chapter(self, post_id: int, chapter: int) -> None:
+    def _download_cartoon_chapter(self, cartoon_name: str, post_id: int, chapter: int) -> bool:
         """ download man mirror by post id with page"""
-        main_dir = self.__get_chapter_dir(post_id, chapter)
+        main_dir = self.__get_chapter_dir(cartoon_name, chapter)
         mkdir(main_dir)
         page = 0
         is_error = False
+        is_some_page_error = False
 
         while not is_error:
             try:
-                self._download_cartoon_chapter_page(
+                some_error = self._download_cartoon_chapter_page(
                     post_id, chapter, main_dir, page)
+                if some_error:
+                    is_some_page_error = some_error
             except RequestError:
                 is_error = True
             except Exception as error:
@@ -83,9 +89,12 @@ class ManMirror:
             finally:
                 page += 1
 
+        return is_some_page_error
+
     def _download_cartoon_chapter_page(self, post_id, chapter, main_dir, page):
         image_path = f'{main_dir}/{page}.png'
         is_file_exists = os.path.isfile(image_path)
+        has_some_error = False
         if not is_file_exists:
             time_start = process_time()
             image_json = self.__get_json(post_id, chapter, page)
@@ -94,21 +103,27 @@ class ManMirror:
             #     old_image_file = Image.fromarray(image)
             #     old_image_file.save(f'{main_dir}/{page}-old.png')
 
-            new_image = self.__re_order_images(image, image_json)
+            new_image, has_some_order_error = self.__re_order_images(
+                image, image_json)
+            if has_some_order_error:
+                has_some_error = has_some_order_error
+                old_image_file = Image.fromarray(image)
+                old_image_file.save(f'{main_dir}/{page}-old.png')
 
             new_image_file = Image.fromarray(new_image)
             new_image_file.save(image_path)
             time_end = process_time()
-            print(
-                f'download post_id: {post_id}\tchapter: {chapter}\tpage: {page}\ttime: {time_end-time_start}')
+            # print(
+            #     f'download post_id: {post_id}\tchapter: {chapter}\tpage: {page}\ttime: {time_end-time_start}')
+        return has_some_error
 
-    def __merge_to_pdf(self, target_image_dir: str, output_pdf_path: str) -> Tuple[Any, bool]:
+    def __merge_to_pdf(self, target_image_dir: str, output_pdf_path: str) -> Tuple[str, bool]:
         is_file_exists = os.path.isfile(output_pdf_path)
         if not is_file_exists:
             image_paths = glob.glob(
                 f'{target_image_dir}/*.png', recursive=False)
             merge_images_to_pdf(image_paths, output_pdf_path)
-            return None, True
+            return '', True
 
         return 'is_file_exists', False
 
@@ -119,11 +134,11 @@ class ManMirror:
             return True
         return False
 
-    def __get_main_dir(self, post_id: int) -> str:
+    def __get_main_dir(self, post_id: str) -> str:
         return f'{CARTOON_DIR}/{self.root}/{post_id}'
 
-    def __get_chapter_dir(self, post_id: int, chapter: int) -> str:
-        main_dir = self.__get_main_dir(post_id)
+    def __get_chapter_dir(self, cartoon_name: str, chapter: int) -> str:
+        main_dir = self.__get_main_dir(cartoon_name)
         return f'{main_dir}/chapter-{chapter}'
 
     def __get_json(self, post_id: int, chapter: int, page: int) -> ImageJsonShuffle:
@@ -143,6 +158,7 @@ class ManMirror:
         response = requests.get(url, timeout=60*1000)
         if (response.status_code == 200):
             data = response.json()
+            # print(f'data json {data}')
             return ImageJsonShuffle(
                 data['width'] or 0,
                 data['height'] or 0,
@@ -170,13 +186,14 @@ class ManMirror:
             {"message": 'can get json', "response": response})
 
     def __re_order_images(self, image: np.ndarray, image_json: ImageJsonShuffle):
+        has_some_error = False
         new_image = np.zeros_like(image)
         # print(f'image.shape: {image.shape}')
         # print(f'new_image.shape: {new_image.shape}')
         # print(f'image_json.shuffles: {image_json.shuffles}')
         for new_row in range(1, image_json.all_row + 1):
             for new_col in range(1, image_json.all_col + 1):
-                sort = (new_col - 1) + ((new_row - 1) * image_json.all_row)
+                sort = (new_col - 1) + ((new_row - 1) * image_json.all_col)
 
                 new_top = max((new_row - 1) * image_json.sub_height, 0)
                 new_left = max((new_col - 1) * image_json.sub_width, 0)
@@ -193,25 +210,24 @@ class ManMirror:
                 old_right = min(
                     old_col * image_json.sub_width, image_json.width)
                 # print("sort", image_json.shuffles, sort)
-                # image_info = {
-                #     "sort": sort,
-                #     "new_row": new_row,
-                #     "new_col": new_col,
+                image_info = {
+                    "sort": sort,
+                    "new_row": new_row,
+                    "new_col": new_col,
 
-                #     "new_top": new_top,
-                #     "new_left": new_left,
-                #     "new_bottom": new_bottom,
-                #     "new_right": new_right,
+                    "new_top": new_top,
+                    "new_left": new_left,
+                    "new_bottom": new_bottom,
+                    "new_right": new_right,
 
-                #     "old_row": old_row,
-                #     "old_col": old_col,
+                    "old_row": old_row,
+                    "old_col": old_col,
 
-                #     "old_top": old_top,
-                #     "old_left": old_left,
-                #     "old_bottom": old_bottom,
-                #     "old_right": old_right,
-                # }
-                # print(f'{image_info}')
+                    "old_top": old_top,
+                    "old_left": old_left,
+                    "old_bottom": old_bottom,
+                    "old_right": old_right,
+                }
                 # print(json.dumps(image_info, indent=0, ))
 
                 # print('new area')
@@ -225,10 +241,19 @@ class ManMirror:
                     new_image[new_top: new_bottom,
                               new_left: new_right] = sub_image_from_old
                 except Exception as error:
+                    has_some_error = True
                     print('error')
-                    print(error)
-                    print(image[old_top: old_bottom,
-                                old_left: old_right])
+                    # print(error)
+                    # print(f'{image_info}')
+                    # print({
+                    #     "old_top": old_top,
+                    #     "old_bottom": old_bottom,
+                    #     "old_left": old_left,
+                    #     "old_right": old_right
+                    # })
+                    # print(f'image.shape: {image.shape}')
+                    # print(f'new_image.shape: {new_image.shape}')
+                    # print(f'image_json.shuffles: {image_json.shuffles}')
                 # break
             # break
-        return new_image
+        return new_image, has_some_error
