@@ -1,6 +1,11 @@
 {
   "python.analysis.typeCheckingMode": "basic",
-  "python.linting.pylintEnabled": true,
-  "python.linting.enabled": true,
-  "cSpell.words": ["fromarray", "imageio", "imread", "ndarray"]
+  "python.linting.pylintEnabled": false,
+  "python.linting.enabled": false,
+  "cSpell.words": ["creds", "fromarray", "imageio", "imread", "ndarray"],
+  "editor.formatOnSave": false,
+  "editor.defaultFormatter": "ms-python.python",
+  "python.analysis.extraPaths": [
+    "./libs/utils"
+  ]
 }

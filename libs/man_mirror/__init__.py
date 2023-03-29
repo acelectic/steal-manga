@@ -1,4 +1,8 @@
 """Module providingFunction printing python version."""
+from .image_json_shuffle import ImageJsonShuffle
+import concurrent.futures
+from PIL import Image, ImageFile
+import numpy as np
 import glob
 import os
 import random
@@ -8,14 +12,14 @@ from typing import Any, Tuple
 import requests
 import imageio.v3 as iio
 from tqdm import tqdm
-from man_mirror.image_json_shuffle import ImageJsonShuffle
-from utils.constants import CARTOON_DIR
-import numpy as np
-from utils.file_helper import mkdir
-from PIL import Image, ImageFile
-import concurrent.futures
 
-from utils.pdf_helper import merge_images_to_pdf
+from ..utils.constants import CARTOON_DIR
+from ..utils.file_helper import mkdir
+from ..utils.pdf_helper import merge_images_to_pdf
+
+import sys
+sys.path.append("..")  # Adds higher directory to python modules path.
+
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 

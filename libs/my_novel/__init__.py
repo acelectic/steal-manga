@@ -13,9 +13,9 @@ from PIL import Image, ImageFile
 from tqdm import tqdm
 from tqdm.contrib.concurrent import thread_map
 
-from utils.constants import CARTOON_DIR
-from utils.file_helper import mkdir
-from utils.pdf_helper import merge_images_to_pdf
+from ..utils.constants import CARTOON_DIR
+from ..utils.file_helper import mkdir
+from ..utils.pdf_helper import merge_images_to_pdf
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
@@ -137,6 +137,7 @@ class MyNovel:
 
         for index, ep_image_url in tqdm(enumerate(ep_image_urls), total=len(ep_image_urls), desc=f'{product_name} | {ep_name}'):
             page = index + 1
+            # print(f'ep_image_url: {page} {ep_image_url}')
             self._download_cartoon_ep_page(
                 ep_dir, page, ep_image_url)
 
@@ -144,13 +145,18 @@ class MyNovel:
         image_path = f'{ep_dir}/{page}.png'
         is_file_exists = os.path.isfile(image_path)
         if not is_file_exists:
-            image = self.__get_image(ep_image_url)
-            # if (image.shape[0] < image.shape[1]):
-            #     old_image_file = Image.fromarray(image)
-            #     old_image_file.save(f'{main_dir}/{page}-old.png')
+            try:
+                image = self.__get_image(ep_image_url)
+                # if (image.shape[0] < image.shape[1]):
+                #     old_image_file = Image.fromarray(image)
+                #     old_image_file.save(f'{main_dir}/{page}-old.png')
 
-            new_image_file = Image.fromarray(image)
-            new_image_file.save(image_path)
+                new_image_file = Image.fromarray(image)
+                new_image_file.save(image_path)
+            except Exception as e:
+                print(f'ep_image_url: {ep_image_url}')
+                print(f'{image_path}: error {e}')
+                raise e
 
     def __merge_to_pdf(self, target_image_dir: str, output_pdf_path: str) -> Tuple[Any, bool]:
         is_file_exists = os.path.isfile(output_pdf_path)
@@ -210,6 +216,7 @@ class MyNovel:
 
         is_firebase_storage = ep_image_url.startswith(
             'https://firebasestorage.googleapis.com')
+        is_s3_storage = ep_image_url.startswith('https://manga-store.s3')
         if is_firebase_storage:
             """
                 https://firebasestorage.googleapis.com/v0/b/mynovel01.appspot.com/o/images/AY3KbqqA1620882955932?alt=media&token=dcb3dbb5-1741-40d0-b8a0-2fe5129d4132
@@ -219,6 +226,11 @@ class MyNovel:
             url = f'https://images.mynovel.co/images/{image_id}'
 
             response = requests.get(url, timeout=60*1000, stream=True)
+            if response.status_code == 200:
+                img = Image.open(response.raw)
+                return np.array(img)
+        elif is_s3_storage:
+            response = requests.get(ep_image_url, timeout=60*1000, stream=True)
             if response.status_code == 200:
                 img = Image.open(response.raw)
                 return np.array(img)
