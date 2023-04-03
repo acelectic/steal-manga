@@ -9,3 +9,4 @@ build_command = ''
 upload_to_release = false
 ignore_token_for_push = true
 branch = 'main'
+commit_subject = '[ci skip]: {version}'
