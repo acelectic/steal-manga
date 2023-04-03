@@ -1,10 +1,10 @@
 from setuptools import setup
 
-__version__ = "0.0.4"
+__version__ = "0.0.5"
 
 setup(
    name="steal-manga",
    version=__version__,
-   include_dirs= ["libs", "web", "config", "files"]
+   include_dirs= ["./libs", "./web", "./config", "./files"]
    # And so on...
 )
