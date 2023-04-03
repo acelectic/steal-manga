@@ -62,7 +62,7 @@ class ManMirror:
             is_file_exists = False
             
             try:
-                manga_id = manga_exists_json[main_dir]["sub_dirs"][cartoon_name]["chapters"][f'{chapter}.pdf']["id"]
+                manga_id = manga_exists_json[self.root]["sub_dirs"][cartoon_name]["chapters"][f'{chapter}.pdf']["id"]
                 is_file_exists = manga_id is not None
             except: 
                 is_file_exists = False
@@ -71,7 +71,6 @@ class ManMirror:
             if not is_file_exists and not is_file_local_exists:
                 pool.submit(self.__perform_download_chapter, cartoon_name, post_id,
                             chapter, chapter_dir, output_pdf_path)
-                # self.__clean_image_png(chapter_dir)
         pool.shutdown(wait=True)
 
     def __perform_download_chapter(self, cartoon_name: str, post_id: int, chapter: int, chapter_dir: str, output_pdf_path: str):

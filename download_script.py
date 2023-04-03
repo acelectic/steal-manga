@@ -9,7 +9,7 @@ from libs.upload_google_drive import generate_drive_manga_exists, upload_to_driv
 
 def download_man_mirror():
     man_mirror_cartoons = [
-        # ['เลเวลอัพไม่จำกัด', 1, 138, 141],
+        ['เลเวลอัพไม่จำกัด', 1, 138, 143],
         # # ['สุดยอดจอมยุทธ', 7, 117, 118],
         # ['ดาบวายุอัสนี', 19, 64, 66],
         # ['จ้าวสงคราม', 3, 128, 130],
@@ -17,16 +17,17 @@ def download_man_mirror():
         # # ['จิตวิญญาณวายุ', 16, 1, 76],
         # ['โกแซม นักรบในตำนาน', 12, 65, 66],
         # # ['บัณฑิตหวนคืน', 8, 1, 30],  # max 133
-        ['เส้นทางสู่สวรรค์', 21, 1, 30],
+        # ['เส้นทางสู่สวรรค์', 21, 1, 30],
         # # ['หนึ่งในใต้หล้า', 10, 1, 30],  # max 100
     ]
+    manga_exists_json = generate_drive_manga_exists()
     for cartoon_name, cartoon_id, latest_chapter, max_chapter in man_mirror_cartoons:
         print(
             f'cartoon_name: {cartoon_name}\tkey: {cartoon_id}\tlatest_chapter: {latest_chapter}\tmax_chapter: {max_chapter}')
         man_mirror = ManMirror()
         man_mirror.download_cartoons(
             cartoon_name,
-            cartoon_id, first_chapter=latest_chapter, max_chapter=max_chapter)
+            cartoon_id, first_chapter=latest_chapter, max_chapter=max_chapter, manga_exists_json=manga_exists_json)
 
 def download_my_novel():
     my_novel_cartoons = [
@@ -35,17 +36,18 @@ def download_my_novel():
         ['Tales of Demon and Gods', 'E8XDEk8Dv9vbchSGtF5n', 419],
         ['Infinite Mage','63b2a71156baafb4e8213126', 28]
     ]
+    manga_exists_json = generate_drive_manga_exists()
     my_novel = MyNovel()
     for cartoon_name, cartoon_id, latest_chapter in my_novel_cartoons:
         print(
             f'cartoon_name: {cartoon_name}\tkey: {cartoon_id}\tlatest_chapter: {latest_chapter}')
-        my_novel.download_cartoons(cartoon_id, start_ep_index=latest_chapter)
+        my_novel.download_cartoons(cartoon_id, start_ep_index=latest_chapter, manga_exists_json=manga_exists_json)
 
 
 if __name__ == "__main__":
     ENABLE_DOWNLOAD_MAM_MIRROR = True
     ENABLE_DOWNLOAD_MY_NOVEL = False
-    manga_exists_json = generate_drive_manga_exists()
+    manga_exists_json = generate_drive_manga_exists(force_update=True)
     
     
     if ENABLE_DOWNLOAD_MAM_MIRROR:

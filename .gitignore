@@ -159,6 +159,7 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
+files/cartoons/*
 files/cartoons/*/
 files/trash/*
 config/token.json

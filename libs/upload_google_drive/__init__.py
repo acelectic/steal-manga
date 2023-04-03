@@ -47,7 +47,7 @@ SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly']
 
 
 DRIVE_CARTOONS_DIR_ID = '1iXUAF2N3YxLPvJyDTYYL1f8HFP1mU1Ek'
-MANGE_EXISTS_FILE_PATH = os.path.join(CARTOON_DIR, 'mange_exists.json')
+MANGE_EXISTS_FILE_PATH = os.path.join(CARTOON_DIR, 'manga_exists.json')
 UPDATE_TIMESTAMP_FILE_PATH = os.path.join(CARTOON_DIR, 'update_timestamp.txt')
 UPDATE_MINUTE_THRESHOLD = 2
 
