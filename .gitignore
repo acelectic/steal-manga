@@ -160,6 +160,5 @@ cython_debug/
 #.idea/
 
 files/cartoons/*
-files/cartoons/*/
 files/trash/*
 config/token.json

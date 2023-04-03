@@ -2,6 +2,9 @@
 
 <!--next-version-placeholder-->
 
+## v0.0.17 (2023-04-03)
+
+
 ## v0.0.16 (2023-04-03)
 ### Fix
 * Code missing ([`a132b74`](https://github.com/acelectic/steal-manga/commit/a132b7460450996463e0dd93fffba653fbe6de47))
