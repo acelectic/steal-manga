@@ -5,20 +5,23 @@ sys.path.append("../libs")
 from libs.man_mirror import ManMirror
 from libs.my_novel import MyNovel
 from libs.upload_google_drive import generate_drive_manga_exists, upload_to_drive
+from dotenv import load_dotenv
 
+load_dotenv()
 
 def download_man_mirror():
     man_mirror_cartoons = [
-        ['เลเวลอัพไม่จำกัด', 1, 138, 143],
+        # ['เลเวลอัพไม่จำกัด', 1, 138, 143],
         # # ['สุดยอดจอมยุทธ', 7, 117, 118],
         # ['ดาบวายุอัสนี', 19, 64, 66],
         # ['จ้าวสงคราม', 3, 128, 130],
-        # ['มือกระบี่ไร้พ่าย', 5, 150, 151],
+        # ['มือกระบี่ไร้พ่าย', 5, 150, 154],
         # # ['จิตวิญญาณวายุ', 16, 1, 76],
         # ['โกแซม นักรบในตำนาน', 12, 65, 66],
         # # ['บัณฑิตหวนคืน', 8, 1, 30],  # max 133
-        # ['เส้นทางสู่สวรรค์', 21, 1, 30],
-        # # ['หนึ่งในใต้หล้า', 10, 1, 30],  # max 100
+        ['เส้นทางสู่สวรรค์', 21, 1, 42],
+        # ['มังกรพิษ', 6, 100, 126],
+        # ['หนึ่งในใต้หล้า', 10, 1, 111],  # max 100
     ]
     manga_exists_json = generate_drive_manga_exists()
     for cartoon_name, cartoon_id, latest_chapter, max_chapter in man_mirror_cartoons:

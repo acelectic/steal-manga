@@ -21,7 +21,7 @@ from typing import Any, Dict, List
 import shutil
 
 from libs.utils.file_helper import mkdir
-from libs.utils.constants import CARTOON_DIR
+from libs.utils.constants import CARTOON_DIR, DRIVE_CARTOONS_DIR_ID, MANGE_EXISTS_FILE_PATH, UPDATE_MINUTE_THRESHOLD, UPDATE_TIMESTAMP_FILE_PATH
 
 sys.path.append("../../libs")  # Adds higher directory to python modules path.
 sys.path.append("../utils")
@@ -45,13 +45,10 @@ import json
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly']
 
-
-DRIVE_CARTOONS_DIR_ID = '1iXUAF2N3YxLPvJyDTYYL1f8HFP1mU1Ek'
-MANGE_EXISTS_FILE_PATH = os.path.join(CARTOON_DIR, 'manga_exists.json')
-UPDATE_TIMESTAMP_FILE_PATH = os.path.join(CARTOON_DIR, 'update_timestamp.txt')
-UPDATE_MINUTE_THRESHOLD = 2
-
-def upload_to_drive():
+def upload_to_drive(logging=False):
+    """
+        Upload to drive
+    """
     try:
         cartoon_projects = get_cartoon_projects()
         service = get_drive_service()
@@ -70,8 +67,9 @@ def upload_to_drive():
                 service, DRIVE_CARTOONS_DIR_ID, cartoon_project.title)
 
             if cartoon_project_res is not None:
-                cartoon_project_id, dir = cartoon_project_res
-                print(f'dir_id: {cartoon_project_id}, dir: {dir.get("name")}')
+                cartoon_project_id, cartoon_project_dir = cartoon_project_res
+                if logging:
+                    print(f'dir_id: {cartoon_project_id}, dir: {cartoon_project_dir.get("name")}')
 
                 # manga level
                 for cartoon_project_sub_dir in cartoon_project.sub_dirs[::]:
@@ -80,21 +78,24 @@ def upload_to_drive():
 
                     if cartoon_project_sub_dir_res is not None:
                         sub_dir_id, sub_dir = cartoon_project_sub_dir_res
-                        print(
+                        if logging:
+                            print(
                             f'\tdir_id: {sub_dir_id}, dir: {sub_dir.get("name")}')
 
                         # upload manga
                         for image_pdf in cartoon_project_sub_dir.image_pdf_list[::]:
                             file_name = image_pdf.split('/')[-1]
                             file_path = image_pdf
-                            print(
+                            if logging:
+                                print(
                                 f'\t\tfile_name: {file_name}, \tfile_path: {file_path}')
                             upload_manga_res = upload_file_to_drive_if_not_exists(
                                 service, file_name, file_path, sub_dir_id)
 
                             if upload_manga_res is not None:
                                 file_id, file = upload_manga_res
-                                print(
+                                if logging:
+                                    print(
                                     f'\t\tfile_id: {file_id}, file: {file.get("name")}')
                                 delete_file(file_path)
 
@@ -375,11 +376,14 @@ def create_folder(service, parent_dir_id: str, dir_name: str):
 
 
 def delete_file(file_path: str):
+    """
+        Delete file after upload to drive
+    """
     if os.path.exists(file_path):
-        trash_dir = os.path.join(
-            'files', 'trash', '/'.join(file_path.split('/')[1:-1:]))
-        print(f'trash_dir: {trash_dir}')
-        mkdir(trash_dir)
-        new_path = os.path.join(trash_dir, file_path.split('/')[-1])
-        shutil.move(file_path, new_path)
-        # os.remove(file_path)
+        # trash_dir = os.path.join(
+        #     'files', 'trash', '/'.join(file_path.split('/')[1:-1:]))
+        # print(f'trash_dir: {trash_dir}')
+        # mkdir(trash_dir)
+        # new_path = os.path.join(trash_dir, file_path.split('/')[-1])
+        # shutil.move(file_path, new_path)
+        os.remove(file_path)

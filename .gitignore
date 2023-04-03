@@ -162,3 +162,5 @@ cython_debug/
 files/cartoons/*
 files/trash/*
 config/token.json
+
+.env*.local

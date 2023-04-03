@@ -3,10 +3,17 @@
   "python.linting.pylintEnabled": true,
   "python.linting.enabled": false,
   "pylint.args": ["--ignore", "E0402", "--ignore", "C0303"],
-  "cSpell.words": ["creds", "fromarray", "imageio", "imread", "ndarray"],
+  "cSpell.words": [
+    "creds",
+    "dotenv",
+    "fromarray",
+    "imageio",
+    "imread",
+    "ndarray"
+  ],
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "ms-python.python",
   "python.analysis.extraPaths": ["./libs/utils"],
-  "python.formatting.autopep8Args": ["--ignore", "E402"],
+  "python.formatting.autopep8Args": ["--ignore", "E402", "--ignore", "C0303"],
   "python.analysis.importFormat": "relative"
 }
