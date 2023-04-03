@@ -1,0 +1,3 @@
+[tool.semantic_release]
+version_variable = ["setup.py:__version__","docs/conf.py:version"]
+version_pattern = "README.md:VERSION {version}"
