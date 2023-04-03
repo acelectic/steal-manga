@@ -2,6 +2,15 @@
 
 <!--next-version-placeholder-->
 
+## v0.0.16 (2023-04-03)
+### Fix
+* Code missing ([`a132b74`](https://github.com/acelectic/steal-manga/commit/a132b7460450996463e0dd93fffba653fbe6de47))
+* Edit package ([`e7e9db7`](https://github.com/acelectic/steal-manga/commit/e7e9db788892c0ca39540e4a9298645431500235))
+* Edit tag ([`c304745`](https://github.com/acelectic/steal-manga/commit/c304745b6175c02801315dae43272252694fc174))
+* Workflow error ([`55a550f`](https://github.com/acelectic/steal-manga/commit/55a550fe8be121105b443c52ae171e67854f9566))
+* Edit workflow ([`67b57bd`](https://github.com/acelectic/steal-manga/commit/67b57bde71ea9c54da38f2788755965d7e645a73))
+* Pip freeze ([`26776ec`](https://github.com/acelectic/steal-manga/commit/26776ecc0c808a2de92ac1c9722ef45ca01cb510))
+
 ## v0.0.15 (2023-04-03)
 
 
