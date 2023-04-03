@@ -3,7 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 import glob
 import os
 import shutil
-from typing import Any, List, Tuple
+from typing import Any, Dict, List, Tuple
 from urllib.parse import unquote
 
 import imageio.v3 as iio
@@ -34,7 +34,7 @@ class MyNovel:
     root = 'my-novel'
     app_key = "xdde8cNN5k7AuVTMgz7b"
 
-    def download_cartoons(self, product_id: str, start_ep_index: int = 1) -> None:
+    def download_cartoons(self, product_id: str, start_ep_index: int = 1, manga_exists_json: Dict[Any,Any] = {}) -> None:
         """
         download man mirror by post id
         """
@@ -106,12 +106,19 @@ class MyNovel:
                 ep_dir = self.__get_ep_dir(product_name, ep_name)
 
                 output_pdf_path = f'{main_dir}/{ep_name}.pdf'
-                is_file_exists = os.path.isfile(output_pdf_path)
+                is_file_local_exists = os.path.isfile(output_pdf_path)
+                is_file_exists = False
+            
+                try:
+                    manga_id = manga_exists_json[self.root]["sub_dirs"][product_name]["chapters"][f'{ep_name}.pdf']["id"]
+                    is_file_exists = manga_id is not None
+                except: 
+                    is_file_exists = False
 
-                print(
-                    f'\nexists: {is_file_exists} | {i} | {ep_index} {raw_ep_name} {ep_name}')
+                # print(
+                #     f'\nexists: {is_file_exists} | {i} | {ep_index} {raw_ep_name} {ep_name}')
 
-                if not is_file_exists:
+                if not is_file_exists and not is_file_local_exists:
                     # Create two threads as follows
                     # self._perform_download_ep(
                     #     product_name, ep_name,

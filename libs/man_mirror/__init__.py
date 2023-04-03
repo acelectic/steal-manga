@@ -1,4 +1,9 @@
 """Module providingFunction printing python version."""
+
+import sys
+sys.path.append("../utils")  # Adds higher directory to python modules path.
+sys.path.append("../../libs")  # Adds higher directory to python modules path.
+
 from .image_json_shuffle import ImageJsonShuffle
 import concurrent.futures
 from PIL import Image, ImageFile
@@ -8,17 +13,16 @@ import os
 import random
 import shutil
 from time import process_time, sleep
-from typing import Any, Tuple
+from typing import Any, Dict, Tuple
 import requests
 import imageio.v3 as iio
 from tqdm import tqdm
 
-from ..utils.constants import CARTOON_DIR
-from ..utils.file_helper import mkdir
-from ..utils.pdf_helper import merge_images_to_pdf
+from libs.utils.constants import CARTOON_DIR
+from libs.utils.file_helper import mkdir
+from libs.utils.pdf_helper import merge_images_to_pdf
 
-import sys
-sys.path.append("..")  # Adds higher directory to python modules path.
+
 
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
@@ -37,7 +41,7 @@ class ManMirror:
     """ class """
     root = 'man-mirror'
 
-    def download_cartoons(self, cartoon_name: str, post_id: int,  max_chapter: int, first_chapter: int = 1) -> None:
+    def download_cartoons(self, cartoon_name: str, post_id: int,  max_chapter: int, first_chapter: int = 1, manga_exists_json: Dict[Any,Any] = {}) -> None:
         """ 
         download man mirror by post id 
         """
@@ -48,15 +52,23 @@ class ManMirror:
         # create a thread pool with 2 threads
         pool = concurrent.futures.ThreadPoolExecutor(max_workers=2)
 
-        chapters = range(first_chapter, max_chapter + 1)
+        chapters = range(first_chapter, (max_chapter or first_chapter) + 1)
 
         for chapter in tqdm(chapters):
 
             chapter_dir = self.__get_chapter_dir(cartoon_name, chapter)
             output_pdf_path = f'{main_dir}/{chapter}.pdf'
-            is_file_exists = os.path.isfile(output_pdf_path)
-
-            if not is_file_exists:
+            is_file_local_exists = os.path.isfile(output_pdf_path)
+            is_file_exists = False
+            
+            try:
+                manga_id = manga_exists_json[main_dir]["sub_dirs"][cartoon_name]["chapters"][f'{chapter}.pdf']["id"]
+                is_file_exists = manga_id is not None
+            except: 
+                is_file_exists = False
+                
+            
+            if not is_file_exists and not is_file_local_exists:
                 pool.submit(self.__perform_download_chapter, cartoon_name, post_id,
                             chapter, chapter_dir, output_pdf_path)
                 # self.__clean_image_png(chapter_dir)
