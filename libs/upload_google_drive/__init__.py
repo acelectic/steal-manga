@@ -116,7 +116,7 @@ def upload_to_drive():
         print(f'An error occurred: {error}')
 
 
-def generate_drive_manga_exists(force_update = False)->Dict[Any, Any]:
+def generate_drive_manga_exists(force_update = False, logging = False)->Dict[Any, Any]:
     """
         get and generate manga in drive
     """
@@ -153,10 +153,11 @@ def generate_drive_manga_exists(force_update = False)->Dict[Any, Any]:
             print('No files found.')
             return manga_exists_json
 
-        
-        print('Files:')
+        if logging:
+            print('Files:')
         for project_dir in drive_project_dirs[::]:
-            print(u'{0} ({1})'.format(project_dir['name'], project_dir['id']))
+            if logging:
+                print(u'{0} ({1})'.format(project_dir['name'], project_dir['id']))
 
             manga_exists_json[project_dir['name']] = {
                 "id": project_dir['id'],
@@ -166,7 +167,8 @@ def generate_drive_manga_exists(force_update = False)->Dict[Any, Any]:
             drive_project_manga_dirs = list_drive_dirs(
                 service, project_dir['id'])
             for manga_dir in drive_project_manga_dirs[::]:
-                print(u'\t{0} ({1})'.format(
+                if logging:
+                    print(u'\t{0} ({1})'.format(
                     manga_dir['name'], manga_dir['id']))
                 
                 manga_exists_json[project_dir['name']]["sub_dirs"][manga_dir['name']] = {
@@ -177,7 +179,8 @@ def generate_drive_manga_exists(force_update = False)->Dict[Any, Any]:
                 drive_manga_chapters = list_drive_manga(
                     service, manga_dir['id'])
                 for drive_manga_chapter in drive_manga_chapters[::]:
-                    print(u'\t\t{0} ({1})'.format(
+                    if logging:
+                        print(u'\t\t{0} ({1})'.format(
                         drive_manga_chapter['name'], drive_manga_chapter['id']))
                     manga_exists_json[project_dir['name']]["sub_dirs"][manga_dir['name']]["chapters"][drive_manga_chapter['name']] = {
                     "id": drive_manga_chapter['id'],
