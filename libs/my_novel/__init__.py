@@ -13,9 +13,14 @@ from PIL import Image, ImageFile
 from tqdm import tqdm
 from tqdm.contrib.concurrent import thread_map
 
-from ..utils.constants import CARTOON_DIR
-from ..utils.file_helper import mkdir
-from ..utils.pdf_helper import merge_images_to_pdf
+from libs.utils.constants import CARTOON_DIR
+from libs.utils.file_helper import mkdir
+from libs.utils.pdf_helper import merge_images_to_pdf
+
+import sys
+sys.path.append("../utils")  # Adds higher directory to python modules path.
+sys.path.append("../../libs")  # Adds higher directory to python modules path.
+
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
@@ -34,7 +39,7 @@ class MyNovel:
     root = 'my-novel'
     app_key = "xdde8cNN5k7AuVTMgz7b"
 
-    def download_cartoons(self, product_id: str, start_ep_index: int = 1, manga_exists_json: Dict[Any,Any] = {}) -> None:
+    def download_cartoons(self, product_id: str, start_ep_index: int = 1, manga_exists_json: Dict[Any,Any] = {}, max_workers: int = 4) -> None:
         """
         download man mirror by post id
         """
@@ -78,7 +83,7 @@ class MyNovel:
         #            max_workers=2)
 
         # create a thread pool with 2 threads
-        with ThreadPoolExecutor(max_workers=2) as pool:
+        with ThreadPoolExecutor(max_workers=max_workers) as pool:
             # tqdm(pool.map(sub_process, enumerate(
             #     product_ep_list)),
             #     desc=f'{product_name}',

@@ -1,9 +1,6 @@
 """Module providingFunction printing python version."""
 
 import sys
-sys.path.append("../utils")  # Adds higher directory to python modules path.
-sys.path.append("../../libs")  # Adds higher directory to python modules path.
-
 from .image_json_shuffle import ImageJsonShuffle
 import concurrent.futures
 from PIL import Image, ImageFile
@@ -23,7 +20,8 @@ from libs.utils.file_helper import mkdir
 from libs.utils.pdf_helper import merge_images_to_pdf
 import urllib.parse
 
-
+sys.path.append("../utils")  # Adds higher directory to python modules path.
+sys.path.append("../../libs")  # Adds higher directory to python modules path.
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
@@ -47,7 +45,7 @@ class ManMirror:
     """ class """
     root = 'man-mirror'
 
-    def download_cartoons(self, cartoon_name: str, post_id: int,  max_chapter: int, first_chapter: int = 1, manga_exists_json: Dict[Any,Any] = {}) -> None:
+    def download_cartoons(self, cartoon_name: str, post_id: int,  max_chapter: int, first_chapter: int = 1, manga_exists_json: Dict[Any,Any] = {}, max_workers: int = 4) -> None:
         """ 
             download man mirror by post id 
         """
@@ -56,7 +54,7 @@ class ManMirror:
         mkdir(main_dir)
 
         # create a thread pool with 2 threads
-        pool = concurrent.futures.ThreadPoolExecutor(max_workers=2)
+        pool = concurrent.futures.ThreadPoolExecutor(max_workers=max_workers)
 
         chapters = range(first_chapter, (max_chapter or first_chapter) + 1)
 
@@ -182,7 +180,7 @@ class ManMirror:
             new_image = None
             
             try:
-                image = self.__get_image(post_id, chapter, page = str(page), image_extension=image_extension)
+                image = self.__get_image(post_id, chapter, page = str(page))
             except RequestError:
                 raw_page_title = f'หน้า-{str(page).zfill(2)}'.encode('utf-8')
                 page_title = urllib.parse.quote_plus(raw_page_title)
@@ -281,12 +279,16 @@ class ManMirror:
             if response.status_code == 200:
                 img = Image.open(response.raw)
                 return np.array(img)
-            
+            elif response.status_code == 404:
+                print(f'url: {url}')
         else:
             response = requests.get(url, timeout=20*1000)
-            if (response.status_code == 200):
+            if response.status_code == 200:
                 response = iio.imread(url)
                 return response
+            elif response.status_code == 404:
+                print(f'url: {url}')
+                
         
         # if image_extension == 'jpg':
         #     print(f'url: {url}')
