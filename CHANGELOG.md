@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.0.22 (2023-04-07)
+### Fix
+* Implement mamirror jpg no json order ([`ca1310e`](https://github.com/acelectic/steal-manga/commit/ca1310e01aeed8c7296efb5943a1c420d9bb45c4))
+
 ## v0.0.21 (2023-04-03)
 
 
