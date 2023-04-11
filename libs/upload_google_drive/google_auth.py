@@ -26,7 +26,7 @@ from google.auth.exceptions import RefreshError
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/drive']
 
-google_auth_token_path = 'config/token.json'
+GOOGLE_AUTH_TOKEN_PATH = 'config/token.json'
 
 def authen():
     """Shows basic usage of the Drive v3 API.
@@ -36,24 +36,24 @@ def authen():
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
     # time.
-    if os.path.exists(google_auth_token_path):
+    if os.path.exists(GOOGLE_AUTH_TOKEN_PATH):
         creds = Credentials.from_authorized_user_file(
-            google_auth_token_path, SCOPES)
+            GOOGLE_AUTH_TOKEN_PATH, SCOPES)
     # If there are no (valid) credentials available, let the user log in.
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             try:
                 creds.refresh(Request())
             except RefreshError:
-                if os.path.exists(google_auth_token_path):
-                    os.remove(google_auth_token_path)
+                if os.path.exists(GOOGLE_AUTH_TOKEN_PATH):
+                    os.remove(GOOGLE_AUTH_TOKEN_PATH)
                 return authen()
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
                 'config/credentials.json', SCOPES)
             creds = flow.run_local_server(port=0)
         # Save the credentials for the next run
-        with open(google_auth_token_path, 'w') as token:
+        with open(GOOGLE_AUTH_TOKEN_PATH, 'w') as token:
             token.write(creds.to_json())
 
     return creds
