@@ -53,7 +53,7 @@ def authen():
                 'config/credentials.json', SCOPES)
             creds = flow.run_local_server(port=0)
         # Save the credentials for the next run
-        with open(GOOGLE_AUTH_TOKEN_PATH, 'w') as token:
+        with open(GOOGLE_AUTH_TOKEN_PATH, 'w', encoding='utf-8') as token:
             token.write(creds.to_json())
 
     return creds
