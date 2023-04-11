@@ -206,9 +206,9 @@ def generate_drive_manga_exists(force_update = False, logging = False)->Dict[Any
                     "modifiedByMeTime": drive_manga_chapter['modifiedByMeTime']
                 }
 
-                manga_exists_json[project_dir['name']]["sub_dirs"][manga_dir['name']]["chapters"] = orderKeysInJson(manga_exists_json[project_dir['name']]["sub_dirs"][manga_dir['name']]["chapters"])
-            manga_exists_json[project_dir['name']]["sub_dirs"] = orderKeysInJson(manga_exists_json[project_dir['name']]["sub_dirs"])   
-        manga_exists_json = orderKeysInJson(manga_exists_json)
+                manga_exists_json[project_dir['name']]["sub_dirs"][manga_dir['name']]["chapters"] = order_keys_in_json(manga_exists_json[project_dir['name']]["sub_dirs"][manga_dir['name']]["chapters"])
+            manga_exists_json[project_dir['name']]["sub_dirs"] = order_keys_in_json(manga_exists_json[project_dir['name']]["sub_dirs"])   
+        manga_exists_json = order_keys_in_json(manga_exists_json)
 
         # Serializing json
         json_object = json.dumps(manga_exists_json, indent=2, ensure_ascii=False)
@@ -315,7 +315,7 @@ def upload_file_to_drive(service, file_name: str, file_path: str, folder_id: str
     file = service.files().create(body=file_metadata,
                                   media_body=media,
                                   fields='id, name').execute()
-    print(file)
+    # print(file)
     return file['id'], file
 
 
@@ -354,7 +354,7 @@ def find_or_init_dir(service, drive_cartoons_dir_id: str, dir_name: str):
         fields='nextPageToken, '
         'files(*)',
     ).execute()
-    print(f'dir_res: {dir_res}')
+    # print(f'dir_res: {dir_res}')
     if dir_res is not None and dir_res['files'] is not None and len(dir_res['files']) > 0:
         dir_file = dir_res['files'][0]
     # print(dir)
@@ -385,7 +385,7 @@ def create_folder(service, parent_dir_id: str, dir_name: str):
         # pylint: disable=maybe-no-member
         file = service.files().create(body=file_metadata, fields='files(id, name)'
                                       ).execute()
-        print(F'Create Folder ID: "{file.get("id")}".')
+        # print(F'Create Folder ID: "{file.get("id")}".')
         return file.get('id'), file
 
     except HttpError as error:
@@ -409,5 +409,6 @@ def delete_file(file_path: str):
             shutil.move(file_path, new_path)
 
 
-def orderKeysInJson(data: dict)->dict:
+def order_keys_in_json(data: dict)->dict:
+    """ order_keys_in_json """
     return dict(sorted(data.items(), key=lambda x: str(x[0]).zfill(30)))
