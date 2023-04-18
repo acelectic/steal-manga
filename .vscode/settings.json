@@ -2,12 +2,6 @@
   "python.analysis.typeCheckingMode": "basic",
   "python.linting.pylintEnabled": true,
   "python.linting.enabled": true,
-  "python.formatting.autopep8Args": [
-    "--max-line-length",
-    "120",
-    "--experimental"
-  ],
-  "editor.action.organizeImports": false,
   "python.analysis.autoImportCompletions": true,
   "cSpell.words": [
     "creds",
@@ -18,7 +12,6 @@
     "ndarray"
   ],
   "editor.formatOnSave": true,
-  "python.analysis.extraPaths": ["./libs/utils"],
   "python.analysis.importFormat": "relative",
   "cSpell.ignoreRegExpList": ["/[\\u0E00-\\u0E7F]/g"]
 }

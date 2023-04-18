@@ -37,10 +37,21 @@ def show_manga_updated():
                                 "manga": manga,
                                 "chapter": chapter,
                             })
-                for updated, item in sorted(results.items(),reverse=True)[:1:]:
-                    print(f'updated: {updated}')
+        
+                results_sorted = sorted(results.items(),reverse=True)[:1:]
+                results_sorted_group = []
+                latest_update = results_sorted[0][0]
+                
+                for updated, item in results_sorted:
+                    # print(f'updated: {updated}')
                     for e in item:
-                        print('\tproject: {} {} {}'.format(e["project"], e["manga"], e["chapter"]))
+                        results_sorted_group.append(e["project"] + '|' + e["manga"])
+                        # print('\tproject: {} {} {}'.format(e["project"], e["manga"], e["chapter"]))
+
+                print(f'updated: {latest_update}')
+                for item in list(set(map(lambda x: x, results_sorted_group))):
+                    print(item)
+                
                 # drive_project_manga_dirs = list_drive_dirs(
                 #     service, project_dir['id'])
                 # for manga_dir in drive_project_manga_dirs[::]:

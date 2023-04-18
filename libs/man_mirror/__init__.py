@@ -87,8 +87,8 @@ class ManMirror:
 
     def _download_cartoon_chapter(self, cartoon_name: str, post_id: int, chapter: int) -> bool:
         """ download man mirror by post id with page"""
-        main_dir = self.__get_chapter_dir(cartoon_name, chapter)
-        mkdir(main_dir)
+        chapter_dir = self.__get_chapter_dir(cartoon_name, chapter)
+        mkdir(chapter_dir)
 
         max_page = 0
         is_error = False
@@ -111,9 +111,9 @@ class ManMirror:
                 is_error = True
 
         if len(image_json_list) > 0:
-            is_some_page_error = self.download_manga_by_image_json(cartoon_name, post_id, chapter, main_dir, max_page, image_json_list)
+            is_some_page_error = self.download_manga_by_image_json(cartoon_name, post_id, chapter, chapter_dir, max_page, image_json_list)
         else:
-            is_some_page_error = self.download_manga_normal(cartoon_name, post_id, chapter, main_dir)
+            is_some_page_error = self.download_manga_normal(cartoon_name, post_id, chapter, chapter_dir)
                 
 
         return is_some_page_error
@@ -233,8 +233,8 @@ class ManMirror:
             return True
         return False
 
-    def __get_main_dir(self, post_id: str) -> str:
-        return f'{CARTOON_DIR}/{self.root}/{post_id}'
+    def __get_main_dir(self, cartoon_name: str) -> str:
+        return f'{CARTOON_DIR}/{self.root}/{cartoon_name}'
 
     def __get_chapter_dir(self, cartoon_name: str, chapter: int) -> str:
         main_dir = self.__get_main_dir(cartoon_name)
@@ -375,3 +375,53 @@ class ManMirror:
                 # break
             # break
         return new_image, has_some_error
+
+    def download_manual(self, cartoon_name:str, cartoon_id:str, chapter:int, image_paths: List[str]):
+        main_dir = self.__get_main_dir(cartoon_name)
+        chapter_dir = self.__get_chapter_dir(cartoon_name, chapter)
+        mkdir(chapter_dir)
+        output_pdf_path = f'{main_dir}/{chapter}.pdf'
+        
+        if os.path.exists(output_pdf_path):
+            return
+
+        loop_target: List[Tuple[int,int]] = []
+        for d1 in range(10):
+            for d2 in range(25):
+                loop_target.append((d1, d2))
+
+        count_error_continue = 0
+        d1_error = None
+        for i, d in tqdm(enumerate(loop_target), desc=f'cartoon_name {cartoon_name}[{chapter}]', total=len(loop_target)):
+            d1, d2 = d
+            page = i + 1
+            image_path = f'{chapter_dir}/{page}.png'
+            image_url = f'https://www.manmirror.net/test/{cartoon_id}/{chapter}/DG{ str(chapter).zfill(2)}-{d1}_{ str(d2).zfill(3) }.jpg'
+            if os.path.exists(image_path):
+                continue
+
+            if d1_error is not None and d1_error <= d1:
+                continue
+            
+            if count_error_continue > 4:
+                break
+            
+            try:
+                new_image = self.call_get_image(image_url)
+                if new_image is not None:
+                    new_image_file = Image.fromarray(new_image)
+                    new_image_file.save(image_path)
+                count_error_continue = 0
+            except: 
+                d1_error = d1
+                count_error_continue += 1
+                continue
+
+        self.__merge_to_pdf(chapter_dir, output_pdf_path)
+        self.__remove_chapter_dir(chapter_dir)
+
+    def call_get_image(self, url):
+        response = requests.get(url, timeout=20*1000, stream=True)
+        if response.status_code == 200:
+            img = Image.open(response.raw)
+            return np.array(img)
