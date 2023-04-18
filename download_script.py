@@ -1,5 +1,4 @@
 """ Main Module """
-import sys
 from time import time
 
 from dotenv import load_dotenv
@@ -9,8 +8,8 @@ from libs.my_novel import MyNovel
 from libs.upload_google_drive import generate_drive_manga_exists, upload_to_drive
 from libs.upload_google_drive.manga_result import show_manga_updated
 
-sys.path.append("./libs")
-sys.path.append("./libs/upload_google_drive")
+# sys.path.append("./libs")
+# sys.path.append("./libs/upload_google_drive")
 
 
 load_dotenv()
@@ -88,7 +87,12 @@ def download_man_mirror():
             force_update=True, cartoon_name=cartoon_name, project_name=man_mirror.root)
         man_mirror.download_cartoons(
             cartoon_name,
-            cartoon_id, first_chapter=latest_chapter, max_chapter=max_chapter, manga_exists_json=manga_exists_json, max_workers=MAX_WORKERS)
+            cartoon_id,
+            first_chapter=latest_chapter,
+            max_chapter=max_chapter,
+            manga_exists_json=manga_exists_json,
+            max_workers=MAX_WORKERS
+        )
         upload_to_drive(cartoon_name=cartoon_name,
                         project_name=man_mirror.root)
 
@@ -114,7 +118,7 @@ def download_my_novel():
 def function_execute_time(name: str, cb):
     start_time: float = time()
     cb()
-    print("\n[Execute Time] %s | %s seconds" % (name, time() - start_time))
+    print(f"\n[Execute Time] {name} | {time() - start_time} seconds")
 
 
 def run():

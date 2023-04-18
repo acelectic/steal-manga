@@ -7,7 +7,8 @@ def mkdir(path: str) -> None:
     """ make dir recursive """
     os.makedirs(path, exist_ok=True)
 
-def get_env(key: str, required: bool = False)-> str | None: 
+
+def get_env(key: str, required: bool = False) -> str | None:
     """
         get env and validate
     """

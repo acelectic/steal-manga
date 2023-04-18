@@ -29,7 +29,7 @@ from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload
 from tqdm import tqdm
 
-from libs.utils.constants import (
+from ..utils.constants import (
     CARTOON_DIR,
     DELETE_FILE_AFTER_UPLOADED,
     DRIVE_CARTOONS_DIR_ID,
@@ -37,13 +37,12 @@ from libs.utils.constants import (
     UPDATE_MINUTE_THRESHOLD,
     UPDATE_TIMESTAMP_FILE_PATH,
 )
-from libs.utils.file_helper import mkdir
-
+from ..utils.file_helper import mkdir
 from .google_auth import authen
 from .interface import ProjectCartoonItem, ProjectItem
 
-sys.path.append("../../libs")  # Adds higher directory to python modules path.
-sys.path.append("../utils")
+# sys.path.append("../../libs")  # Adds higher directory to python modules path.
+# sys.path.append("../utils")
 
 
 # sys.path.append(".")  # Adds higher directory to python modules path.
@@ -53,7 +52,7 @@ sys.path.append("../utils")
 SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly']
 
 
-def upload_to_drive(project_name=None, cartoon_name=None, logging=False, max_workers=1):
+def upload_to_drive(project_name=None, cartoon_name=None, logging=False):
     """
         Upload to drive
     """
@@ -115,9 +114,9 @@ def upload_to_drive(project_name=None, cartoon_name=None, logging=False, max_wor
 
                         if total_files > 0:
                             # upload manga
-                            for i, image_pdf in tqdm(enumerate(manga_files),
-                                                     desc=f'{manga_name}',
-                                                     total=total_files):
+                            for image_pdf in tqdm(manga_files,
+                                                  desc=f'{manga_name}',
+                                                  total=total_files):
                                 file_name = image_pdf.split('/')[-1]
                                 file_path = image_pdf
 
@@ -222,8 +221,7 @@ def generate_drive_manga_exists(project_name=None, cartoon_name=None, force_upda
                     service, manga_dir['id'])
                 for drive_manga_chapter in drive_manga_chapters[::]:
                     if logging:
-                        print(u'\t\t{0} ({1})'.format(
-                            drive_manga_chapter['name'], drive_manga_chapter['id']))
+                        print(f'\t\t{drive_manga_chapter["name"]} ({drive_manga_chapter["id"]})')
                     manga_exists_json[project_dir['name']]["sub_dirs"][manga_dir['name']]["chapters"][drive_manga_chapter['name']] = {
                         "id": drive_manga_chapter['id'],
                         "createdTime": drive_manga_chapter['createdTime'],
@@ -261,7 +259,7 @@ def generate_drive_manga_exists(project_name=None, cartoon_name=None, force_upda
 
 def get_drive_service():
     creds = authen()
-    if creds == None:
+    if creds is None:
         print('not authen')
         return
 
@@ -325,8 +323,8 @@ def upload_file_to_drive_if_not_exists(service, file_name: str, file_path: str, 
         if dir_result is None:
             return upload_file_to_drive(service, file_name, file_path, folder_id)
         return dir_result.get('id'), dir_result
-    except Exception as e:
-        print(e)
+    except Exception as error:
+        print(error)
         return None
 
 

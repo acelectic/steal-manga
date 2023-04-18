@@ -4,7 +4,7 @@
   "python.linting.enabled": true,
   "python.linting.lintOnSave": true,
   "python.analysis.autoImportCompletions": true,
-  "python.analysis.importFormat": "absolute",
+  "python.analysis.importFormat": "relative",
   "python.formatting.provider": "none",
   "autopep8.args": ["--max-line-length", "100"],
   "editor.formatOnPaste": true,
@@ -26,7 +26,21 @@
     "editor.defaultFormatter": "ms-python.autopep8",
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
-      "source.organizeImports": true
+      "source.organizeImports": true,
+      "source.fixAll": true
     }
-  }
+  },
+  "python.analysis.extraPaths": [
+    "libs/man_mirror",
+    "libs/my_novel",
+    "libs/utils"
+  ],
+  "pylint.args": [
+    "--disable=C0116",
+    "--disable=C0103",
+    "--disable=C0209",
+    "--disable=C0114",
+    "--disable=W0718",
+    "--disable=E0402"
+  ]
 }

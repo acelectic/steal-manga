@@ -1,12 +1,11 @@
-from collections import defaultdict
 import datetime
 import json
 import os
-import sys
+from collections import defaultdict
 
-from libs.utils.constants import MANGE_EXISTS_FILE_PATH
+from ..utils.constants import MANGE_EXISTS_FILE_PATH
 
-sys.path.append("../../libs")  # Adds higher directory to python modules path.
+# sys.path.append("../../libs")  # Adds higher directory to python modules path.
 
 
 def show_manga_updated():
@@ -49,39 +48,16 @@ def show_manga_updated():
             results_yet_view_sorted = sorted(results_yet_view.items(), reverse=True)[:2:]
             results_viewed_sorted = sorted(results_viewed.items(), reverse=True)[:2:]
 
-            print(f'\n--- VIEWED ---')
+            print('\n--- VIEWED ---')
             for updated, item in results_viewed_sorted:
                 print(f'updated: {updated}')
                 for e in list(sorted(set([f'{ d["project"]: <20} {d["manga"]}' for d in item]))):
                     # print('\tproject: {} {} {}'.format(e["project"], e["manga"], e["chapter"]))
                     print(f'\t{e}')
 
-            print(f'\n--- YET VIEW ---')
+            print('\n--- YET VIEW ---')
             for updated, item in results_yet_view_sorted:
                 print(f'updated: {updated}')
-                for e in list(sorted(set([f'{ d["project"]: <20} {d["manga"]} {d["chapter"]}' for d in item]))):
+                for e in list(sorted(set([f'{d["project"]: <20} {d["manga"]} {d["chapter"]} {d["viewedByMe"]}' for d in item]))):
                     # print('\tproject: {} {} {}'.format(e["project"], e["manga"], e["chapter"]))
                     print(f'\t{e}')
-            # drive_project_manga_dirs = list_drive_dirs(
-            #     service, project_dir['id'])
-            # for manga_dir in drive_project_manga_dirs[::]:
-            #     if logging:
-            #         print(u'\t{0} ({1})'.format(
-            #         manga_dir['name'], manga_dir['id']))
-
-            #     manga_exists_json[project_dir['name']]["sub_dirs"][manga_dir['name']] = {
-            #         "id": manga_dir['id'],
-            #         "chapters": {}
-            #     }
-
-            #     drive_manga_chapters = list_drive_manga(
-            #         service, manga_dir['id'])
-            #     for drive_manga_chapter in drive_manga_chapters[::]:
-            #         if logging:
-            #             print(u'\t\t{0} ({1})'.format(
-            #             drive_manga_chapter['name'], drive_manga_chapter['id']))
-            #         manga_exists_json[project_dir['name']]["sub_dirs"][manga_dir['name']]["chapters"][drive_manga_chapter['name']] = {
-            #         "id": drive_manga_chapter['id'],
-            #         "createdTime": drive_manga_chapter['createdTime'],
-            #         "modifiedByMeTime": drive_manga_chapter['modifiedByMeTime']
-            #     }

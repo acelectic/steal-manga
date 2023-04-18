@@ -1,8 +1,8 @@
 """Module providingFunction printing python version."""
-from concurrent.futures import ThreadPoolExecutor
 import glob
 import os
 import shutil
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Dict, List, Tuple
 from urllib.parse import unquote
 
@@ -13,13 +13,12 @@ from PIL import Image, ImageFile
 from tqdm import tqdm
 from tqdm.contrib.concurrent import thread_map
 
-from libs.utils.constants import CARTOON_DIR
-from libs.utils.file_helper import mkdir
-from libs.utils.pdf_helper import merge_images_to_pdf
+from ..utils.constants import CARTOON_DIR
+from ..utils.file_helper import mkdir
+from ..utils.pdf_helper import merge_images_to_pdf
 
-import sys
-sys.path.append("../utils")  # Adds higher directory to python modules path.
-sys.path.append("../../libs")  # Adds higher directory to python modules path.
+# sys.path.append("../utils")  # Adds higher directory to python modules path.
+# sys.path.append("../../libs")  # Adds higher directory to python modules path.
 
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
@@ -39,7 +38,7 @@ class MyNovel:
     root = 'my-novel'
     app_key = "xdde8cNN5k7AuVTMgz7b"
 
-    def download_cartoons(self, product_id: str, start_ep_index: int = 1, manga_exists_json: Dict[Any,Any] = {}, max_workers: int = 4) -> None:
+    def download_cartoons(self, product_id: str, manga_exists_json: Dict[Any, Any], start_ep_index: int = 1, max_workers: int = 4) -> None:
         """
         download man mirror by post id
         """
@@ -60,21 +59,21 @@ class MyNovel:
 
         print(f'download {product_name}\ttotal ep: {total_ep}')
 
-        def sub_process(args):
-            i, product_ep = args
-            ep_index = i + 1
-            ep_id = product_ep["EpId"]
-            ep_name = f'chapter-{ep_index}'
-            ep_dir = self.__get_ep_dir(product_name, ep_name)
+        # def sub_process(args):
+        #     i, product_ep = args
+        #     ep_index = i + 1
+        #     ep_id = product_ep["EpId"]
+        #     ep_name = f'chapter-{ep_index}'
+        #     ep_dir = self.__get_ep_dir(product_name, ep_name)
 
-            output_pdf_path = f'{main_dir}/{ep_name}.pdf'
-            is_file_exists = os.path.isfile(output_pdf_path)
+        #     output_pdf_path = f'{main_dir}/{ep_name}.pdf'
+        #     is_file_exists = os.path.isfile(output_pdf_path)
 
-            if not is_file_exists:
-                # Create two threads as follows
-                self._perform_download_ep(
-                    product_name, ep_name,
-                    ep_id, ep_dir, output_pdf_path)
+        #     if not is_file_exists:
+        #         # Create two threads as follows
+        #         self._perform_download_ep(
+        #             product_name, ep_name,
+        #             ep_id, ep_dir, output_pdf_path)
 
         # thread_map(sub_process, enumerate(product_ep_list),
         #            desc=f'{product_name}',
@@ -113,11 +112,12 @@ class MyNovel:
                 output_pdf_path = f'{main_dir}/{ep_name}.pdf'
                 is_file_local_exists = os.path.isfile(output_pdf_path)
                 is_file_exists = False
-            
+
                 try:
-                    manga_id = manga_exists_json[self.root]["sub_dirs"][product_name]["chapters"][f'{ep_name}.pdf']["id"]
+                    manga_id = manga_exists_json[self.root]["sub_dirs"][
+                        product_name]["chapters"][f'{ep_name}.pdf']["id"]
                     is_file_exists = manga_id is not None
-                except: 
+                except Exception:
                     is_file_exists = False
 
                 # print(
@@ -230,9 +230,7 @@ class MyNovel:
             'https://firebasestorage.googleapis.com')
         is_s3_storage = ep_image_url.startswith('https://manga-store.s3')
         if is_firebase_storage:
-            """
-                https://firebasestorage.googleapis.com/v0/b/mynovel01.appspot.com/o/images/AY3KbqqA1620882955932?alt=media&token=dcb3dbb5-1741-40d0-b8a0-2fe5129d4132
-            """
+            # example https://firebasestorage.googleapis.com/v0/b/mynovel01.appspot.com/o/images/AY3KbqqA1620882955932?alt=media&token=dcb3dbb5-1741-40d0-b8a0-2fe5129d4132
             ep_image_url_only, _ = ep_image_url.split('?', 2)
             image_id = ep_image_url_only.split('/images/')[-1]
             url = f'https://images.mynovel.co/images/{image_id}'
