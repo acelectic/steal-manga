@@ -2,7 +2,13 @@
   "python.analysis.typeCheckingMode": "basic",
   "python.linting.pylintEnabled": true,
   "python.linting.enabled": true,
+  "python.linting.lintOnSave": true,
   "python.analysis.autoImportCompletions": true,
+  "python.analysis.importFormat": "absolute",
+  "python.formatting.provider": "none",
+  "autopep8.args": ["--max-line-length", "100"],
+  "editor.formatOnPaste": true,
+  "editor.formatOnSave": true,
   "cSpell.words": [
     "creds",
     "dotenv",
@@ -11,7 +17,16 @@
     "imread",
     "ndarray"
   ],
-  "editor.formatOnSave": true,
-  "python.analysis.importFormat": "relative",
-  "cSpell.ignoreRegExpList": ["/[\\u0E00-\\u0E7F]/g"]
+  "cSpell.ignoreRegExpList": ["/[\\u0E00-\\u0E7F]/g"],
+  "python.analysis.inlayHints.functionReturnTypes": true,
+  "python.analysis.inlayHints.variableTypes": true,
+  "python.analysis.inlayHints.pytestParameters": true,
+  "isort.args": ["--profile", "black"],
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.autopep8",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": true
+    }
+  }
 }

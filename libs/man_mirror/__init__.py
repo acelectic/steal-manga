@@ -33,7 +33,7 @@ class RequestError(Exception):
 
     def __init__(self, *args: object):
         self.args = args
-        
+
 class AppError(Exception):
     """ RequestError """
 
@@ -133,7 +133,8 @@ class ManMirror:
                 if some_error:
                     is_some_page_error = some_error
             except RequestError as e:
-                print(f'request error: {e}')
+                # print(f'request error: {e}')
+                continue
             except AppError as e:
                 print(f'app error: {e}')
             except Exception as error:
@@ -157,8 +158,9 @@ class ManMirror:
                 if some_error:
                     is_some_page_error = some_error
             except RequestError as e:
-                print(f'request error: {e}')
+                # print(f'request error: {e}')
                 is_error = True
+                continue
             except AppError as e:
                 print(f'app error: {e}')
                 is_error = True
@@ -376,15 +378,22 @@ class ManMirror:
             # break
         return new_image, has_some_error
 
-    def download_manual(self, cartoon_name:str, cartoon_id:str, chapter:int, image_paths: List[str]):
+    def download_manual(self, cartoon_name:str, cartoon_id:str, chapter:int, manga_exists_json: Dict[Any,Any]):
         main_dir = self.__get_main_dir(cartoon_name)
         chapter_dir = self.__get_chapter_dir(cartoon_name, chapter)
         mkdir(chapter_dir)
         output_pdf_path = f'{main_dir}/{chapter}.pdf'
-        
-        if os.path.exists(output_pdf_path):
-            return
+        is_file_local_exists = os.path.exists(output_pdf_path)
+        is_file_exists = False
+        try:
+            manga_id = manga_exists_json[self.root]["sub_dirs"][cartoon_name]["chapters"][f'{chapter}.pdf']["id"]
+            is_file_exists = manga_id is not None
+        except: 
+            is_file_exists = False
 
+        if is_file_exists or is_file_local_exists:
+            return 
+            
         loop_target: List[Tuple[int,int]] = []
         for d1 in range(10):
             for d2 in range(25):
