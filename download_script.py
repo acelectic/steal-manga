@@ -122,8 +122,8 @@ def function_execute_time(name: str, cb):
 
 
 def run():
-    ENABLE_DOWNLOAD_MAM_MIRROR = True
-    ENABLE_DOWNLOAD_MAM_MIRROR_MANUAL = True
+    ENABLE_DOWNLOAD_MAM_MIRROR = False
+    ENABLE_DOWNLOAD_MAM_MIRROR_MANUAL = False
     ENABLE_DOWNLOAD_MY_NOVEL = True
     # manga_exists_json = generate_drive_manga_exists(force_update=True, logging=False)
     # generate_drive_manga_exists(force_update=True)

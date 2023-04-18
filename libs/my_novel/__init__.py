@@ -165,10 +165,10 @@ class MyNovel:
 
                 new_image_file = Image.fromarray(image)
                 new_image_file.save(image_path)
-            except Exception as e:
+            except Exception as error:
                 print(f'ep_image_url: {ep_image_url}')
-                print(f'{image_path}: error {e}')
-                raise e
+                print(f'{image_path}: error {error}')
+                raise error
 
     def __merge_to_pdf(self, target_image_dir: str, output_pdf_path: str) -> Tuple[Any, bool]:
         is_file_exists = os.path.isfile(output_pdf_path)
@@ -225,7 +225,7 @@ class MyNovel:
     def __get_image(self, ep_image_url: str) -> np.ndarray:
         """function for get man mirror image"""
         ep_image_url = unquote(ep_image_url)
-
+        response = None
         is_firebase_storage = ep_image_url.startswith(
             'https://firebasestorage.googleapis.com')
         is_s3_storage = ep_image_url.startswith('https://manga-store.s3')
@@ -245,12 +245,23 @@ class MyNovel:
                 img = Image.open(response.raw)
                 return np.array(img)
         else:
-            response = requests.get(ep_image_url, timeout=60*1000)
+            try:
+                response = requests.get(ep_image_url, timeout=60*1000)
 
-            if response.status_code == 200:
-                response = iio.imread(ep_image_url)
-                return response
+                if response.status_code == 200:
+                    response = iio.imread(ep_image_url)
+                    return response
+            except Exception:
+                if 'Cartoon/productEP/' in ep_image_url and not ep_image_url.startswith('https://images-manga.mynovel.co'):
+                    ep_image_path = ep_image_url.split('/Cartoon/productEP/')[-1]
+                    ep_image_url = f'https://images-manga.mynovel.co/file/manga-store/Cartoon/productEP/{ep_image_path}'
+                    # print(f'new ep_image_url: {ep_image_url}')
+                    response = requests.get(ep_image_url, timeout=60*1000, stream=True)
 
-        print(response.json())
+                    if response.status_code == 200:
+                        img = Image.open(response.raw)
+                        return np.array(img)
+                    # print(response.status_code, response.json())
+
         raise RequestError(
             {"message": 'can get image', "response": response})
