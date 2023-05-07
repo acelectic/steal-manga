@@ -377,7 +377,7 @@ class ManMirror:
             # break
         return new_image, has_some_error
 
-    def download_manual(self, cartoon_name: str, cartoon_id: str, chapter: int, manga_exists_json: Dict[Any, Any]):
+    def download_manual(self, cartoon_name: str, cartoon_id: str, chapter: int, manga_exists_json: Dict[Any, Any], prefix: str):
         main_dir = self.__get_main_dir(cartoon_name)
         chapter_dir = self.__get_chapter_dir(cartoon_name, chapter)
         mkdir(chapter_dir)
@@ -405,7 +405,7 @@ class ManMirror:
             d1, d2 = d
             page = i + 1
             image_path = f'{chapter_dir}/{page}.png'
-            image_url = f'https://www.manmirror.net/test/{cartoon_id}/{chapter}/DG{ str(chapter).zfill(2)}-{d1}_{ str(d2).zfill(3) }.jpg'
+            image_url = f'https://www.manmirror.net/test/{cartoon_id}/{chapter}/{prefix}{ str(chapter).zfill(2)}-{d1}_{ str(d2).zfill(3) }.jpg'
             if os.path.exists(image_path):
                 continue
 

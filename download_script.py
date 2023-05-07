@@ -1,11 +1,13 @@
 """ Main Module """
 from time import time
+from typing import List
 
 from dotenv import load_dotenv
 
 from libs.man_mirror import ManMirror
 from libs.my_novel import MyNovel
 from libs.upload_google_drive import generate_drive_manga_exists, upload_to_drive
+from libs.upload_google_drive.interface import ManualManMirrorMangaItem
 from libs.upload_google_drive.manga_result import show_manga_updated
 
 # sys.path.append("./libs")
@@ -18,45 +20,46 @@ MAX_WORKERS = 1
 
 
 def download_man_mirror_manual() -> None:
-    cartoons = [
-        {
-            "cartoon_name": "เทพมรณะ",
-            "cartoon_id": 22,
-            "chapters": [
-                {
-                    "chapter_name": "0",
-                },
-                {
-                    "chapter_name": "1",
-                },
-                {
-                    "chapter_name": "2",
-                },
-                {
-                    "chapter_name": "3",
-                },
-                {
-                    "chapter_name": "4",
-                },
-                {
-                    "chapter_name": "5",
-                },
-            ]
-        }
+    cartoons: list[ManualManMirrorMangaItem] = [
+        ManualManMirrorMangaItem(
+            cartoon_name="เทพมรณะ",
+            cartoon_id="22",
+            active=False,
+            prefix="GD",
+            chapters=["0", "1", "2", "3", "4", "5"]
+        ),
+        ManualManMirrorMangaItem(
+            cartoon_name="ขุนศึก",
+            cartoon_id="24",
+            active=True,
+            prefix="GG",
+            chapters=["0", "1", "2", "3", "4", "5", "6"]
+        ),
     ]
 
     man_mirror = ManMirror()
+    manga_exists_json = generate_drive_manga_exists(force_update=True)
 
     for cartoon in cartoons:
-        cartoon_name = cartoon["cartoon_name"]
-        cartoon_id = cartoon["cartoon_id"]
-        manga_exists_json = generate_drive_manga_exists(force_update=True)
+        cartoon_name = cartoon.cartoon_name
+        cartoon_id = cartoon.cartoon_id
+        active = cartoon.active
+        prefix = cartoon.prefix
+        chapters: List[str] = cartoon.chapters
+        if not active:
+            continue
 
-        for chapter in cartoon['chapters']:
-            chapter_name = chapter["chapter_name"]
-            # image_paths = chapter["image_paths"]
-            man_mirror.download_manual(cartoon_id=cartoon_id,  cartoon_name=cartoon_name,
-                                       chapter=chapter_name, manga_exists_json=manga_exists_json)
+        for chapter in chapters:
+            man_mirror.download_manual(
+                cartoon_id=cartoon_id,
+                cartoon_name=cartoon_name,
+                chapter=int(chapter),
+                prefix=prefix,
+                manga_exists_json=manga_exists_json,
+            )
+
+    upload_to_drive(
+        project_name=man_mirror.root)
 
 
 def download_man_mirror():
@@ -75,9 +78,9 @@ def download_man_mirror():
         ['ตำนานกระบี่อุดร', 9, 150, 154],
         ['เทพมรณะ', 22, 1, 38],
         # ['เทพอัสนี', 11, 1, 141],
-        ['ทายาทจอมมาร', 2, 1, 81],
+        ['ทายาทจอมมาร', 2, 1, 82],
         ['ทายาทเทพธนู', 20, 1, 50],
-        ['ขุนศึก', 24, 0, 53],
+        ['ขุนศึก', 24, 30, 53],
         ['เมื่อผมดันหยิบมือถือจากโลกอื่น', 23, 1, 30]
     ]
 
@@ -126,9 +129,9 @@ def function_execute_time(name: str, cb):
 
 
 def run():
-    ENABLE_DOWNLOAD_MAM_MIRROR = True
-    ENABLE_DOWNLOAD_MAM_MIRROR_MANUAL = False
-    ENABLE_DOWNLOAD_MY_NOVEL = True
+    ENABLE_DOWNLOAD_MAM_MIRROR = False
+    ENABLE_DOWNLOAD_MAM_MIRROR_MANUAL = True
+    ENABLE_DOWNLOAD_MY_NOVEL = False
     # manga_exists_json = generate_drive_manga_exists(force_update=True, logging=False)
     # generate_drive_manga_exists(force_update=True)
     # function_execute_time('show_manga_updated',show_manga_updated)
