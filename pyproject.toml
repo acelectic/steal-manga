@@ -1,3 +1,12 @@
 [tool.semantic_release]
-version_variable = ["setup.py:__version__","docs/conf.py:version"]
+version_variable = ["setup.py:__version__", "README.md:VERSION {version}"]
 version_pattern = "README.md:VERSION {version}"
+version_source = "commit"
+include = ["libs", "web", "config", "files"]
+upload_to_pypi = false
+upload_to_repository = false
+build_command = ''
+upload_to_release = false
+ignore_token_for_push = true
+branch = 'main'
+commit_subject = '{version}'

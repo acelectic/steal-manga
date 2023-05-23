@@ -1,29 +1,28 @@
 """Module providingFunction printing python version."""
 
-import sys
-sys.path.append("../utils")  # Adds higher directory to python modules path.
-sys.path.append("../../libs")  # Adds higher directory to python modules path.
-
-from .image_json_shuffle import ImageJsonShuffle
 import concurrent.futures
-from PIL import Image, ImageFile
-import numpy as np
 import glob
 import os
 import random
 import shutil
+import sys
+import urllib.parse
 from time import process_time, sleep
-from typing import Any, Dict, Tuple
-import requests
+from typing import Any, Dict, List, Tuple
+
 import imageio.v3 as iio
+import numpy as np
+import requests
+from PIL import Image, ImageFile
 from tqdm import tqdm
 
-from libs.utils.constants import CARTOON_DIR
-from libs.utils.file_helper import mkdir
-from libs.utils.pdf_helper import merge_images_to_pdf
+from ..utils.constants import CARTOON_DIR
+from ..utils.file_helper import mkdir
+from ..utils.pdf_helper import merge_images_to_pdf
+from .image_json_shuffle import ImageJsonShuffle
 
-
-
+# sys.path.append("../utils")  # Adds higher directory to python modules path.
+# sys.path.append("../../libs")  # Adds higher directory to python modules path.
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
@@ -37,20 +36,27 @@ class RequestError(Exception):
         self.args = args
 
 
+class AppError(Exception):
+    """ RequestError """
+
+    def __init__(self, *args: object):
+        self.args = args
+
+
 class ManMirror:
     """ class """
     root = 'man-mirror'
 
-    def download_cartoons(self, cartoon_name: str, post_id: int,  max_chapter: int, first_chapter: int = 1, manga_exists_json: Dict[Any,Any] = {}) -> None:
+    def download_cartoons(self, cartoon_name: str, post_id: int,  max_chapter: int, manga_exists_json: Dict[Any, Any],  first_chapter: int = 1, max_workers: int = 4) -> None:
         """ 
-        download man mirror by post id 
+            download man mirror by post id 
         """
 
         main_dir = self.__get_main_dir(cartoon_name)
         mkdir(main_dir)
 
         # create a thread pool with 2 threads
-        pool = concurrent.futures.ThreadPoolExecutor(max_workers=2)
+        pool = concurrent.futures.ThreadPoolExecutor(max_workers=max_workers)
 
         chapters = range(first_chapter, (max_chapter or first_chapter) + 1)
 
@@ -60,18 +66,17 @@ class ManMirror:
             output_pdf_path = f'{main_dir}/{chapter}.pdf'
             is_file_local_exists = os.path.isfile(output_pdf_path)
             is_file_exists = False
-            
+
             try:
-                manga_id = manga_exists_json[main_dir]["sub_dirs"][cartoon_name]["chapters"][f'{chapter}.pdf']["id"]
+                manga_id = manga_exists_json[self.root]["sub_dirs"][
+                    cartoon_name]["chapters"][f'{chapter}.pdf']["id"]
                 is_file_exists = manga_id is not None
-            except: 
+            except Exception:
                 is_file_exists = False
-                
-            
+
             if not is_file_exists and not is_file_local_exists:
                 pool.submit(self.__perform_download_chapter, cartoon_name, post_id,
                             chapter, chapter_dir, output_pdf_path)
-                # self.__clean_image_png(chapter_dir)
         pool.shutdown(wait=True)
 
     def __perform_download_chapter(self, cartoon_name: str, post_id: int, chapter: int, chapter_dir: str, output_pdf_path: str):
@@ -84,16 +89,16 @@ class ManMirror:
 
     def _download_cartoon_chapter(self, cartoon_name: str, post_id: int, chapter: int) -> bool:
         """ download man mirror by post id with page"""
-        main_dir = self.__get_chapter_dir(cartoon_name, chapter)
-        mkdir(main_dir)
-        page = 0
+        chapter_dir = self.__get_chapter_dir(cartoon_name, chapter)
+        mkdir(chapter_dir)
+
         max_page = 0
         is_error = False
         is_some_page_error = False
         # print(f'{cartoon_name} chapter {chapter}')
         # print('')
 
-        image_json_list = []
+        image_json_list: List[ImageJsonShuffle] = []
         while not is_error:
             try:
                 image_json = self.__get_json(post_id, chapter, max_page)
@@ -103,59 +108,120 @@ class ManMirror:
             except RequestError:
                 is_error = True
             except Exception as error:
-                # print('loop page error')
-                # print(error)
+                print('loop get json error')
+                print(error)
                 is_error = True
 
+        if len(image_json_list) > 0:
+            is_some_page_error = self.download_manga_by_image_json(
+                cartoon_name, post_id, chapter, chapter_dir, max_page, image_json_list)
+        else:
+            is_some_page_error = self.download_manga_normal(
+                cartoon_name, post_id, chapter, chapter_dir)
+
+        return is_some_page_error
+
+    def download_manga_by_image_json(self, cartoon_name: str, post_id: int, chapter: int, main_dir: str, max_page: int, image_json_list: List[ImageJsonShuffle]):
+        is_some_page_error = False
         pages = range(0, max_page + 1)
 
         for i, page in tqdm(enumerate(pages), desc=f'{cartoon_name} | chapter {chapter}', total=max_page):
             try:
-                image_json = image_json_list[i]
+                image_json = None
+                if len(image_json_list) - 1 >= i:
+                    image_json = image_json_list[i]
+
                 some_error = self._download_cartoon_chapter_page(
                     post_id=post_id, chapter=chapter, main_dir=main_dir, page=page, image_json=image_json)
                 if some_error:
                     is_some_page_error = some_error
             except RequestError:
+                # print(f'request error: {e}')
+                continue
+            except AppError as error:
+                print(f'app error: {error}')
+            except Exception as error:
+                print('loop download_cartoon_chapter_page error')
+                print(error)
+
+        return is_some_page_error
+
+    def download_manga_normal(self, cartoon_name: str, post_id: int, chapter: int, main_dir: str):
+        is_some_page_error = False
+        max_page = 200
+        pages = range(0, max_page + 1)
+        is_error = False
+
+        for page in tqdm(pages, desc=f'{cartoon_name} | chapter {chapter}', total=max_page):
+            if is_error:
+                break
+            try:
+                some_error = self._download_cartoon_chapter_page(
+                    post_id=post_id, chapter=chapter, main_dir=main_dir, page=page + 1, image_extension='jpg')
+                if some_error:
+                    is_some_page_error = some_error
+            except RequestError:
+                # print(f'request error: {e}')
+                is_error = True
+                continue
+            except AppError as error:
+                print(f'app error: {error}')
                 is_error = True
             except Exception as error:
-                print('loop page error')
+                print('loop download_cartoon_chapter_page error')
                 print(error)
                 is_error = True
 
         return is_some_page_error
 
-    def _download_cartoon_chapter_page(self, post_id: int, chapter: int, main_dir: str, page: int, image_json: ImageJsonShuffle):
+    def _download_cartoon_chapter_page(self, post_id: int, chapter: int, main_dir: str, page: int, image_json: ImageJsonShuffle | None = None, image_extension: str = 'png'):
         image_path = f'{main_dir}/{page}.png'
         is_file_exists = os.path.isfile(image_path)
         has_some_error = False
         if not is_file_exists:
-            time_start = process_time()
-            image = self.__get_image(post_id, chapter, page)
+            image = None
+            new_image = None
+
+            try:
+                image = self.__get_image(post_id, chapter, page=str(page))
+            except RequestError:
+                raw_page_title = f'หน้า-{str(page).zfill(2)}'.encode('utf-8')
+                page_title = urllib.parse.quote_plus(raw_page_title)
+                # print(f'raw_page_title: {raw_page_title}\t page_title: {page_title}')
+                new_image = self.__get_image(
+                    post_id, chapter, page=page_title,  image_extension=image_extension)
+
             # if (image.shape[0] < image.shape[1]):
             #     old_image_file = Image.fromarray(image)
             #     old_image_file.save(f'{main_dir}/{page}-old.png')
 
-            new_image, has_some_order_error = self.__re_order_images(
-                image, image_json)
-            if has_some_order_error:
-                has_some_error = has_some_order_error
-                old_image_file = Image.fromarray(image)
-                old_image_file.save(f'{main_dir}/{page}-old.png')
+            if image_json is not None and image is not None:
+                new_image, has_some_order_error = self.__re_order_images(
+                    image, image_json)
+                if has_some_order_error:
+                    has_some_error = has_some_order_error
+                    old_image_file = Image.fromarray(image)
+                    old_image_file.save(f'{main_dir}/{page}-old.png')
 
-            new_image_file = Image.fromarray(new_image)
-            new_image_file.save(image_path)
-            time_end = process_time()
-            # print(
-            #     f'download post_id: {post_id}\tchapter: {chapter}\tpage: {page}\ttime: {time_end-time_start}')
+            if new_image is not None:
+                new_image_file = Image.fromarray(new_image)
+                new_image_file.save(image_path)
+
+            if new_image is None and image is None:
+                has_some_error = True
         return has_some_error
 
     def __merge_to_pdf(self, target_image_dir: str, output_pdf_path: str) -> Tuple[str, bool]:
         is_file_exists = os.path.isfile(output_pdf_path)
+        extensions = ('*.png', '*.jpg')
         if not is_file_exists:
-            image_paths = glob.glob(
-                f'{target_image_dir}/*.png', recursive=False)
-            merge_images_to_pdf(image_paths, output_pdf_path)
+            image_paths = []
+
+            for ext in extensions:
+                image_paths.extend(glob.glob(f'{target_image_dir}/{ext}', recursive=False))
+
+            if len(image_paths) > 0:
+                merge_images_to_pdf(image_paths, output_pdf_path)
             return '', True
 
         return 'is_file_exists', False
@@ -167,8 +233,8 @@ class ManMirror:
             return True
         return False
 
-    def __get_main_dir(self, post_id: str) -> str:
-        return f'{CARTOON_DIR}/{self.root}/{post_id}'
+    def __get_main_dir(self, cartoon_name: str) -> str:
+        return f'{CARTOON_DIR}/{self.root}/{cartoon_name}'
 
     def __get_chapter_dir(self, cartoon_name: str, chapter: int) -> str:
         main_dir = self.__get_main_dir(cartoon_name)
@@ -188,8 +254,8 @@ class ManMirror:
 
         url = f'https://www.manmirror.net/test/{post_id}/{chapter}/{page}.json'
         # print(f'get json {url}')
-        response = requests.get(url, timeout=60*1000)
-        if (response.status_code == 200):
+        response = requests.get(url, timeout=5*1000)
+        if response.status_code is 200:
             data = response.json()
             # print(f'data json {data}')
             return ImageJsonShuffle(
@@ -202,21 +268,37 @@ class ManMirror:
 
         # print(response.status_code)
         raise RequestError(
-            {"message": 'can get json', "response": response})
+            {"message": 'can not get json', "response": response})
 
-    def __get_image(self, post_id: int, chapter: int, page: int) -> np.ndarray:
+    def __get_image(self, post_id: int, chapter: int, page: str, image_extension: str = 'png') -> np.ndarray:
         """function for get man mirror image"""
+        url = f'https://www.manmirror.net/test/{post_id}/{chapter}/{page}.{image_extension}'
+        if image_extension == 'jpg':
+            # print(f'get image {url}')
+            response = requests.get(url, timeout=20*1000, stream=True)
+            if response.status_code == 200:
+                img = Image.open(response.raw)
+                return np.array(img)
+            elif response.status_code == 404:
+                # print(f'url: {url}')
+                pass
+        else:
+            response = requests.get(url, timeout=20*1000)
+            if response.status_code == 200:
+                response = iio.imread(url)
+                return response
+            elif response.status_code == 404:
+                # print(f'url: {url}')
+                pass
 
-        url = f'https://www.manmirror.net/test/{post_id}/{chapter}/{page}.png'
+        # if image_extension == 'jpg':
+        #     print(f'url: {url}')
+        #     print(response.status_code)
+        #     print(response.json())
+
         # print(f'get image {url}')
-        response = requests.get(url, timeout=60*1000)
-        if (response.status_code == 200):
-            response = iio.imread(url)
-            return response
-
-        # print(response.status_code)
         raise RequestError(
-            {"message": 'can get json', "response": response})
+            {"message": 'can not get image', "response": response})
 
     def __re_order_images(self, image: np.ndarray, image_json: ImageJsonShuffle):
         has_some_error = False
@@ -276,17 +358,79 @@ class ManMirror:
                 except Exception as error:
                     has_some_error = True
                     print('error')
-                    # print(error)
-                    # print(f'{image_info}')
-                    # print({
-                    #     "old_top": old_top,
-                    #     "old_bottom": old_bottom,
-                    #     "old_left": old_left,
-                    #     "old_right": old_right
-                    # })
-                    # print(f'image.shape: {image.shape}')
-                    # print(f'new_image.shape: {new_image.shape}')
-                    # print(f'image_json.shuffles: {image_json.shuffles}')
+                    print(error)
+                    print(f'{image_info}')
+                    print({
+                        "old_top": old_top,
+                        "old_bottom": old_bottom,
+                        "old_left": old_left,
+                        "old_right": old_right
+                    })
+                    print(f'image.shape: {image.shape}')
+                    print(f'new_image.shape: {new_image.shape}')
+                    print(f'image_json.shuffles: {image_json.shuffles}')
+                    raise AppError({
+                        "message": "re_order_images error",
+                        "error": error
+                    }) from error
                 # break
             # break
         return new_image, has_some_error
+
+    def download_manual(self, cartoon_name: str, cartoon_id: str, chapter: int, manga_exists_json: Dict[Any, Any], prefix: str):
+        main_dir = self.__get_main_dir(cartoon_name)
+        chapter_dir = self.__get_chapter_dir(cartoon_name, chapter)
+        mkdir(chapter_dir)
+        output_pdf_path = f'{main_dir}/{chapter}.pdf'
+        is_file_local_exists = os.path.exists(output_pdf_path)
+        is_file_exists = False
+        try:
+            manga_id = manga_exists_json[self.root]["sub_dirs"][
+                cartoon_name]["chapters"][f'{chapter}.pdf']["id"]
+            is_file_exists = manga_id is not None
+        except Exception:
+            is_file_exists = False
+
+        if is_file_exists or is_file_local_exists:
+            return
+
+        loop_target: List[Tuple[int, int]] = []
+        for d1 in range(10):
+            for d2 in range(25):
+                loop_target.append((d1, d2))
+
+        count_error_continue = 0
+        d1_error = None
+        for i, d in tqdm(enumerate(loop_target), desc=f'cartoon_name {cartoon_name}[{chapter}]', total=len(loop_target)):
+            d1, d2 = d
+            page = i + 1
+            image_path = f'{chapter_dir}/{page}.png'
+            image_url = f'https://www.manmirror.net/test/{cartoon_id}/{chapter}/{prefix}{ str(chapter).zfill(2)}-{d1}_{ str(d2).zfill(3) }.jpg'
+            if os.path.exists(image_path):
+                continue
+
+            if d1_error is not None and d1_error <= d1:
+                continue
+
+            if count_error_continue > 4:
+                break
+
+            try:
+                new_image = self.call_get_image(image_url)
+                if new_image is not None:
+                    new_image_file = Image.fromarray(new_image)
+                    new_image_file.save(image_path)
+                count_error_continue = 0
+            except Exception:
+                d1_error = d1
+                count_error_continue += 1
+                continue
+
+        self.__merge_to_pdf(chapter_dir, output_pdf_path)
+        self.__remove_chapter_dir(chapter_dir)
+
+    def call_get_image(self, url):
+        response = requests.get(url, timeout=20*1000, stream=True)
+        if response.status_code == 200:
+            img = Image.open(response.raw)
+            return np.array(img)

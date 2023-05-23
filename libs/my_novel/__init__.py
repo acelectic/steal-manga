@@ -1,8 +1,8 @@
 """Module providingFunction printing python version."""
-from concurrent.futures import ThreadPoolExecutor
 import glob
 import os
 import shutil
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Dict, List, Tuple
 from urllib.parse import unquote
 
@@ -16,6 +16,10 @@ from tqdm.contrib.concurrent import thread_map
 from ..utils.constants import CARTOON_DIR
 from ..utils.file_helper import mkdir
 from ..utils.pdf_helper import merge_images_to_pdf
+
+# sys.path.append("../utils")  # Adds higher directory to python modules path.
+# sys.path.append("../../libs")  # Adds higher directory to python modules path.
+
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
@@ -34,7 +38,7 @@ class MyNovel:
     root = 'my-novel'
     app_key = "xdde8cNN5k7AuVTMgz7b"
 
-    def download_cartoons(self, product_id: str, start_ep_index: int = 1, manga_exists_json: Dict[Any,Any] = {}) -> None:
+    def download_cartoons(self, product_id: str, manga_exists_json: Dict[Any, Any], start_ep_index: int = 1, max_workers: int = 4) -> None:
         """
         download man mirror by post id
         """
@@ -55,21 +59,21 @@ class MyNovel:
 
         print(f'download {product_name}\ttotal ep: {total_ep}')
 
-        def sub_process(args):
-            i, product_ep = args
-            ep_index = i + 1
-            ep_id = product_ep["EpId"]
-            ep_name = f'chapter-{ep_index}'
-            ep_dir = self.__get_ep_dir(product_name, ep_name)
+        # def sub_process(args):
+        #     i, product_ep = args
+        #     ep_index = i + 1
+        #     ep_id = product_ep["EpId"]
+        #     ep_name = f'chapter-{ep_index}'
+        #     ep_dir = self.__get_ep_dir(product_name, ep_name)
 
-            output_pdf_path = f'{main_dir}/{ep_name}.pdf'
-            is_file_exists = os.path.isfile(output_pdf_path)
+        #     output_pdf_path = f'{main_dir}/{ep_name}.pdf'
+        #     is_file_exists = os.path.isfile(output_pdf_path)
 
-            if not is_file_exists:
-                # Create two threads as follows
-                self._perform_download_ep(
-                    product_name, ep_name,
-                    ep_id, ep_dir, output_pdf_path)
+        #     if not is_file_exists:
+        #         # Create two threads as follows
+        #         self._perform_download_ep(
+        #             product_name, ep_name,
+        #             ep_id, ep_dir, output_pdf_path)
 
         # thread_map(sub_process, enumerate(product_ep_list),
         #            desc=f'{product_name}',
@@ -78,7 +82,7 @@ class MyNovel:
         #            max_workers=2)
 
         # create a thread pool with 2 threads
-        with ThreadPoolExecutor(max_workers=2) as pool:
+        with ThreadPoolExecutor(max_workers=max_workers) as pool:
             # tqdm(pool.map(sub_process, enumerate(
             #     product_ep_list)),
             #     desc=f'{product_name}',
@@ -108,11 +112,12 @@ class MyNovel:
                 output_pdf_path = f'{main_dir}/{ep_name}.pdf'
                 is_file_local_exists = os.path.isfile(output_pdf_path)
                 is_file_exists = False
-            
+
                 try:
-                    manga_id = manga_exists_json[self.root]["sub_dirs"][product_name]["chapters"][f'{ep_name}.pdf']["id"]
+                    manga_id = manga_exists_json[self.root]["sub_dirs"][
+                        product_name]["chapters"][f'{ep_name}.pdf']["id"]
                     is_file_exists = manga_id is not None
-                except: 
+                except Exception:
                     is_file_exists = False
 
                 # print(
@@ -160,10 +165,10 @@ class MyNovel:
 
                 new_image_file = Image.fromarray(image)
                 new_image_file.save(image_path)
-            except Exception as e:
+            except Exception as error:
                 print(f'ep_image_url: {ep_image_url}')
-                print(f'{image_path}: error {e}')
-                raise e
+                print(f'{image_path}: error {error}')
+                raise error
 
     def __merge_to_pdf(self, target_image_dir: str, output_pdf_path: str) -> Tuple[Any, bool]:
         is_file_exists = os.path.isfile(output_pdf_path)
@@ -220,14 +225,12 @@ class MyNovel:
     def __get_image(self, ep_image_url: str) -> np.ndarray:
         """function for get man mirror image"""
         ep_image_url = unquote(ep_image_url)
-
+        response = None
         is_firebase_storage = ep_image_url.startswith(
             'https://firebasestorage.googleapis.com')
         is_s3_storage = ep_image_url.startswith('https://manga-store.s3')
         if is_firebase_storage:
-            """
-                https://firebasestorage.googleapis.com/v0/b/mynovel01.appspot.com/o/images/AY3KbqqA1620882955932?alt=media&token=dcb3dbb5-1741-40d0-b8a0-2fe5129d4132
-            """
+            # example https://firebasestorage.googleapis.com/v0/b/mynovel01.appspot.com/o/images/AY3KbqqA1620882955932?alt=media&token=dcb3dbb5-1741-40d0-b8a0-2fe5129d4132
             ep_image_url_only, _ = ep_image_url.split('?', 2)
             image_id = ep_image_url_only.split('/images/')[-1]
             url = f'https://images.mynovel.co/images/{image_id}'
@@ -242,12 +245,23 @@ class MyNovel:
                 img = Image.open(response.raw)
                 return np.array(img)
         else:
-            response = requests.get(ep_image_url, timeout=60*1000)
+            try:
+                response = requests.get(ep_image_url, timeout=60*1000)
 
-            if response.status_code == 200:
-                response = iio.imread(ep_image_url)
-                return response
+                if response.status_code == 200:
+                    response = iio.imread(ep_image_url)
+                    return response
+            except Exception:
+                if 'Cartoon/productEP/' in ep_image_url and not ep_image_url.startswith('https://images-manga.mynovel.co'):
+                    ep_image_path = ep_image_url.split('/Cartoon/productEP/')[-1]
+                    ep_image_url = f'https://images-manga.mynovel.co/file/manga-store/Cartoon/productEP/{ep_image_path}'
+                    # print(f'new ep_image_url: {ep_image_url}')
+                    response = requests.get(ep_image_url, timeout=60*1000, stream=True)
 
-        print(response.json())
+                    if response.status_code == 200:
+                        img = Image.open(response.raw)
+                        return np.array(img)
+                    # print(response.status_code, response.json())
+
         raise RequestError(
             {"message": 'can get image', "response": response})

@@ -1,12 +1,46 @@
 {
   "python.analysis.typeCheckingMode": "basic",
   "python.linting.pylintEnabled": true,
-  "python.linting.enabled": false,
-  "pylint.args": ["--ignore", "E0402", "--ignore", "C0303"],
-  "cSpell.words": ["creds", "fromarray", "imageio", "imread", "ndarray"],
+  "python.linting.enabled": true,
+  "python.linting.lintOnSave": true,
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.importFormat": "relative",
+  "python.formatting.provider": "none",
+  "autopep8.args": ["--max-line-length", "100"],
+  "editor.formatOnPaste": true,
   "editor.formatOnSave": true,
-  "editor.defaultFormatter": "ms-python.python",
-  "python.analysis.extraPaths": ["./libs/utils"],
-  "python.formatting.autopep8Args": ["--ignore", "E402"],
-  "python.analysis.importFormat": "relative"
+  "cSpell.words": [
+    "creds",
+    "dotenv",
+    "fromarray",
+    "imageio",
+    "imread",
+    "ndarray"
+  ],
+  "cSpell.ignoreRegExpList": ["/[\\u0E00-\\u0E7F]/g"],
+  "python.analysis.inlayHints.functionReturnTypes": true,
+  "python.analysis.inlayHints.variableTypes": true,
+  "python.analysis.inlayHints.pytestParameters": true,
+  "isort.args": ["--profile", "black"],
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.autopep8",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": true,
+      "source.fixAll": true
+    }
+  },
+  "python.analysis.extraPaths": [
+    "libs/man_mirror",
+    "libs/my_novel",
+    "libs/utils"
+  ],
+  "pylint.args": [
+    "--disable=C0116",
+    "--disable=C0103",
+    "--disable=C0209",
+    "--disable=C0114",
+    "--disable=W0718",
+    "--disable=E0402"
+  ]
 }
