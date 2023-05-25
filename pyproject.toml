@@ -1,5 +1,5 @@
 [tool.semantic_release]
-version_variable = ["setup.py:__version__", "README.md:VERSION {version}"]
+version_variable = "setup.py:__version__"
 version_pattern = "README.md:VERSION {version}"
 version_source = "commit"
 include = ["libs", "web", "config", "files"]
