@@ -16,7 +16,7 @@ from libs.upload_google_drive.manga_result import show_manga_updated
 
 load_dotenv()
 
-MAX_WORKERS = 1
+MAX_WORKERS = 2
 
 
 def download_man_mirror_manual() -> None:
@@ -64,24 +64,24 @@ def download_man_mirror_manual() -> None:
 
 def download_man_mirror():
     man_mirror_cartoons = [
-        ['เลเวลอัพไม่จำกัด', 1, 138, 146],
+        ['เลเวลอัพไม่จำกัด', 1, 138, 149],
         ['สุดยอดจอมยุทธ', 7, 1, 118],
         ['ดาบวายุอัสนี', 19, 21, 72],
-        ['จ้าวสงคราม', 3, 65, 134],
-        ['มือกระบี่ไร้พ่าย', 5, 100, 159],
+        ['จ้าวสงคราม', 3, 65, 135],
+        ['มือกระบี่ไร้พ่าย', 5, 100, 162],
         # ['จิตวิญญาณวายุ', 16, 1, 76],
         # ['โกแซม นักรบในตำนาน', 12, 65, 66],
-        ['บัณฑิตหวนคืน', 8, 1, 144],  # max 133
-        ['เส้นทางสู่สวรรค์', 21, 35, 70],
-        ['มังกรพิษ', 6, 120, 131],
+        ['บัณฑิตหวนคืน', 8, 1, 146],  # max 133
+        ['เส้นทางสู่สวรรค์', 21, 35, 80],
+        ['มังกรพิษ', 6, 120, 133],
         # ['หนึ่งในใต้หล้า', 10, 1, 111],  # max 100
-        ['ตำนานกระบี่อุดร', 9, 150, 154],
-        ['เทพมรณะ', 22, 1, 38],
+        ['ตำนานกระบี่อุดร', 9, 150, 157],
+        ['เทพมรณะ', 22, 1, 41],
         # ['เทพอัสนี', 11, 1, 141],
-        ['ทายาทจอมมาร', 2, 1, 82],
+        ['ทายาทจอมมาร', 2, 1, 84],
         ['ทายาทเทพธนู', 20, 1, 50],
-        ['ขุนศึก', 24, 30, 53],
-        ['เมื่อผมดันหยิบมือถือจากโลกอื่น', 23, 1, 30]
+        ['ขุนศึก', 24, 30, 61],
+        ['เมื่อผมดันหยิบมือถือจากโลกอื่น', 23, 1, 50]
     ]
 
     man_mirror = ManMirror()
@@ -129,9 +129,9 @@ def function_execute_time(name: str, cb):
 
 
 def run():
-    ENABLE_DOWNLOAD_MAM_MIRROR = False
-    ENABLE_DOWNLOAD_MAM_MIRROR_MANUAL = True
-    ENABLE_DOWNLOAD_MY_NOVEL = False
+    ENABLE_DOWNLOAD_MAM_MIRROR = True
+    ENABLE_DOWNLOAD_MAM_MIRROR_MANUAL = False
+    ENABLE_DOWNLOAD_MY_NOVEL = True
     # manga_exists_json = generate_drive_manga_exists(force_update=True, logging=False)
     # generate_drive_manga_exists(force_update=True)
     # function_execute_time('show_manga_updated',show_manga_updated)
