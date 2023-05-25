@@ -10,10 +10,6 @@ from libs.upload_google_drive import generate_drive_manga_exists, upload_to_driv
 from libs.upload_google_drive.interface import ManualManMirrorMangaItem
 from libs.upload_google_drive.manga_result import show_manga_updated
 
-# sys.path.append("./libs")
-# sys.path.append("./libs/upload_google_drive")
-
-
 load_dotenv()
 
 MAX_WORKERS = 2
