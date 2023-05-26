@@ -104,7 +104,7 @@ def download_my_novel():
         # ['Against the Gods - อสูรพลิกฟ้า', '6EvFPzipwmnKxlZMqhjs', 423],
         ['Cultivator vs Superhero (ทันจีน)', '6yeQcr6kL14A96eUwKZA', 250],
         ['Tales of Demon and Gods', 'E8XDEk8Dv9vbchSGtF5n', 419],
-        ['Infinite Mage', '63b2a71156baafb4e8213126', 1]
+        ['Infinite Mage', '63b2a71156baafb4e8213126', 36]
     ]
     my_novel = MyNovel()
     manga_exists_json = generate_drive_manga_exists(
