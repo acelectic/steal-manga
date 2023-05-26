@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.0.23 (2023-05-26)
+### Fix
+* Refactor ([`18a2800`](https://github.com/acelectic/steal-manga/commit/18a28002b77d1b1dd4df95cfc2642da9cbe0f52e))
+
 ## v0.0.22 (2023-04-07)
 ### Fix
 * Implement mamirror jpg no json order ([`ca1310e`](https://github.com/acelectic/steal-manga/commit/ca1310e01aeed8c7296efb5943a1c420d9bb45c4))
