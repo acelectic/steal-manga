@@ -23,12 +23,16 @@ jobs:
       uses: relekang/python-semantic-release@master
       with:
         github_token: ${{ secrets.GH_TOKEN }}
+        repository_username: ${{ secrets.GH_USERNAME }}
+        repository_password: ${{ secrets.GH_PASSWORD }}
       env:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
-    # - name: Python Semantic Release
-    #   run: |
-    #     git config --global user.name "github-actions"
-    #     git config --global user.email "action@github.com"
-    #     semantic-release publish -D commit_author="github-actions <action@github.com>"
-    #   env:
-    #     GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+    - name: Python Semantic Release
+      run: |
+        git config --global user.name "github-actions"
+        git config --global user.email "action@github.com"
+        echo $GH_TOKEN
+        semantic-release publish -D commit_author="github-actions <action@github.com>"
+      env:
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
