@@ -19,16 +19,16 @@ jobs:
       run: |
         python -m pip install -r requirements.txt
 
-    - name: Python Semantic Release
-      uses: relekang/python-semantic-release@master
-      with:
-        github_token: ${{ secrets.GH_TOKEN }}
-        repository_username: ${{ secrets.GH_USERNAME }}
-        repository_password: ${{ secrets.GH_PASSWORD }}
-      env:
-        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+    # - name: Python Semantic Release
+    #   uses: relekang/python-semantic-release@master
+    #   with:
+    #     github_token: ${{ secrets.GH_TOKEN }}
+    #     repository_username: ${{ secrets.GH_USERNAME }}
+    #     repository_password: ${{ secrets.GH_PASSWORD }}
+    #   env:
+    #     GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-    - name: Python Semantic Release
+    - name: Python Semantic Release 2
       run: |
         git config --global user.name "github-actions"
         git config --global user.email "action@github.com"
