@@ -35,4 +35,4 @@ jobs:
         echo $GH_TOKEN
         semantic-release publish -D commit_author="github-actions <action@github.com>"
       env:
-        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        GH_TOKEN: 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
