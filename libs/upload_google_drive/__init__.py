@@ -19,6 +19,7 @@ from __future__ import print_function
 import glob
 import json
 import os
+import pprint
 import shutil
 import sys
 from datetime import datetime
@@ -115,7 +116,7 @@ def upload_to_drive(project_name=None, cartoon_name=None, logging=False):
                         if total_files > 0:
                             # upload manga
                             for image_pdf in tqdm(manga_files,
-                                                  desc=f'{manga_name}',
+                                                  desc=f'[Process]: UPLOAD {manga_name}',
                                                   total=total_files):
                                 file_name = image_pdf.split('/')[-1]
                                 file_path = image_pdf
@@ -150,6 +151,10 @@ def upload_file(service, logging: bool, sub_dir_id: str, file_name: str, file_pa
         if logging:
             print(f'\t\tfile_id: {file_id}, file: {file.get("name")}')
         delete_file(file_path)
+    else:
+        pprint.pprint({
+            "tag": "upload_file error"
+        })
 
 
 def generate_drive_manga_exists(project_name=None, cartoon_name=None, force_update=False, logging=False) -> Dict[Any, Any]:
@@ -212,13 +217,15 @@ def generate_drive_manga_exists(project_name=None, cartoon_name=None, force_upda
                     print('\t{0} ({1})'.format(
                         manga_dir['name'], manga_dir['id']))
 
+                drive_manga_chapters = list_drive_manga(
+                    service, manga_dir['id'])
+
                 manga_exists_json[project_dir['name']]["sub_dirs"][manga_dir['name']] = {
                     "id": manga_dir['id'],
+                    'total':  len(drive_manga_chapters),
                     "chapters": {}
                 }
 
-                drive_manga_chapters = list_drive_manga(
-                    service, manga_dir['id'])
                 for drive_manga_chapter in drive_manga_chapters[::]:
                     if logging:
                         print(f'\t\t{drive_manga_chapter["name"]} ({drive_manga_chapter["id"]})')
@@ -315,16 +322,20 @@ def upload_file_to_drive_if_not_exists(service, file_name: str, file_path: str, 
             fields='nextPageToken, '
             'files(id, name, createdTime, modifiedByMeTime, viewedByMe)',
         ).execute()
-        # print(dir_res)
+        # pprint.pprint({
+        #     "dir_res": dir_res
+        # })
         if dir_res is not None and dir_res['files'] is not None and len(dir_res['files']) > 0:
             dir_result = dir_res['files'][0]
-        # print(f'dir_name: {dir_name}')
         # print(dir_result)
         if dir_result is None:
             return upload_file_to_drive(service, file_name, file_path, folder_id)
         return dir_result.get('id'), dir_result
     except Exception as error:
-        print(error)
+        pprint.pprint({
+            "tag": "upload_file_to_drive_if_not_exists",
+            "error": error
+        })
         return None
 
 
@@ -340,7 +351,11 @@ def upload_file_to_drive(service, file_name: str, file_path: str, folder_id: str
     file = service.files().create(body=file_metadata,
                                   media_body=media,
                                   fields='id, name').execute()
-    # print(file)
+    # pprint.pprint({
+    #     "tag": "upload",
+    #     "file": file,
+    #     "file_metadata": file_metadata
+    # })
     return file['id'], file
 
 

@@ -3,6 +3,7 @@ import glob
 import os
 import shutil
 from concurrent.futures import ThreadPoolExecutor
+from pprint import pprint
 from typing import Any, Dict, List, Tuple
 from urllib.parse import unquote
 
@@ -52,7 +53,8 @@ class MyNovel:
         total_ep = len(product_ep_list)
         print(f'filter len: {total_ep}')
 
-        product_name = product_ep_list_res['ProductName']
+        product_name = product_ep_list_res['ProductName'].replace(
+            '[', '(').replace(']', ')').replace("'s", ' is')
 
         main_dir = self.__get_main_dir(product_name)
         mkdir(main_dir)
@@ -82,26 +84,26 @@ class MyNovel:
         #            max_workers=2)
 
         # create a thread pool with 2 threads
+        # tqdm(pool.map(sub_process, enumerate(
+        #     product_ep_list)),
+        #     desc=f'{product_name}',
+        #     total=len(product_ep_list))
+
+        start_index = 0
+        for i, product_ep in enumerate(product_ep_list):
+            if str(start_ep_index) in product_ep['EpName']:
+                start_index = i
+                break
+
+        product_ep_list_split = product_ep_list[start_index:]
+        # print(
+        #     f'{len(product_ep_list)} {len(product_ep_list_split)} {start_index} {start_ep_index}')
+
         with ThreadPoolExecutor(max_workers=max_workers) as pool:
-            # tqdm(pool.map(sub_process, enumerate(
-            #     product_ep_list)),
-            #     desc=f'{product_name}',
-            #     total=len(product_ep_list))
-
-            start_index = 0
-            for i, product_ep in enumerate(product_ep_list):
-                if str(start_ep_index) in product_ep['EpName']:
-                    start_index = i
-                    break
-
-            product_ep_list_split = product_ep_list[start_index:]
-            # print(
-            #     f'{len(product_ep_list)} {len(product_ep_list_split)} {start_index} {start_ep_index}')
-
             for i, product_ep in tqdm(enumerate(product_ep_list_split, start=start_ep_index),
                                       desc=f'Main | {product_name}',
                                       total=len(product_ep_list_split)):
-                raw_ep_name = product_ep['EpName']
+                raw_ep_name = product_ep['EpName'].replace('[', '(').replace(']', ')')
                 ep_index = i
                 ep_name = raw_ep_name or f'chapter-{ep_index}'
                 # continue
@@ -138,8 +140,18 @@ class MyNovel:
     def _perform_download_ep(self, product_name: str, ep_name: str, ep_id: str, ep_dir: str, output_pdf_path: str):
         mkdir(ep_dir)
         self._download_cartoon_ep(product_name, ep_name, ep_id, ep_dir)
-        self.__merge_to_pdf(ep_dir, output_pdf_path)
-        self.__remove_chapter_dir(ep_dir)
+        error, success = self.__merge_to_pdf(ep_dir, output_pdf_path)
+        if not success:
+            pprint({
+                "tag": '__merge_to_pdf error',
+                "error": error,
+                "product_name": product_name,
+                "ep_name": ep_name,
+                "ep_dir": ep_dir,
+                "output_pdf_path": output_pdf_path
+            })
+        # print(f'output_pdf_path: {output_pdf_path} error: {error}, success: {success}')
+        self.__remove_chapter_dir(ep_dir, output_pdf_path)
 
     def _download_cartoon_ep(self, product_name: str, ep_name: str, ep_id: str, ep_dir: str) -> None:
         """ download man mirror by post id with page"""
@@ -175,14 +187,19 @@ class MyNovel:
         if not is_file_exists:
             image_paths = glob.glob(
                 f'{target_image_dir}/*.png', recursive=False)
-            merge_images_to_pdf(image_paths, output_pdf_path)
-            return None, True
 
-        return 'is_file_exists', False
+            if len(image_paths):
+                merge_images_to_pdf(image_paths, output_pdf_path)
+                return None, True
+            else:
+                return 'images to pdf not found', False
 
-    def __remove_chapter_dir(self, target_image_dir: str) -> bool:
+        return 'is_file_exists', True
+
+    def __remove_chapter_dir(self, target_image_dir: str, output_pdf_path: str) -> bool:
+        is_pdf_exists = os.path.isfile(output_pdf_path)
         is_file_exists = os.path.exists(target_image_dir)
-        if is_file_exists:
+        if is_file_exists and is_pdf_exists:
             shutil.rmtree(target_image_dir, ignore_errors=True)
             return True
         return False

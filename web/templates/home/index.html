@@ -1,6 +1,53 @@
+
+<style>
+  .manga-updated-item {
+    display: grid;
+    grid-template-columns: repeat(2, max-content);
+    column-gap: 8px;
+
+    align-items: baseline;
+
+    > * {
+      margin: 0;
+    }
+
+
+    .weight-normal {
+      font-weight: 300;
+    }
+  }
+
+</style>
+<script>
+    function google_auth() {
+        window.open('/google-auth');
+    }
+</script>
 <h1>Projects</h1>
 <div class="row">
-  {% for project in projects %}
+  {% if google_auth_ok == False %}
+    <button onclick="google_auth()">Authen</button>
+  {% endif %}
+  <form action="/download-manga" method="post" >
+    {% csrf_token %}
+    <button name="type" type="submit" value="man-mirror">Download man-mirror</button>
+    <button name="type" type="submit" value="man-mirror-manual">Download man-mirror-manual</button>
+    <button name="type" type="submit" value="my-novel">Download my-novel</button>
+  </form>
+  {% for updated, item in results_yet_view_sorted %}
+  <h2>Updated: {{updated}}</h2>
+  <ul>
+    {% for d in item %}
+      <li>
+        <div class="manga-updated-item">
+          <h2 class="weight-normal">{{d.project}}</h2>
+          <h3>{{d.manga}} {{d.chapter}} </h3>
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+  {% endfor %}
+  <!-- {% for project in projects %}
   <div class="col-md-4">
     <div class="card mb-2">
       <div class="card-body">
@@ -40,5 +87,5 @@
       </div>
     </div>
   </div>
-  {% endfor %}
+  {% endfor %} -->
 </div>

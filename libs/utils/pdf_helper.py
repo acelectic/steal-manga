@@ -9,7 +9,7 @@ def merge_images_to_pdf(image_paths: List[str], output: str) -> None:
     """ merge images to pdf """
     first_image = None
     rest_images = []
-    for i, image_path in tqdm(enumerate(sorted(image_paths, key=lambda x: int(x.split('/')[-1].replace('.png', '').replace('.jpg', ''))))):
+    for i, image_path in tqdm(enumerate(sorted(image_paths, key=lambda x: int(x.split('/')[-1].replace('.png', '').replace('.jpg', '')))), total=len(image_paths)):
         img: Image.Image = Image.open(image_path).convert('RGB')
         if i == 0:
             first_image = img

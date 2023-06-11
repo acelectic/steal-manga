@@ -1,0 +1,13 @@
+<h1>Google Authenticator</h1>
+<script>
+
+    setTimeout(function() {
+        const elm = document.getElementById("google-auth-link")
+        elm.click()
+    }, 100)
+    
+</script>
+<form action="/google-auth" method="post" >
+    {% csrf_token %}
+    <a id="google-auth-link" href="{{ google_auth_link }}" target="_self">
+</form>

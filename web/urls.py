@@ -15,10 +15,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+
 from . import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
-    path('pdf-view', views.pdf_view_v2, name='pdf_view'),
+    path('google-auth', views.google_auth, name='google_auth'),
+    path('google-callback', views.google_callback, name='google_callback'),
+    path('download-manga', views.download_manga, name='download_manga'),
 ]

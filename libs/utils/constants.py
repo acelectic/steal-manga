@@ -13,9 +13,12 @@ from .file_helper import get_env
 
 load_dotenv()
 
-CARTOON_DIR = 'files/cartoons'
-MANGE_EXISTS_FILE_PATH: LiteralString = os.path.join(CARTOON_DIR, 'manga_exists.json')
-UPDATE_TIMESTAMP_FILE_PATH: LiteralString = os.path.join(CARTOON_DIR, 'update_timestamp.txt')
+cwd = os.getcwd()
+
+GOOGLE_AUTH_TOKEN_PATH = os.path.join(cwd, 'config/token.json')
+CARTOON_DIR = os.path.join(cwd, 'files/cartoons')
+MANGE_EXISTS_FILE_PATH = os.path.join(CARTOON_DIR, 'manga_exists.json')
+UPDATE_TIMESTAMP_FILE_PATH = os.path.join(CARTOON_DIR, 'update_timestamp.txt')
 
 GOOGLE_DRIVE_DIR: str = get_env('GOOGLE_DRIVE_DIR') or ''
 DRIVE_CARTOONS_DIR_ID: str = get_env('DRIVE_CARTOONS_DIR_ID') or ''
