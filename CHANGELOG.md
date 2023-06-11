@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.0.24 (2023-06-11)
+### Fix
+* Implement docker ([`1ff330d`](https://github.com/acelectic/steal-manga/commit/1ff330dae5e959a56b6f35f8c593ea267c7c474a))
+
 ## v0.0.23 (2023-05-26)
 ### Fix
 * Refactor ([`18a2800`](https://github.com/acelectic/steal-manga/commit/18a28002b77d1b1dd4df95cfc2642da9cbe0f52e))
