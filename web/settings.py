@@ -10,11 +10,14 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# project directory
+ROOT_DIR = BASE_DIR.parent
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
@@ -111,6 +114,9 @@ USE_I18N = True
 
 USE_TZ = True
 
+
+# directory to which Django will move those static assets and from which it will serve them when the app is running
+STATIC_ROOT = os.path.join(ROOT_DIR, "staticfiles")
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/

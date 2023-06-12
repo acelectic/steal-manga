@@ -1,0 +1,26 @@
+FROM python:3.11.3
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ARG port
+
+COPY . /app
+WORKDIR /app
+
+ENV PORT=$port
+
+RUN apt-get update && apt-get install -y --no-install-recommends apt-utils \
+    && apt-get -y install curl \
+    && apt-get install libgomp1
+
+RUN chgrp -R 0 /app \
+    && chmod -R g=u /app \
+    && pip install pip --upgrade \
+    && pip install -r requirements.txt
+
+RUN mkdir /app/staticfiles
+
+EXPOSE $PORT
+
+# CMD ["python3", "manage.py", "runserver", "0.0.0.0:"$PORT]
+RUN python3 manage.py collectstatic --noinput
