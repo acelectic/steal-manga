@@ -2,7 +2,6 @@
     Constants
 """
 import os
-from typing import LiteralString
 
 from dotenv import load_dotenv
 
@@ -16,6 +15,7 @@ load_dotenv()
 cwd = os.getcwd()
 
 GOOGLE_AUTH_TOKEN_PATH = os.path.join(cwd, 'config/token.json')
+MANGE_ROOT_DIR = os.path.join(cwd, 'config/manga')
 CARTOON_DIR = os.path.join(cwd, 'files/cartoons')
 MANGE_EXISTS_FILE_PATH = os.path.join(CARTOON_DIR, 'manga_exists.json')
 UPDATE_TIMESTAMP_FILE_PATH = os.path.join(CARTOON_DIR, 'update_timestamp.txt')

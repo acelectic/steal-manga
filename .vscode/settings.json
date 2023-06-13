@@ -18,6 +18,7 @@
     "ndarray"
   ],
   "cSpell.ignoreRegExpList": ["/[\\u0E00-\\u0E7F]/g"],
+  "cSpell.ignorePaths": ["config/**/*.json", ".vscode/*"],
   "python.analysis.inlayHints.functionReturnTypes": true,
   "python.analysis.inlayHints.variableTypes": true,
   "python.analysis.inlayHints.pytestParameters": true,

@@ -67,4 +67,4 @@ def get_manga_updated(debug=False):
                     # print('\tproject: {} {} {}'.format(e["project"], e["manga"], e["chapter"]))
                     if debug:
                         print(f'\t{e}')
-            return results_viewed_sorted, results_yet_view_sorted
+            return manga_exists_json, results_viewed_sorted, results_yet_view_sorted

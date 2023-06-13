@@ -1,5 +1,33 @@
 
 <style>
+  .manga-list {
+    display: flex;
+    flex-flow: row wrap;
+    column-gap: 12px;
+    row-gap: 12px;
+    padding: 8px;
+
+    .manga-list-table {
+      flex: 1;
+
+      border: 1px solid black;
+      padding: 8px;
+
+      .manga-table-header {
+        font-weight: 700;
+        margin-bottom: 6px;
+      }
+
+      > thead, tbody {
+        > tr {
+          > td,  > th {
+            padding: 2px 4px;
+          }
+        }
+      }
+    }
+  }
+
   .manga-updated-item {
     display: grid;
     grid-template-columns: repeat(2, max-content);
@@ -23,69 +51,130 @@
         window.open('/google-auth');
     }
 </script>
-<h1>Projects</h1>
-<div class="row">
+<div>
+  <h1>Console</h1>
   {% if google_auth_ok == False %}
     <button onclick="google_auth()">Authen</button>
   {% endif %}
   <form action="/download-manga" method="post" >
     {% csrf_token %}
     <button name="type" type="submit" value="man-mirror">Download man-mirror</button>
-    <button name="type" type="submit" value="man-mirror-manual">Download man-mirror-manual</button>
+    <!-- <button name="type" type="submit" value="man-mirror-manual">Download man-mirror-manual</button> -->
     <button name="type" type="submit" value="my-novel">Download my-novel</button>
   </form>
-  {% for updated, item in results_yet_view_sorted %}
-  <h2>Updated: {{updated}}</h2>
-  <ul>
-    {% for d in item %}
-      <li>
-        <div class="manga-updated-item">
-          <h2 class="weight-normal">{{d.project}}</h2>
-          <h3>{{d.manga}} {{d.chapter}} </h3>
-        </div>
-      </li>
-    {% endfor %}
-  </ul>
-  {% endfor %}
-  <!-- {% for project in projects %}
-  <div class="col-md-4">
-    <div class="card mb-2">
-      <div class="card-body">
-        <h2 class="card-title">{{ project.title }}</h2>
-        {% for sub_dir in project.sub_dirs %}
-        <div class="col-md-4" style="margin-left: 2rem">
-          <div class="card mb-2">
-            <h3 class="card-title">- {{ sub_dir.title }}</h3>
-            <ul class="card-body">
-              {% for pdf_path in sub_dir.image_pdf_list %}
-              <li class="col-md-4">
-                <div class="card mb-2">
-                  <div
-                    class="card-body"
-                    style="
-                      display: grid;
-                      grid-template-columns: max-content max-content;
-                      grid-column-gap: 12px;
-                      align-items: center;
-                    "
-                  >
-                    <div class="card-title">{{ pdf_path }}</div>
-                    <a
-                      href="pdf-view?pdf_path={{ pdf_path }}"
-                      class="btn btn-primary"
-                    >
-                      View
-                    </a>
-                  </div>
-                </div>
-              </li>
-              {% endfor %}
-            </ul>
-          </div>
-        </div>
-        {% endfor %}
-      </div>
+  <h2>Manga List</h2>
+  <div class="manga-list">
+    <div>
+      <h3 class="">Man mirror</h3>
+      <table class="manga-list-table">
+        <thead>
+          <tr>
+            <th class="manga-table-header">CartoonName</th>
+            <th class="manga-table-header">CartoonId</th>
+            <th class="manga-table-header">LatestChapter</th>
+            <th class="manga-table-header">MaxChapter</th>
+            <th class="manga-table-header">Downloaded</th>
+            <th class="manga-table-header">Disabled</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for d in man_mirror_cartoons %}
+              <tr>
+                <td>{{d.cartoon_name}}</td>
+                <td>{{d.cartoon_id}}</td>
+                <td>{{d.latest_chapter}}</td>
+                <td>{{d.max_chapter}}</td>
+                <td>{{d.downloaded}}</td>
+                <td>{{d.disabled}}</td>
+              </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <h3>My novel</h3>
+      <table class="manga-list-table">
+        <thead>
+          <tr>
+            <th class="manga-table-header">CartoonName</th>
+            <th class="manga-table-header">CartoonId</th>
+            <th class="manga-table-header">LatestChapter</th>
+            <!-- <th class="manga-table-header">MaxChapter</th> -->
+            <th class="manga-table-header">Downloaded</th>
+            <th class="manga-table-header">Disabled</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for d in my_novel_cartoons %}
+              <tr>
+                <td>{{d.cartoon_name}}</td>
+                <td>{{d.cartoon_id}}</td>
+                <td>{{d.latest_chapter}}</td>
+                <!-- <td>{{d.max_chapter}}</td> -->
+                <td>{{d.downloaded}}</td>
+                <td>{{d.disabled}}</td>
+              </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </div>
-  {% endfor %} -->
+  <h2>Manga Updated</h2>
+  <div class="row">
+    {% for updated, item in results_yet_view_sorted %}
+    <h2>Updated: {{updated}}</h2>
+    <ul>
+      {% for d in item %}
+        <li>
+          <div class="manga-updated-item">
+            <h2 class="weight-normal">{{d.project}}</h2>
+            <h3>{{d.manga}} {{d.chapter}} </h3>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+    {% endfor %}
+    <!-- {% for project in projects %}
+    <div class="col-md-4">
+      <div class="card mb-2">
+        <div class="card-body">
+          <h2 class="card-title">{{ project.title }}</h2>
+          {% for sub_dir in project.sub_dirs %}
+          <div class="col-md-4" style="margin-left: 2rem">
+            <div class="card mb-2">
+              <h3 class="card-title">- {{ sub_dir.title }}</h3>
+              <ul class="card-body">
+                {% for pdf_path in sub_dir.image_pdf_list %}
+                <li class="col-md-4">
+                  <div class="card mb-2">
+                    <div
+                      class="card-body"
+                      style="
+                        display: grid;
+                        grid-template-columns: max-content max-content;
+                        grid-column-gap: 12px;
+                        align-items: center;
+                      "
+                    >
+                      <div class="card-title">{{ pdf_path }}</div>
+                      <a
+                        href="pdf-view?pdf_path={{ pdf_path }}"
+                        class="btn btn-primary"
+                      >
+                        View
+                      </a>
+                    </div>
+                  </div>
+                </li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endfor %} -->
+  </div>
+
 </div>
