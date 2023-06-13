@@ -2,6 +2,11 @@
 
 <!--next-version-placeholder-->
 
+## v0.0.25 (2023-06-12)
+### Fix
+* S ([`faa90ea`](https://github.com/acelectic/steal-manga/commit/faa90ea2f369049785efe678a73d9253ee964db8))
+* Implement heroku docker ([`5b1580b`](https://github.com/acelectic/steal-manga/commit/5b1580b6fc8da6dc4233e6e2b3b20ae798061a03))
+
 ## v0.0.24 (2023-06-11)
 ### Fix
 * Implement docker ([`1ff330d`](https://github.com/acelectic/steal-manga/commit/1ff330dae5e959a56b6f35f8c593ea267c7c474a))
