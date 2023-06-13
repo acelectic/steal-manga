@@ -22,6 +22,8 @@
   "python.analysis.inlayHints.functionReturnTypes": true,
   "python.analysis.inlayHints.variableTypes": true,
   "python.analysis.inlayHints.pytestParameters": true,
+  "typescript.tsdk": "web/node_modules/typescript/lib",
+  "typescript.preferences.importModuleSpecifier": "project-relative",
   "isort.args": ["--profile", "black"],
   "[python]": {
     "editor.defaultFormatter": "ms-python.autopep8",

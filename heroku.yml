@@ -2,7 +2,8 @@
 
 build:
   docker:
-    web: Dockerfile.prod
+    api: api/Dockerfile.prod
+    web: web/Dockerfile.prod
 
 release:
   command:
@@ -10,7 +11,9 @@ release:
   image: web
 
 run:
-  web:
+  api:
     command:
       - gunicorn core.wsgi:application
+    image: api
+  web:
     image: web
