@@ -1,5 +1,5 @@
 'use client'
-import { Button, Form, FormInstance, Input, InputRef, Space, Table, Typography } from 'antd'
+import { Button, Form, FormInstance, Input, InputRef, Space, Switch, Table, Typography } from 'antd'
 import { IGetMangaUpdatedResponse } from '../../service/manga-updated/types'
 import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { ColumnType } from 'antd/es/table'
@@ -53,6 +53,7 @@ const EditableRow: React.FC<IEditableRowProps> = ({ index, ...props }) => {
 interface EditableCellProps {
   title: React.ReactNode
   editable: boolean
+  dataType: 'number' | 'string' | 'boolean'
   children: React.ReactNode
   dataIndex: keyof IItem
   record: IItem
@@ -64,6 +65,7 @@ const EditableCell: React.FC<EditableCellProps> = ({
   editable,
   children,
   dataIndex,
+  dataType,
   record,
   handleSave,
   ...restProps
@@ -74,7 +76,7 @@ const EditableCell: React.FC<EditableCellProps> = ({
 
   useEffect(() => {
     if (editing) {
-      inputRef.current!.focus()
+      inputRef.current?.focus?.()
     }
   }, [editing])
 
@@ -108,7 +110,11 @@ const EditableCell: React.FC<EditableCellProps> = ({
           },
         ]}
       >
-        <Input ref={inputRef} onPressEnter={save} onBlur={save} />
+        {dataType === 'boolean' ? (
+          <Switch />
+        ) : (
+          <Input ref={inputRef} onPressEnter={save} onBlur={save} />
+        )}
       </Form.Item>
     ) : (
       <div className="editable-cell-value-wrap" style={{ paddingRight: 24 }} onClick={toggleEdit}>
@@ -144,7 +150,7 @@ export const MangaTable = (props: IMangaTableProps) => {
   }, [data])
 
   const defaultColumns = useMemo(
-    (): (ColumnType<IItem> & { editable?: boolean })[] => [
+    (): (ColumnType<IItem> & Partial<Pick<EditableCellProps, 'editable' | 'dataType'>>)[] => [
       { title: 'Cartoon Name', key: 'cartoonName', dataIndex: 'cartoonName' },
       { title: 'Cartoon Id', key: 'cartoonId', dataIndex: 'cartoonId' },
       {
@@ -159,7 +165,14 @@ export const MangaTable = (props: IMangaTableProps) => {
         dataIndex: 'maxChapter',
         editable: title === 'man-mirror',
       },
-      { title: 'Disabled', key: 'disabled', dataIndex: 'disabled' },
+      {
+        title: 'Disabled',
+        key: 'disabled',
+        dataIndex: 'disabled',
+        editable: true,
+        dataType: 'boolean',
+        render: (value: boolean) => (value === true ? 'True' : 'False'),
+      },
       { title: 'Downloaded', key: 'downloaded', dataIndex: 'downloaded' },
       {
         title: 'Action',
@@ -211,6 +224,7 @@ export const MangaTable = (props: IMangaTableProps) => {
         editable: col.editable,
         dataIndex: col.dataIndex,
         title: col.title,
+        dataType: col.dataType,
         handleSave,
       }),
     }
