@@ -3,11 +3,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import path from 'path'
 import { appConfig } from '../../../../config/app-config'
 import { decamelizeKeys } from 'humps'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 
 export async function POST(request: NextRequest) {
   const payload = await request.json()
-  console.log({ payload })
+  revalidateTag('manga-list')
+
   const [error, responseData] = await to(
     fetch(path.join(appConfig.API_HOST, 'api', 'v1', 'manga-updated'), {
       method: 'POST',
@@ -18,16 +19,15 @@ export async function POST(request: NextRequest) {
       cache: 'no-store',
     }),
   )
-  console.log({ error })
 
   const dataRes = await responseData?.json()
-  console.log({ dataRes })
-  const pathUrl = request.nextUrl.searchParams.get('path') || '/'
-  console.log({ pathUrl })
+  // const pathUrl = request.nextUrl.searchParams.get('path') || '/'
+  // revalidatePath(pathUrl)
 
-  revalidatePath(pathUrl)
-  const response = new NextResponse(JSON.stringify(dataRes), {
-    status: 200,
-  })
-  return response
+  return NextResponse.json(
+    { ...dataRes, revalidated: true },
+    {
+      status: 200,
+    },
+  )
 }

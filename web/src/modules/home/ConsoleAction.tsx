@@ -1,11 +1,14 @@
-import { Button, Col, Row } from 'antd'
+import { Button, Col, Row, message } from 'antd'
 import {
   ITriggerDownloadPayload,
   TriggerDownloadTypeEnum,
 } from '../../service/trigger-download/types'
 import { useMutation } from '@tanstack/react-query'
+import { useRouter } from 'next/navigation'
+import { pascalize } from 'humps'
 
 export const ConsoleAction = () => {
+  const router = useRouter()
   const { mutate: triggerDownload, isLoading } = useMutation(
     async (type: TriggerDownloadTypeEnum) => {
       const payload: ITriggerDownloadPayload = {
@@ -21,6 +24,8 @@ export const ConsoleAction = () => {
         },
         body: JSON.stringify(payload),
       })
+
+      message.success(`Download ${pascalize(type)} Success`)
     },
   )
 
@@ -28,6 +33,7 @@ export const ConsoleAction = () => {
     <Row gutter={[16, 16]}>
       <Col>
         <Button
+          type="primary"
           onClick={triggerDownload.bind(null, TriggerDownloadTypeEnum.MAN_MIRROR)}
           loading={isLoading}
           disabled={isLoading}
@@ -37,6 +43,7 @@ export const ConsoleAction = () => {
       </Col>
       <Col>
         <Button
+          type="primary"
           onClick={triggerDownload.bind(null, TriggerDownloadTypeEnum.MY_NOVEL)}
           loading={isLoading}
           disabled={isLoading}
@@ -44,6 +51,18 @@ export const ConsoleAction = () => {
           Download My Novel
         </Button>
       </Col>
+
+      {/* <Col>
+        <Button
+          onClick={() => {
+            router.refresh()
+          }}
+          loading={isLoading}
+          disabled={isLoading}
+        >
+          Download My Novel
+        </Button>
+      </Col> */}
     </Row>
   )
 }

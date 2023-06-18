@@ -11,13 +11,14 @@ import {
   Switch,
   Table,
   Typography,
+  message,
 } from 'antd'
 import { IGetMangaUpdatedResponse } from '../../service/manga-updated/types'
 import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { ColumnType } from 'antd/es/table'
 import { css } from '@emotion/css'
 import { updateMangeConfig } from '../../service/manga-updated'
-import { chain, get, isEmpty, map } from 'lodash'
+import { chain } from 'lodash'
 
 const warpCss = css`
   width: 100%;
@@ -241,6 +242,7 @@ export const MangaTable = (props: IMangaTableProps) => {
                   disabled: record.disabled,
                   downloaded: record.downloaded,
                 })
+                message.success('Update Config Success')
               }}
             >
               Save

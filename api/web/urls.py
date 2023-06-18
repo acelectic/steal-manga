@@ -19,11 +19,12 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    # path('admin/', admin.site.urls),
     path('', views.home, name='home'),
-    path('google-auth', views.google_auth, name='google_auth'),
+    # path('google-auth', views.google_auth, name='google_auth'),
     path('google-callback', views.google_callback, name='google_callback'),
-    path('download-manga', views.download_manga, name='download_manga'),
+    # path('download-manga', views.download_manga, name='download_manga'),
     path('api/v1/download-manga', views.download_manga, name='download_manga'),
     path('api/v1/manga-updated', views.manga_updated, name='manga_updated'),
+    path('api/v1/auth-google-drive', views.auth_google_drive, name='auth_google_drive'),
 ]

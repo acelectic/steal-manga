@@ -19,7 +19,7 @@ def update_manga_config(data: UpdateMangaConfigData):
                                           int(data.latest_chapter), int(data.max_chapter), data.disabled]
 
         with open(os.path.join(MANGE_ROOT_DIR,  'man-mirror.json'), 'w', encoding='utf-8') as f:
-            f.write(json.dumps(man_mirror_cartoons, indent=2, ensure_ascii=False))
+            f.write(json.dumps(man_mirror_cartoons, indent=4, ensure_ascii=False))
 
         success = True
 
@@ -35,6 +35,6 @@ def update_manga_config(data: UpdateMangaConfigData):
                                         int(data.latest_chapter),  data.disabled]
 
         with open(os.path.join(MANGE_ROOT_DIR,  'my-novel.json'), 'w', encoding='utf-8') as f:
-            f.write(json.dumps(my_novel_cartoons, indent=2, ensure_ascii=False))
+            f.write(json.dumps(my_novel_cartoons, indent=4, ensure_ascii=False))
         success = True
     return success

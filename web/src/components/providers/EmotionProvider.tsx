@@ -4,7 +4,7 @@ import createCache from '@emotion/cache'
 import { useServerInsertedHTML } from 'next/navigation'
 import { useState } from 'react'
 
-export default function EmotionProvider({ children }: { children: React.ReactNode }) {
+const EmotionProvider = ({ children }: { children: React.ReactNode }) => {
   const [cache] = useState(() => {
     const cache = createCache({ key: 'css' })
     cache.compat = true
@@ -24,3 +24,5 @@ export default function EmotionProvider({ children }: { children: React.ReactNod
 
   return <CacheProvider value={cache}>{children}</CacheProvider>
 }
+
+export default EmotionProvider

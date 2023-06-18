@@ -147,7 +147,7 @@ def google_callback(request: WSGIRequest):
     # )
     creds = flow.credentials
     write_google_token(creds)
-    return redirect("/")
+    return redirect("http://localhost:8001/")
 
 
 def download_manga(request: WSGIRequest):
@@ -288,4 +288,29 @@ def manga_updated(request: WSGIRequest):
         "my_novel_cartoons": my_novel_cartoons or [],
         "results_viewed_sorted": results_viewed_sorted or [],
         "results_yet_view_sorted": results_yet_view_sorted or []
+    })
+
+
+def auth_google_drive(request: HttpRequest):
+    creds = get_google_creds()
+
+    if request.method == 'POST':
+        # body = json.loads(request.body)
+        # redirect_uri = body['redirect_uri']
+        flow = get_google_flow()
+        auth_data = flow.authorization_url(
+            # Enable offline access so that you can refresh an access token without
+            # re-prompting the user for permission. Recommended for web server apps.
+            # access_type='offline',
+            # Enable incremental authorization. Recommended as a best practice.
+            # include_granted_scopes='true'
+        )
+        authorization_url, _ = auth_data
+
+        return JsonResponse({
+            "authorization_url": authorization_url
+        })
+
+    return JsonResponse({
+        "google_authen_status": creds is not None and creds.valid and not creds.expired,
     })

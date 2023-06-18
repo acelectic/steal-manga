@@ -1,10 +1,13 @@
-import { ReactQueryProvider } from '../components/providers/ReactQueryProvider'
-import { AppProvider } from '../components/providers/AppProvider'
+import ReactQueryProvider from '../components/providers/ReactQueryProvider'
 import EmotionProvider from '../components/providers/EmotionProvider'
 import './globals.css'
 import { Sarabun } from 'next/font/google'
 import React from 'react'
-import { AntdProvider } from '../components/providers/AntdProvider'
+import AntdProvider from '../components/providers/AntdProvider'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import Navbar from '../components/layouts/Navbar'
+import AppLayout from '../components/layouts/index.'
 
 const inter = Sarabun({ weight: '400', subsets: ['thai'] })
 
@@ -16,17 +19,12 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body
-        className={inter.className}
-        style={{
-          backgroundColor: '#80bcdf',
-          width: '100vw',
-          height: '100vh',
-        }}
-      >
+      <body className={inter.className}>
         <AntdProvider>
           <EmotionProvider>
-            <ReactQueryProvider>{children}</ReactQueryProvider>
+            <ReactQueryProvider>
+              <AppLayout>{children}</AppLayout>
+            </ReactQueryProvider>
           </EmotionProvider>
         </AntdProvider>
       </body>

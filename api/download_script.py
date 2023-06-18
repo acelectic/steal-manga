@@ -5,7 +5,6 @@ from time import time
 from typing import List
 
 from dotenv import load_dotenv
-
 from libs.man_mirror import ManMirror
 from libs.my_novel import MyNovel
 from libs.upload_google_drive import generate_drive_manga_exists, upload_to_drive
@@ -15,7 +14,7 @@ from libs.utils.constants import MANGE_ROOT_DIR
 
 load_dotenv()
 
-MAX_WORKERS = 4
+MAX_WORKERS = 2
 
 
 def download_man_mirror_manual() -> None:
@@ -139,11 +138,16 @@ def execute_download(enable_download_mam_mirror=False,
     if enable_download_my_novel:
         function_execute_time('download_my_novel', download_my_novel)
 
+    print('Download Finished')
+
     function_execute_time('upload_to_drive all', upload_to_drive)
+    print('Upload Finished')
 
     function_execute_time('generate_drive_manga_exists', tmp_x)
+    print('Generate Update Manga Finished')
 
     function_execute_time('show_manga_updated', get_manga_updated, debug=debug)
+    print('END')
 
 
 if __name__ == "__main__":

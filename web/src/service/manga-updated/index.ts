@@ -4,7 +4,13 @@ import { IGetMangaUpdatedResponse, IUpdateMangaConfigPayload } from './types'
 import path from 'path'
 
 export const getMangaUpdated = async (options?: RequestInit) => {
-  const response = await fetch(path.join(appConfig.API_HOST, 'api', 'v1', 'manga-updated'), options)
+  const response = await fetch(path.join(appConfig.API_HOST, 'api', 'v1', 'manga-updated'), {
+    next: {
+      revalidate: 2,
+      // tags: ['manga-list'],
+    },
+    ...options,
+  })
   const responseData = await response.json()
   return camelizeKeys(responseData) as IGetMangaUpdatedResponse
 }
