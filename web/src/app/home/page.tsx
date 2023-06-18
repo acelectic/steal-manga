@@ -7,11 +7,11 @@ export const revalidate = 15
 const HomePage = async () => {
   const [, data] = await to(
     getMangaUpdated({
-      // cache: 'no-store',
+      cache: 'no-store',
       // // cache: 'only-if-cached',
-      next: {
-        revalidate: 30,
-      },
+      // next: {
+      //   revalidate: 30,
+      // },
     }),
   )
 

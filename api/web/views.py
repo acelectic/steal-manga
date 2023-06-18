@@ -83,7 +83,7 @@ def home(request: HttpRequest):
         "cartoon_id": cartoon_id,
         "latest_chapter": latest_chapter,
         "max_chapter": max_chapter,
-        "disabled": disabled is False,
+        "disabled": disabled or False,
         "downloaded": man_mirror_downloaded[cartoon_name]['total'] or 0 if man_mirror_downloaded[cartoon_name] is not None else 0,
     } for cartoon_name, cartoon_id, latest_chapter, max_chapter, disabled in man_mirror_cartoons]
 
@@ -92,7 +92,7 @@ def home(request: HttpRequest):
         "cartoon_id": cartoon_id,
         "latest_chapter": latest_chapter,
         "max_chapter": '',
-        "disabled": disabled is False,
+        "disabled": disabled or False,
         "downloaded": my_novel_downloaded[cartoon_name]['total'] or 0 if my_novel_downloaded[cartoon_name] is not None else 0,
     } for cartoon_name, cartoon_id, latest_chapter, disabled in my_novel_cartoons]
     # pprint({
@@ -268,7 +268,7 @@ def manga_updated(request: WSGIRequest):
         "cartoon_id": cartoon_id,
         "latest_chapter": latest_chapter,
         "max_chapter": max_chapter,
-        "disabled": disabled is False,
+        "disabled": disabled or False,
         "downloaded": man_mirror_downloaded[cartoon_name]['total'] or 0 if man_mirror_downloaded[cartoon_name] is not None else 0,
     } for cartoon_name, cartoon_id, latest_chapter, max_chapter, disabled in man_mirror_cartoons]
 
@@ -277,7 +277,7 @@ def manga_updated(request: WSGIRequest):
         "cartoon_id": cartoon_id,
         "latest_chapter": latest_chapter,
         "max_chapter": '',
-        "disabled": disabled is False,
+        "disabled": disabled or False,
         "downloaded": my_novel_downloaded[cartoon_name]['total'] or 0 if my_novel_downloaded[cartoon_name] is not None else 0,
     } for cartoon_name, cartoon_id, latest_chapter, disabled in my_novel_cartoons]
 

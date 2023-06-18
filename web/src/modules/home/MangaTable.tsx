@@ -1,10 +1,23 @@
 'use client'
-import { Button, Form, FormInstance, Input, InputRef, Space, Switch, Table, Typography } from 'antd'
+import {
+  Button,
+  Col,
+  Form,
+  FormInstance,
+  Input,
+  InputRef,
+  Row,
+  Space,
+  Switch,
+  Table,
+  Typography,
+} from 'antd'
 import { IGetMangaUpdatedResponse } from '../../service/manga-updated/types'
 import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { ColumnType } from 'antd/es/table'
 import { css } from '@emotion/css'
 import { updateMangeConfig } from '../../service/manga-updated'
+import { chain, get, isEmpty, map } from 'lodash'
 
 const warpCss = css`
   width: 100%;
@@ -42,7 +55,7 @@ interface IEditableRowProps {
 const EditableRow: React.FC<IEditableRowProps> = ({ index, ...props }) => {
   const [form] = Form.useForm()
   return (
-    <Form form={form} component={false}>
+    <Form form={form} component={false} /*  initialValues={initialValues} */>
       <EditableContext.Provider value={form}>
         <tr {...props} />
       </EditableContext.Provider>
@@ -88,7 +101,6 @@ const EditableCell: React.FC<EditableCellProps> = ({
   const save = async () => {
     try {
       const values = await form.validateFields()
-
       toggleEdit()
       handleSave({ ...record, ...values })
     } catch (errInfo) {
@@ -98,27 +110,66 @@ const EditableCell: React.FC<EditableCellProps> = ({
 
   let childNode = children
 
+  // useEffect(() => {
+  //   if (editable && dataType === 'boolean') {
+  //     const formValues = form.getFieldsValue()
+  //     const formValuesData = formValues?.[dataIndex]
+  //     const data = record?.[dataIndex]
+  //     console.log({ formValues, formValuesData, record, data })
+  //     if (formValuesData === undefined && record && data !== undefined) {
+  //       console.log({ dataIndex, formValuesData, record, data })
+  //       form.setFieldsValue({ [dataIndex]: data })
+  //     }
+  //   }
+  // }, [dataIndex, dataType, editable, form, record])
+
+  const renderChildren = useMemo(() => {
+    if (dataType === 'boolean') {
+      if (Array.isArray(children)) {
+        return chain(children)
+          .map((e) => {
+            if (typeof e === 'boolean') return e === true ? 'True' : 'False'
+            return e
+          })
+          .value()
+      }
+    }
+    return children
+  }, [children, dataType])
+
   if (editable) {
     childNode = editing ? (
-      <Form.Item
-        style={{ margin: 0 }}
-        name={dataIndex}
-        rules={[
-          {
-            required: true,
-            message: `${title} is required.`,
-          },
-        ]}
-      >
-        {dataType === 'boolean' ? (
-          <Switch />
-        ) : (
-          <Input ref={inputRef} onPressEnter={save} onBlur={save} />
+      <Row gutter={12} align="middle">
+        <Col>
+          <Form.Item
+            style={{ margin: 0 }}
+            name={dataIndex}
+            rules={[
+              {
+                required: true,
+                message: `${title} is required.`,
+              },
+            ]}
+            valuePropName={dataType === 'boolean' ? 'checked' : undefined}
+          >
+            {dataType === 'boolean' ? (
+              <Switch />
+            ) : (
+              <Input ref={inputRef} onPressEnter={save} onBlur={save} />
+            )}
+          </Form.Item>
+        </Col>
+        {dataType === 'boolean' && (
+          <Col>
+            <Button onClick={save} size="small">
+              Save
+            </Button>
+          </Col>
         )}
-      </Form.Item>
+      </Row>
     ) : (
       <div className="editable-cell-value-wrap" style={{ paddingRight: 24 }} onClick={toggleEdit}>
-        {children}
+        {renderChildren}
       </div>
     )
   }
@@ -171,7 +222,7 @@ export const MangaTable = (props: IMangaTableProps) => {
         dataIndex: 'disabled',
         editable: true,
         dataType: 'boolean',
-        render: (value: boolean) => (value === true ? 'True' : 'False'),
+        render: (value: boolean) => !!value,
       },
       { title: 'Downloaded', key: 'downloaded', dataIndex: 'downloaded' },
       {
@@ -237,6 +288,9 @@ export const MangaTable = (props: IMangaTableProps) => {
         dataSource={dataSource}
         columns={columns as ColumnType<IItem>[]}
         rowKey={'cartoonId'}
+        pagination={{
+          defaultPageSize: 5,
+        }}
         components={{
           body: {
             row: EditableRow,

@@ -1,10 +1,10 @@
 'use client'
 
-import { Col, Collapse, Row, Typography } from 'antd'
+import { Col, Collapse, Layout, Row, Typography } from 'antd'
 import { IGetMangaUpdatedResponse } from '../../service/manga-updated/types'
 import { MangaTable } from './MangaTable'
 import { ConsoleAction } from './ConsoleAction'
-import { AppProvider } from '../../app/app-provider'
+import { AppProvider } from '../../components/providers/AppProvider'
 import dayjs from 'dayjs'
 import { join } from 'lodash'
 
@@ -42,24 +42,28 @@ export const Home = (props: IHomeProps) => {
         <Col span={24}>
           <MangaTable title="my-novel" data={myNovelCartoons} />
         </Col>
-        <Row gutter={[18, 18]} style={{ width: '100%' }}>
-          {resultsYetViewSorted.map(([updated, items = []]) => {
-            return (
-              <Col span={12} key={updated.toString()}>
-                <Typography.Title level={5}>{updated.toString()}</Typography.Title>
-                <ul style={{ marginLeft: 20 }}>
-                  {items.map((item) => {
-                    return (
-                      <li key={item.project + item.manga + item.chapter}>
-                        <Typography>{join([item.manga, item.chapter], ' ')}</Typography>
-                      </li>
-                    )
-                  })}
-                </ul>
-              </Col>
-            )
-          })}
-        </Row>
+        <Layout.Content
+          style={{ backgroundColor: '#ffffff', borderRadius: '6px', padding: '20px' }}
+        >
+          <Row gutter={[18, 18]} style={{ width: '100%' }}>
+            {resultsYetViewSorted.map(([updated, items = []]) => {
+              return (
+                <Col span={12} key={updated.toString()}>
+                  <Typography.Title level={5}>{updated.toString()}</Typography.Title>
+                  <ul style={{ marginLeft: 20 }}>
+                    {items.map((item) => {
+                      return (
+                        <li key={item.project + item.manga + item.chapter}>
+                          <Typography>{join([item.manga, item.chapter], ' ')}</Typography>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </Col>
+              )
+            })}
+          </Row>
+        </Layout.Content>
       </Row>
     </AppProvider>
   )

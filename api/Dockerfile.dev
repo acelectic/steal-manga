@@ -14,19 +14,24 @@ ENV PYTHONUNBUFFERED=1
 ARG PORT
 WORKDIR /usr/src/app
 
-COPY ./api /.
+COPY ./api .
 
 RUN ls
 
 
 ENV PORT=$PORT
 
-RUN chgrp -R 0 /usr/scr/app \
-    && chmod -R g=u /usr/scr/app \
-    && pip install pip --upgrade \
-    && pip install -r requirements.txt
+RUN --mount=type=cache,target=/root/.pip YARN_CACHE_FOLDER=/root/.pip pip install pip --upgrade
+RUN --mount=type=cache,target=/root/.pip YARN_CACHE_FOLDER=/root/.pip pip install -r requirements.txt
+# RUN pip install pip --upgrade \
+#     && pip install -r requirements.txt
 
-RUN mkdir /usr/scr/app/staticfiles
+# RUN chgrp -R 0 /usr/scr/app \
+#     && chmod -R g=u /usr/scr/app \
+#     && pip install pip --upgrade \
+#     && pip install -r requirements.txt
+
+RUN mkdir -p /usr/scr/app/staticfiles
 
 EXPOSE $PORT
 

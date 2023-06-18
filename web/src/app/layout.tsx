@@ -1,8 +1,10 @@
-import { AppProvider } from './app-provider'
-import RootStyleRegistry from './emotion'
+import { ReactQueryProvider } from '../components/providers/ReactQueryProvider'
+import { AppProvider } from '../components/providers/AppProvider'
+import EmotionProvider from '../components/providers/EmotionProvider'
 import './globals.css'
 import { Sarabun } from 'next/font/google'
 import React from 'react'
+import { AntdProvider } from '../components/providers/AntdProvider'
 
 const inter = Sarabun({ weight: '400', subsets: ['thai'] })
 
@@ -22,9 +24,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           height: '100vh',
         }}
       >
-        <AppProvider>
-          <RootStyleRegistry>{children}</RootStyleRegistry>
-        </AppProvider>
+        <AntdProvider>
+          <EmotionProvider>
+            <ReactQueryProvider>{children}</ReactQueryProvider>
+          </EmotionProvider>
+        </AntdProvider>
       </body>
     </html>
   )
