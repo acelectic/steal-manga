@@ -1,14 +1,15 @@
 """ module mam mirror image json meta """
 
-from typing import List, Tuple
 import json
+from typing import Any, List, Tuple
+
 import numpy as np
 
 
 class ImageJsonShuffle:
     """ interface of man mirror image json """
 
-    def __init__(self, width: int, height: int, all_row: int, all_col: int, shuffles: List[int]):
+    def __init__(self, width: int, height: int, all_row: int, all_col: int, shuffles: List[int], raw):
         try:
             self.width = width
             self.height = height
@@ -17,6 +18,13 @@ class ImageJsonShuffle:
             self.shuffles = np.reshape(shuffles, (all_row, all_col))
             self.sub_height = int(round(height / all_row, 0))
             self.sub_width = int(round(width / all_col, 0))
+            self.raw: Any = raw
+
+            self.is_shuffles_size_too_many: bool = len(shuffles) > 10000
+            self.is_shuffles_radio_size_too_many: bool = all_row > height / 10 or all_col > width / 10
+            self.is_shuffles_not_match: bool = all_row * all_col != len(shuffles)
+
+            self.must_debug: bool = self.is_shuffles_size_too_many or self.is_shuffles_not_match
         except Exception:
             print(
                 {

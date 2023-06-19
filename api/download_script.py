@@ -14,7 +14,7 @@ from libs.utils.constants import MANGE_ROOT_DIR
 
 load_dotenv()
 
-MAX_WORKERS = 2
+MAX_WORKERS = 1
 
 
 def download_man_mirror_manual() -> None:
@@ -117,16 +117,15 @@ def execute_download(enable_download_mam_mirror=False,
     # function_execute_time('show_manga_updated',show_manga_updated)
     # return
     if not enable_download_mam_mirror and not enable_download_mam_mirror_manual and not enable_download_my_novel:
+        print('Nothing Download enabled')
         return
 
-    def tmp_x() -> None:
-        generate_drive_manga_exists(force_update=True)
-
-    # function_execute_time('generate_drive_manga_exists', tmp_x)
+    # function_execute_time('generate_drive_manga_exists',
+    #                       generate_drive_manga_exists, force_update=True)
 
     # function_execute_time('upload_to_drive all', upload_to_drive)
 
-    # function_execute_time('generate_drive_manga_exists', tmp_x)
+    # function_execute_time('generate_drive_manga_exists', generate_drive_manga_exists, force_update=True)
 
     if enable_download_mam_mirror:
         function_execute_time('download_man_mirror', download_man_mirror)
@@ -143,7 +142,8 @@ def execute_download(enable_download_mam_mirror=False,
     function_execute_time('upload_to_drive all', upload_to_drive)
     print('Upload Finished')
 
-    function_execute_time('generate_drive_manga_exists', tmp_x)
+    function_execute_time('generate_drive_manga_exists',
+                          generate_drive_manga_exists, force_update=True)
     print('Generate Update Manga Finished')
 
     function_execute_time('show_manga_updated', get_manga_updated, debug=debug)

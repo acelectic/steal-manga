@@ -2,11 +2,13 @@
 
 import concurrent.futures
 import glob
+import json
 import os
 import random
 import shutil
 import sys
 import urllib.parse
+from pprint import pprint
 from time import process_time, sleep
 from typing import Any, Dict, List, Tuple
 
@@ -36,6 +38,16 @@ class RequestError(Exception):
         self.args = args
 
 
+class RequestErrorMustDebug(Exception):
+    """ RequestError """
+    data: object = None
+
+    def __init__(self, data: object, image_json: ImageJsonShuffle, *args: object):
+        self.args = args
+        self.data = data
+        self.image_json: ImageJsonShuffle = image_json
+
+
 class AppError(Exception):
     """ RequestError """
 
@@ -45,12 +57,19 @@ class AppError(Exception):
 
 class ManMirror:
     """ class """
-    root = 'man-mirror'
+    root: str = 'man-mirror'
+    get_json_timeout: int = 10 * 1000
+    get_image_timeout: int = 60 * 1000
 
-    def download_cartoons(self, cartoon_name: str, post_id: int,  max_chapter: int, manga_exists_json: Dict[Any, Any],  first_chapter: int = 1, max_workers: int = 4) -> None:
+    def download_cartoons(self, cartoon_name: str, post_id: int,  max_chapter: int, manga_exists_json: Dict[Any, Any],  first_chapter: int = 1, max_workers: int = 4,
+                          get_json_timeout: int = 10 * 1000,
+                          get_image_timeout: int = 60 * 1000,
+                          ) -> None:
         """ 
             download man mirror by post id 
         """
+        self.get_json_timeout: int = get_json_timeout
+        self.get_image_timeout: int = get_image_timeout
 
         main_dir = self.__get_main_dir(cartoon_name)
         mkdir(main_dir)
@@ -80,14 +99,15 @@ class ManMirror:
         pool.shutdown(wait=True)
 
     def __perform_download_chapter(self, cartoon_name: str, post_id: int, chapter: int, chapter_dir: str, output_pdf_path: str):
-        some_error = self._download_cartoon_chapter(
+        some_error, is_some_json_error = self._download_cartoon_chapter(
             cartoon_name, post_id, chapter)
-        self.__merge_to_pdf(
-            chapter_dir, output_pdf_path)
-        if not some_error:
+        if not is_some_json_error:
+            self.__merge_to_pdf(
+                chapter_dir, output_pdf_path)
+        if not some_error and not is_some_json_error:
             self.__remove_chapter_dir(chapter_dir)
 
-    def _download_cartoon_chapter(self, cartoon_name: str, post_id: int, chapter: int) -> bool:
+    def _download_cartoon_chapter(self, cartoon_name: str, post_id: int, chapter: int) -> Tuple[bool, bool]:
         """ download man mirror by post id with page"""
         chapter_dir = self.__get_chapter_dir(cartoon_name, chapter)
         mkdir(chapter_dir)
@@ -95,16 +115,32 @@ class ManMirror:
         max_page = 0
         is_error = False
         is_some_page_error = False
+        is_some_json_error = False
         # print(f'{cartoon_name} chapter {chapter}')
         # print('')
 
         image_json_list: List[ImageJsonShuffle] = []
         while not is_error:
             try:
-                image_json = self.__get_json(post_id, chapter, max_page)
+                image_json: ImageJsonShuffle = self.__get_json(post_id, chapter, max_page)
                 image_json_list.append(image_json)
+                if image_json.must_debug:
+                    is_some_json_error = True
+                    with open(os.path.join(chapter_dir, 'error.txt'), '+a', encoding='utf-8') as error_file:
+                        debug_info = json.dumps({
+                            "is_shuffles_not_match": image_json.is_shuffles_not_match,
+                            "is_shuffles_radio_size_too_many": image_json.is_shuffles_radio_size_too_many,
+                            "is_shuffles_size_too_many": image_json.is_shuffles_size_too_many
+                        })
+                        error_file.write(f'{max_page} {debug_info}\n')
+                    if image_json.raw:
+                        with open(os.path.join(chapter_dir, f'{max_page}.json'), 'w', encoding='utf-8') as error_file:
+                            error_file.write(json.dumps(image_json.raw))
                 # print(f'get image json page: {max_page}', end='\r')
                 max_page += 1
+
+            except RequestErrorMustDebug as error:
+                is_error = True
             except RequestError:
                 is_error = True
             except Exception as error:
@@ -119,7 +155,7 @@ class ManMirror:
             is_some_page_error = self.download_manga_normal(
                 cartoon_name, post_id, chapter, chapter_dir)
 
-        return is_some_page_error
+        return is_some_page_error, is_some_json_error
 
     def download_manga_by_image_json(self, cartoon_name: str, post_id: int, chapter: int, main_dir: str, max_page: int, image_json_list: List[ImageJsonShuffle]):
         is_some_page_error = False
@@ -196,12 +232,23 @@ class ManMirror:
             #     old_image_file.save(f'{main_dir}/{page}-old.png')
 
             if image_json is not None and image is not None:
+
+                # if image_json.must_debug:
+                #     old_image_file = Image.fromarray(image)
+                #     old_image_file.save(f'{main_dir}/{page}-debug.png')
+                # else:
+                #     new_image, has_some_order_error = self.__re_order_images(
+                #         image, image_json)
+                #     if has_some_order_error:
+                #         has_some_error = has_some_order_error
+                #         old_image_file = Image.fromarray(image)
+                #         old_image_file.save(f'{main_dir}/{page}-before-order.png')
                 new_image, has_some_order_error = self.__re_order_images(
                     image, image_json)
                 if has_some_order_error:
                     has_some_error = has_some_order_error
                     old_image_file = Image.fromarray(image)
-                    old_image_file.save(f'{main_dir}/{page}-old.png')
+                    old_image_file.save(f'{main_dir}/{page}-before-order.png')
 
             if new_image is not None:
                 new_image_file = Image.fromarray(new_image)
@@ -254,17 +301,39 @@ class ManMirror:
 
         url = f'https://www.manmirror.net/test/{post_id}/{chapter}/{page}.json'
         # print(f'get json {url}')
-        response = requests.get(url, timeout=5*1000)
-        if response.status_code is 200:
+        response = requests.get(url, timeout=self.get_json_timeout)
+        if response.status_code == 200:
             data = response.json()
-            # print(f'data json {data}')
-            return ImageJsonShuffle(
-                data['width'] or 0,
-                data['height'] or 0,
-                data['all_row'],
-                data['all_col'],
-                data['shuffles'],
+            width = data['width'] or 0
+            height = data['height'] or 0
+            all_row = data['all_row']
+            all_col = data['all_col']
+            shuffles = data['shuffles']
+            image_json_result = ImageJsonShuffle(
+                width=width,
+                height=height,
+                all_row=all_row,
+                all_col=all_col,
+                shuffles=shuffles,
+                raw=data
             )
+            if width == 0 or height == 0:
+                message = 'width or height null'
+                # print(message)
+                raise RequestError(
+                    {"message": message, "response": response})
+
+            # if image_json_result.must_debug:
+            #     message = f'shuffles size is too many [{len(shuffles)}] '
+            #     # print(message)
+            #     raise RequestErrorMustDebug(
+            #         data,
+            #         image_json_result,
+            #         {"message": message, "response": response},
+            #     )
+
+            # print(f'data json {data}')
+            return image_json_result
 
         # print(response.status_code)
         raise RequestError(
@@ -275,7 +344,7 @@ class ManMirror:
         url = f'https://www.manmirror.net/test/{post_id}/{chapter}/{page}.{image_extension}'
         if image_extension == 'jpg':
             # print(f'get image {url}')
-            response = requests.get(url, timeout=20*1000, stream=True)
+            response = requests.get(url, timeout=self.get_image_timeout, stream=True)
             if response.status_code == 200:
                 img = Image.open(response.raw)
                 return np.array(img)
@@ -283,7 +352,7 @@ class ManMirror:
                 # print(f'url: {url}')
                 pass
         else:
-            response = requests.get(url, timeout=20*1000)
+            response = requests.get(url, timeout=self.get_image_timeout)
             if response.status_code == 200:
                 response = iio.imread(url)
                 return response
@@ -303,6 +372,8 @@ class ManMirror:
     def __re_order_images(self, image: np.ndarray, image_json: ImageJsonShuffle):
         has_some_error = False
         new_image = np.zeros_like(image)
+        if image_json.must_debug:
+            pprint(image_json)
         # print(f'image.shape: {image.shape}')
         # print(f'new_image.shape: {new_image.shape}')
         # print(f'image_json.shuffles: {image_json.shuffles}')
@@ -342,6 +413,11 @@ class ManMirror:
                     "old_left": old_left,
                     "old_bottom": old_bottom,
                     "old_right": old_right,
+
+                    "sub_height": image_json.sub_height,
+                    "sub_width": image_json.sub_width,
+                    "all_col": image_json.all_col,
+                    "all_row": image_json.all_row,
                 }
                 # print(json.dumps(image_info, indent=0, ))
 
@@ -357,9 +433,20 @@ class ManMirror:
                               new_left: new_right] = sub_image_from_old
                 except Exception as error:
                     has_some_error = True
+                    # sub_image_from_old = image[old_top: old_bottom,
+                    #                            old_left: old_right]
+                    # sub_image_from_target = new_image[new_top: new_bottom,
+                    #                                   new_left: new_right]
+                    # print('sub_image_from_old')
+                    # print(sub_image_from_old)
+                    # print('sub_image_from_target')
+                    # print(sub_image_from_target)
+
+                    print('error')
+                    print('error')
                     print('error')
                     print(error)
-                    print(f'{image_info}')
+                    pprint(image_info, indent=2)
                     print({
                         "old_top": old_top,
                         "old_bottom": old_bottom,
@@ -368,7 +455,9 @@ class ManMirror:
                     })
                     print(f'image.shape: {image.shape}')
                     print(f'new_image.shape: {new_image.shape}')
-                    print(f'image_json.shuffles: {image_json.shuffles}')
+                    # print(
+                    #     f'image_json.shuffles: {image_json.shuffles} [{len(image_json.shuffles)}]')
+                    # print(f'image_json.must_debug: {image_json.must_debug}')
                     raise AppError({
                         "message": "re_order_images error",
                         "error": error
@@ -430,7 +519,7 @@ class ManMirror:
         self.__remove_chapter_dir(chapter_dir)
 
     def call_get_image(self, url):
-        response = requests.get(url, timeout=20*1000, stream=True)
+        response = requests.get(url, timeout=self.get_image_timeout, stream=True)
         if response.status_code == 200:
             img = Image.open(response.raw)
             return np.array(img)

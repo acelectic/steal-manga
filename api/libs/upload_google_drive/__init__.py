@@ -164,6 +164,8 @@ def generate_drive_manga_exists(project_name=None, cartoon_name=None, force_upda
     manga_exists_json = {}
     is_early_update = False
 
+    print(f'generate_drive_manga_exists | {project_name or "all"} {cartoon_name or ""}')
+
     try:
         if os.path.exists(UPDATE_TIMESTAMP_FILE_PATH):
             with open(UPDATE_TIMESTAMP_FILE_PATH, "r", encoding='utf-8') as read_file:

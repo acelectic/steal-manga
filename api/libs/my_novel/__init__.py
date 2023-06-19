@@ -38,11 +38,17 @@ class MyNovel:
     """ class """
     root = 'my-novel'
     app_key = "xdde8cNN5k7AuVTMgz7b"
+    get_info_timeout: int = 30 * 1000
+    get_image_timeout: int = 60 * 1000
 
-    def download_cartoons(self, product_id: str, manga_exists_json: Dict[Any, Any], start_ep_index: int = 1, max_workers: int = 4) -> None:
+    def download_cartoons(self, product_id: str, manga_exists_json: Dict[Any, Any], start_ep_index: int = 1, max_workers: int = 4,
+                          get_image_timeout: int = 60 * 1000,
+                          ) -> None:
         """
         download man mirror by post id
         """
+        self.get_image_timeout = get_image_timeout
+
         start_ep_index = max(start_ep_index, 0)
 
         product_ep_list_res = self.__get_product_ep_list(product_id)
@@ -213,7 +219,7 @@ class MyNovel:
 
     def __get_product_ep_list(self, product_id: str):
         url = f'https://asia-southeast2-mynovel01.cloudfunctions.net/product/{product_id}'
-        response = requests.get(url, timeout=15 * 1000)
+        response = requests.get(url, timeout=self.get_info_timeout)
 
         if response.status_code == 200:
             data = response.json()
@@ -229,7 +235,7 @@ class MyNovel:
             "id": ep_id,
             "fontCustom": "Sarabun",
             "appKey": self.app_key,
-        }, timeout=15 * 1000)
+        }, timeout=self.get_info_timeout)
 
         if response.status_code == 200:
             data = response.json()
@@ -252,18 +258,18 @@ class MyNovel:
             image_id = ep_image_url_only.split('/images/')[-1]
             url = f'https://images.mynovel.co/images/{image_id}'
 
-            response = requests.get(url, timeout=60*1000, stream=True)
+            response = requests.get(url, timeout=self.get_image_timeout, stream=True)
             if response.status_code == 200:
                 img = Image.open(response.raw)
                 return np.array(img)
         elif is_s3_storage:
-            response = requests.get(ep_image_url, timeout=60*1000, stream=True)
+            response = requests.get(ep_image_url, timeout=self.get_image_timeout, stream=True)
             if response.status_code == 200:
                 img = Image.open(response.raw)
                 return np.array(img)
         else:
             try:
-                response = requests.get(ep_image_url, timeout=60*1000)
+                response = requests.get(ep_image_url, timeout=self.get_image_timeout)
 
                 if response.status_code == 200:
                     response = iio.imread(ep_image_url)
@@ -273,7 +279,8 @@ class MyNovel:
                     ep_image_path = ep_image_url.split('/Cartoon/productEP/')[-1]
                     ep_image_url = f'https://images-manga.mynovel.co/file/manga-store/Cartoon/productEP/{ep_image_path}'
                     # print(f'new ep_image_url: {ep_image_url}')
-                    response = requests.get(ep_image_url, timeout=60*1000, stream=True)
+                    response = requests.get(
+                        ep_image_url, timeout=self.get_image_timeout, stream=True)
 
                     if response.status_code == 200:
                         img = Image.open(response.raw)
