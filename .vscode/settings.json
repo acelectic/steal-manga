@@ -45,5 +45,6 @@
     "--disable=C0114",
     "--disable=W0718",
     "--disable=E0402"
-  ]
+  ],
+  "prettier.prettierPath": "./web/node_modules/prettier"
 }
