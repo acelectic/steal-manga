@@ -2,15 +2,23 @@ import { camelizeKeys } from 'humps'
 import { appConfig } from '../../config/app-config'
 import { IGetMangaUpdatedResponse, IUpdateMangaConfigPayload } from './types'
 import path from 'path'
+import qs from 'qs'
 
 export const getMangaUpdated = async (options?: RequestInit) => {
-  const response = await fetch(path.join(appConfig.API_HOST, 'api', 'v1', 'manga-updated'), {
-    next: {
-      revalidate: 2,
-      // tags: ['manga-list'],
+  const response = await fetch(
+    path.join(appConfig.API_HOST, 'api', 'v1', 'manga-updated') +
+      '?' +
+      qs.stringify({
+        latest_update: 5,
+      }),
+    {
+      next: {
+        revalidate: 2,
+        // tags: ['manga-list'],
+      },
+      ...options,
     },
-    ...options,
-  })
+  )
   const responseData = await response.json()
   return camelizeKeys(responseData) as IGetMangaUpdatedResponse
 }

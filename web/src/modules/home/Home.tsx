@@ -63,9 +63,9 @@ export const Home = (props: IHomeProps) => {
         <Row gutter={[18, 18]} style={{ width: '100%' }}>
           {resultsYetViewSorted.map(([updated, items = []]) => {
             return (
-              <Col span={12} key={updated.toString()}>
+              <Col sm={8} xs={12} md={4.8} key={updated.toString()}>
                 <Typography.Title level={5}>{updated.toString()}</Typography.Title>
-                <ul style={{ marginLeft: 20 }}>
+                <ul style={{ marginLeft: 20, maxHeight: 300, overflowY: 'auto' }}>
                   {items.map((item) => {
                     return (
                       <li key={item.project + item.manga + item.chapter}>

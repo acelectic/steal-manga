@@ -3,6 +3,7 @@
 import React, { PropsWithChildren } from 'react'
 import { Breadcrumb, Layout, Menu, theme } from 'antd'
 import Navbar from './Navbar'
+import { ScreenSizeIndicator } from './ScreenSizeIndicator'
 
 const { Header, Content, Footer } = Layout
 
@@ -23,6 +24,7 @@ const AppLayout = (props: PropsWithChildren) => {
         <div className="site-layout-content" style={{ background: colorBgContainer }}>
           {props.children}
         </div>
+        <ScreenSizeIndicator />
       </Content>
     </Layout>
   )

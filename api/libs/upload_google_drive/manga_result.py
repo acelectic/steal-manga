@@ -8,7 +8,12 @@ from ..utils.constants import MANGE_EXISTS_FILE_PATH
 # sys.path.append("../../libs")  # Adds higher directory to python modules path.
 
 
-def get_manga_updated(debug=False):
+def get_manga_updated(latest_update=None, debug=False):
+    if latest_update is None:
+        latest_update = 2
+    else:
+        latest_update = int(latest_update)
+
     if os.path.exists(MANGE_EXISTS_FILE_PATH):
         with open(MANGE_EXISTS_FILE_PATH, "r", encoding='utf-8') as read_file:
             manga_exists_json = json.load(read_file)
@@ -45,8 +50,9 @@ def get_manga_updated(debug=False):
                         else:
                             results_yet_view[modified_date].append(data)
 
-            results_yet_view_sorted = sorted(results_yet_view.items(), reverse=True)[:2:]
-            results_viewed_sorted = sorted(results_viewed.items(), reverse=True)[:2:]
+            results_yet_view_sorted = sorted(results_yet_view.items(), reverse=True)[
+                :latest_update:]
+            results_viewed_sorted = sorted(results_viewed.items(), reverse=True)[:latest_update:]
 
             if debug:
                 print('\n--- VIEWED ---')

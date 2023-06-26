@@ -211,7 +211,12 @@ def manga_updated(request: WSGIRequest):
             "status":  200 if res else 400
         })
 
-    manga_exists_json, results_viewed_sorted, results_yet_view_sorted = get_manga_updated()
+    latest_update = request.GET.get("latest_update")
+
+    print(f'latest_update: {latest_update}')
+
+    manga_exists_json, results_viewed_sorted, results_yet_view_sorted = get_manga_updated(
+        latest_update=latest_update)
 
     man_mirror_cartoons = []
     with open(os.path.join(MANGE_ROOT_DIR, 'man-mirror.json'), encoding='utf-8') as f:
