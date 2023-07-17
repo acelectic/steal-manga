@@ -334,12 +334,14 @@ export const MangaTable = (props: IMangaTableProps) => {
         dataIndex: 'latestChapter',
         editable: title === 'my-novel',
       },
-      {
-        title: 'Max Chapter',
-        key: 'maxChapter',
-        dataIndex: 'maxChapter',
-        editable: title === 'man-mirror',
-      },
+      title === 'man-mirror'
+        ? {
+            title: 'Max Chapter',
+            key: 'maxChapter',
+            dataIndex: 'maxChapter',
+            editable: title === 'man-mirror',
+          }
+        : {},
       {
         title: 'Disabled',
         key: 'disabled',

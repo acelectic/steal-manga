@@ -156,16 +156,16 @@ def download_manga(request: WSGIRequest):
         enable_download_mam_mirror_manual = False
         enable_download_my_novel = False
         body = json.loads(request.body)
-        type = body['type'] or request.POST['type']
+        types = body['types'] or request.POST.getlist('types', [])
         pprint({
             "data": request.POST,
-            "type": type
+            "types": types
         })
-        if type == 'man-mirror':
+        if 'man-mirror' in types:
             enable_download_mam_mirror = True
-        if type == 'man-mirror-manual':
+        if 'man-mirror-manual' in types:
             enable_download_mam_mirror_manual = True
-        if type == 'my-novel':
+        if 'my-novel' in types:
             enable_download_my_novel = True
 
         execute_download(

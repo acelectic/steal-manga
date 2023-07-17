@@ -466,7 +466,7 @@ class ManMirror:
             # break
         return new_image, has_some_error
 
-    def download_manual(self, cartoon_name: str, cartoon_id: str, chapter: int, manga_exists_json: Dict[Any, Any], prefix: str):
+    def download_manual(self, cartoon_name: str, cartoon_id: str, chapter: int, manga_exists_json: Dict[Any, Any], prefix: str, debug=False):
         main_dir = self.__get_main_dir(cartoon_name)
         chapter_dir = self.__get_chapter_dir(cartoon_name, chapter)
         mkdir(chapter_dir)
@@ -494,7 +494,12 @@ class ManMirror:
             d1, d2 = d
             page = i + 1
             image_path = f'{chapter_dir}/{page}.png'
-            image_url = f'https://www.manmirror.net/test/{cartoon_id}/{chapter}/{prefix}{ str(chapter).zfill(2)}-{d1}_{ str(d2).zfill(3) }.jpg'
+            file_with_prefix = f'{prefix}{ str(chapter).zfill(2)}-{d1}_{ str(d2).zfill(3) }'
+            if prefix == 'V':
+                file_with_prefix = f'{prefix}{d1}_{ str(d2).zfill(3) }'
+
+            image_url = f'https://www.manmirror.net/test/{cartoon_id}/{chapter}/{file_with_prefix}.jpg'
+
             if os.path.exists(image_path):
                 continue
 
@@ -505,12 +510,17 @@ class ManMirror:
                 break
 
             try:
+                if debug:
+                    print(f'image_url: {image_url}')
                 new_image = self.call_get_image(image_url)
                 if new_image is not None:
                     new_image_file = Image.fromarray(new_image)
                     new_image_file.save(image_path)
                 count_error_continue = 0
-            except Exception:
+            except Exception as e:
+                if debug:
+                    print(f'image_url: {image_url}')
+                    print(e)
                 d1_error = d1
                 count_error_continue += 1
                 continue

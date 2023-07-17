@@ -29,9 +29,24 @@ def download_man_mirror_manual() -> None:
         ManualManMirrorMangaItem(
             cartoon_name="ขุนศึก",
             cartoon_id="24",
-            active=True,
+            active=False,
             prefix="GG",
             chapters=["0", "1", "2", "3", "4", "5", "6"]
+        ),
+        ManualManMirrorMangaItem(
+            cartoon_name="เส้นทางสู่สวรรค์",
+            cartoon_id="21",
+            active=True,
+            prefix="V",
+            chapters=["98"]
+        ),
+        ManualManMirrorMangaItem(
+            cartoon_name="L.A.G.",
+            cartoon_id="26",
+            active=True,
+            prefix="LAG%20",
+            chapters=[str(x) for x in range(1, 30 + 1)],
+            debug=True
         ),
     ]
 
@@ -39,10 +54,11 @@ def download_man_mirror_manual() -> None:
     manga_exists_json = generate_drive_manga_exists(force_update=True)
 
     for cartoon in cartoons:
-        cartoon_name = cartoon.cartoon_name
-        cartoon_id = cartoon.cartoon_id
-        active = cartoon.active
-        prefix = cartoon.prefix
+        cartoon_name: str = cartoon.cartoon_name
+        cartoon_id: str = cartoon.cartoon_id
+        active: bool = cartoon.active
+        prefix: str = cartoon.prefix
+        debug: bool = cartoon.debug or False
         chapters: List[str] = cartoon.chapters
         if not active:
             continue
@@ -54,6 +70,7 @@ def download_man_mirror_manual() -> None:
                 chapter=int(chapter),
                 prefix=prefix,
                 manga_exists_json=manga_exists_json,
+                debug=debug
             )
 
     upload_to_drive(

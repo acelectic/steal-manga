@@ -7,6 +7,14 @@ import { ConsoleAction } from './ConsoleAction'
 import { join } from 'lodash'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { css } from '@emotion/css'
+
+const layoutCss = css`
+  border: 1px solid black;
+  border-radius: 6px;
+  padding: 10px;
+  margin: 0 20px;
+`
 
 export interface IHomeProps {
   data?: IGetMangaUpdatedResponse
@@ -26,17 +34,14 @@ export const Home = (props: IHomeProps) => {
   return (
     <Row gutter={[16, 16]}>
       <Col span={24}>
-        <Row gutter={[12, 12]} align="middle">
-          <Col>
-            <Typography>{updated}</Typography>
-          </Col>
-          <Col>
-            <ConsoleAction />
-          </Col>
-          <Col>
-            <Row gutter={8} align="middle">
+        <Row gutter={[24, 24]} align="middle">
+          <Col flex="none">
+            <Row gutter={[8, 8]} align="middle">
+              <Col span={24}>
+                <Typography.Text>{updated}</Typography.Text>
+              </Col>
               <Col>
-                <Typography>Google Authen Status :</Typography>
+                <Typography.Text>Google Authen Status :</Typography.Text>
               </Col>
               <Col>
                 <div
@@ -49,6 +54,9 @@ export const Home = (props: IHomeProps) => {
                 </div>
               </Col>
             </Row>
+          </Col>
+          <Col flex={1}>
+            <ConsoleAction />
           </Col>
         </Row>
       </Col>

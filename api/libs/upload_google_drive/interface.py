@@ -20,9 +20,10 @@ class ProjectItem:
 class ManualManMirrorMangaItem:
     """ ManualManMirrorMangaItem """
 
-    def __init__(self, cartoon_name: str, cartoon_id: str, prefix: str, active: bool, chapters: List[str]) -> None:
+    def __init__(self, cartoon_name: str, cartoon_id: str, prefix: str, active: bool, chapters: List[str], debug=False) -> None:
         self.cartoon_name: str = cartoon_name
         self.cartoon_id: str = cartoon_id
         self.prefix: str = prefix
         self.active: bool = active
         self.chapters: List[str] = chapters
+        self.debug: bool = debug

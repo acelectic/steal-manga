@@ -3,5 +3,5 @@ export const enum TriggerDownloadTypeEnum {
   MAN_MIRROR = 'man-mirror',
 }
 export interface ITriggerDownloadPayload {
-  type: TriggerDownloadTypeEnum
+  types: TriggerDownloadTypeEnum[]
 }

@@ -1,18 +1,23 @@
-import { Button, Col, Row, message } from 'antd'
+import { Button, Col, Row, Typography, message } from 'antd'
 import {
   ITriggerDownloadPayload,
   TriggerDownloadTypeEnum,
 } from '../../service/trigger-download/types'
 import { useMutation } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
-import { pascalize } from 'humps'
+import { pascalize, pascalizeKeys } from 'humps'
+import { css } from '@emotion/css'
+import { useState } from 'react'
+import { intersection, isEqual } from 'lodash'
 
 export const ConsoleAction = () => {
   const router = useRouter()
+  const [typesDownloading, setTypesDownloading] = useState<TriggerDownloadTypeEnum[]>([])
   const { mutate: triggerDownload, isLoading } = useMutation(
-    async (type: TriggerDownloadTypeEnum) => {
+    async (types: TriggerDownloadTypeEnum[]) => {
+      setTypesDownloading(types)
       const payload: ITriggerDownloadPayload = {
-        type,
+        types,
       }
       await fetch('/api/v1/trigger-download', {
         method: 'POST',
@@ -24,45 +29,55 @@ export const ConsoleAction = () => {
         },
         body: JSON.stringify(payload),
       })
-
-      message.success(`Download ${pascalize(type)} Success`)
+      setTypesDownloading([])
+      message.success(`Download ${pascalizeKeys(types)} Success`)
     },
   )
 
   return (
     <Row gutter={[16, 16]}>
+      <Col span={24}>
+        <Row>
+          <Typography>Download</Typography>
+          <pre>{JSON.stringify(typesDownloading)}</pre>
+        </Row>
+      </Col>
       <Col>
         <Button
           type="primary"
-          onClick={triggerDownload.bind(null, TriggerDownloadTypeEnum.MAN_MIRROR)}
-          loading={isLoading}
+          onClick={triggerDownload.bind(null, [TriggerDownloadTypeEnum.MAN_MIRROR])}
+          loading={isEqual(typesDownloading, [TriggerDownloadTypeEnum.MAN_MIRROR])}
           disabled={isLoading}
         >
-          Download Man Mirror
+          Man Mirror
         </Button>
       </Col>
       <Col>
         <Button
           type="primary"
-          onClick={triggerDownload.bind(null, TriggerDownloadTypeEnum.MY_NOVEL)}
-          loading={isLoading}
+          onClick={triggerDownload.bind(null, [TriggerDownloadTypeEnum.MY_NOVEL])}
+          loading={isEqual(typesDownloading, [TriggerDownloadTypeEnum.MY_NOVEL])}
           disabled={isLoading}
         >
-          Download My Novel
+          My Novel
         </Button>
       </Col>
-
-      {/* <Col>
+      <Col>
         <Button
-          onClick={() => {
-            router.refresh()
-          }}
-          loading={isLoading}
+          type="primary"
+          onClick={triggerDownload.bind(null, [
+            TriggerDownloadTypeEnum.MAN_MIRROR,
+            TriggerDownloadTypeEnum.MY_NOVEL,
+          ])}
+          loading={isEqual(typesDownloading, [
+            TriggerDownloadTypeEnum.MAN_MIRROR,
+            TriggerDownloadTypeEnum.MY_NOVEL,
+          ])}
           disabled={isLoading}
         >
-          Download My Novel
+          Both
         </Button>
-      </Col> */}
+      </Col>
     </Row>
   )
 }
