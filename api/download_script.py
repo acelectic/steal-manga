@@ -38,12 +38,12 @@ def download_man_mirror_manual() -> None:
             cartoon_id="21",
             active=True,
             prefix="V",
-            chapters=["98"]
+            chapters=["98"] + [str(x) for x in range(106, 110 + 1)]
         ),
         ManualManMirrorMangaItem(
             cartoon_name="L.A.G.",
             cartoon_id="26",
-            active=True,
+            active=False,
             prefix="LAG%20",
             chapters=[str(x) for x in range(1, 30 + 1)],
             debug=True

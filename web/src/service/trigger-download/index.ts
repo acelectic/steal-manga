@@ -10,6 +10,7 @@ export const triggerDownloadManga = async (payload: ITriggerDownloadPayload) => 
       'Content-Type': 'application/json',
       // 'Content-Type': 'application/x-www-form-urlencoded',
     },
+    keepalive: true,
     body: JSON.stringify(decamelizeKeys(payload)),
   })
   return camelizeKeys(await response.json())
