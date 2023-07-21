@@ -2,8 +2,8 @@
 
 build:
   docker:
-    api: api/Dockerfile.prod
-    web: web/Dockerfile.prod
+    api: api/Dockerfile.dev
+    web: web/Dockerfile.dev
 
 # release:
 #   command:

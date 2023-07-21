@@ -169,8 +169,8 @@ def execute_download(enable_download_mam_mirror=False,
 
 if __name__ == "__main__":
     function_execute_time('execute download manga', execute_download,
-                          enable_download_mam_mirror=True,
-                          enable_download_mam_mirror_manual=False,
-                          enable_download_my_novel=True,
+                          #   enable_download_mam_mirror=True,
+                          enable_download_mam_mirror_manual=True,
+                          #   enable_download_my_novel=True,
                           debug=True,
                           )
