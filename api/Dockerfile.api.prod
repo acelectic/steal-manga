@@ -21,10 +21,10 @@ RUN ls
 
 ENV PORT=$PORT
 
-RUN install pip --upgrade
-RUN install -r requirements.txt
-# RUN pip install pip --upgrade \
-#     && pip install -r requirements.txt
+# RUN install pip --upgrade
+# RUN install -r requirements.txt
+RUN pip install pip --upgrade \
+    && pip install -r requirements.txt
 
 # RUN chgrp -R 0 /usr/scr/app \
 #     && chmod -R g=u /usr/scr/app \
