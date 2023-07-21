@@ -14,7 +14,7 @@ ENV PYTHONUNBUFFERED=1
 ARG PORT
 WORKDIR /usr/src/app
 
-COPY ./api .
+COPY . .
 
 RUN ls
 
