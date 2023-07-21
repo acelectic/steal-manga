@@ -2,7 +2,7 @@ FROM node:18-alpine AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-COPY ./web/package.json ./web/yarn.lock ./
+COPY ./package.json ./yarn.lock ./
 RUN yarn --frozen-lockfile
 
 FROM node:18-alpine AS runner
