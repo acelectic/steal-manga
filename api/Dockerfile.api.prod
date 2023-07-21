@@ -1,0 +1,41 @@
+FROM python:3.11.3 AS builder
+
+RUN apt-get update && apt-get install -y --no-install-recommends apt-utils \
+    && apt-get -y install curl \
+    && apt-get install libgomp1
+
+# Default powerline10k theme, no plugins installed 
+# RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/v1.1.2/zsh-in-docker.sh)"
+
+FROM builder AS production
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ARG PORT
+WORKDIR /usr/src/app
+
+COPY ./api .
+
+RUN ls
+
+
+ENV PORT=$PORT
+
+RUN install pip --upgrade
+RUN install -r requirements.txt
+# RUN pip install pip --upgrade \
+#     && pip install -r requirements.txt
+
+# RUN chgrp -R 0 /usr/scr/app \
+#     && chmod -R g=u /usr/scr/app \
+#     && pip install pip --upgrade \
+#     && pip install -r requirements.txt
+
+RUN mkdir -p /usr/scr/app/staticfiles
+
+EXPOSE $PORT
+
+# RUN ["chmod", "+x", "/entrypoint-dev.sh"]
+# ENTRYPOINT [ "/entrypoint-dev.sh" ]
+
+# CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
