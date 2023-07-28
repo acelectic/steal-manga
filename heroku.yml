@@ -3,7 +3,7 @@
 build:
   docker:
     api: ./api/Dockerfile.api.prod
-    web: ./web/Dockerfile.web.prod
+    web: ./web/Dockerfile
 
 # release:
 #   command:
@@ -16,6 +16,4 @@ run:
       - python manage.py runserver 0.0.0.0:8000
     image: api
   web:
-    command:
-      - yarn dev
     image: web
