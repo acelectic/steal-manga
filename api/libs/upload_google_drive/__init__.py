@@ -247,6 +247,9 @@ def generate_drive_manga_exists(project_name=None, cartoon_name=None, force_upda
         # Serializing json
         json_object = json.dumps(manga_exists_json, indent=2, ensure_ascii=False)
 
+        if not os.path.exists(CARTOON_DIR):
+            mkdir(CARTOON_DIR)
+        
         # Writing to sample.json
         with open(MANGE_EXISTS_FILE_PATH, "w", encoding='utf-8') as outfile:
             outfile.write(json_object)

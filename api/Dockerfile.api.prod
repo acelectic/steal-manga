@@ -11,15 +11,10 @@ FROM builder AS production
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-ARG PORT
+
 WORKDIR /usr/src/app
 
 COPY . .
-
-RUN ls
-
-
-ENV PORT=$PORT
 
 # RUN install pip --upgrade
 # RUN install -r requirements.txt
@@ -33,9 +28,9 @@ RUN pip install pip --upgrade \
 
 RUN mkdir -p /usr/scr/app/staticfiles
 
-EXPOSE $PORT
+EXPOSE 8000
 
 # RUN ["chmod", "+x", "/entrypoint-dev.sh"]
 # ENTRYPOINT [ "/entrypoint-dev.sh" ]
 
-# CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
