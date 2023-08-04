@@ -1,6 +1,8 @@
 """ Main Module """
+import getopt
 import json
 import os
+import sys
 from time import time
 from typing import List
 
@@ -13,6 +15,16 @@ from libs.upload_google_drive.manga_result import get_manga_updated
 from libs.utils.constants import MANGE_ROOT_DIR
 
 load_dotenv()
+ 
+# Remove 1st argument from the
+# list of command line arguments
+argumentList = sys.argv[1:]
+
+# Options
+options = "hmo:"
+ 
+# Long options
+long_options = ["Help", "My_file", "Output="]
 
 MAX_WORKERS = 1
 
@@ -168,9 +180,47 @@ def execute_download(enable_download_mam_mirror=False,
 
 
 if __name__ == "__main__":
-    function_execute_time('execute download manga', execute_download,
-                          #   enable_download_mam_mirror=True,
-                          enable_download_mam_mirror_manual=True,
-                          #   enable_download_my_novel=True,
-                          debug=True,
-                          )
+    try:
+        debug = False
+        enable_download_mam_mirror=False
+        enable_download_mam_mirror_manual=False
+        enable_download_my_novel=False
+
+        # Parsing argument
+        arguments, values = getopt.getopt(argumentList, options, long_options)
+        
+        # checking each argument
+        for currentArgument, currentValue in arguments:
+    
+            if currentArgument in ("-h", "--Help"):
+                print ("Displaying Help")
+                print ("\t -m | enable_download_mam_mirror")
+                print ("\t -mm | enable_download_mam_mirror_manual")
+                print ("\t --d | debug")
+            elif currentArgument in ("-m"):
+                print ("Enable Man Mirror")
+                enable_download_mam_mirror = True
+                
+            elif currentArgument in ("-mm"):
+                print ("Enable Man Mirror Manual")
+                enable_download_mam_mirror_manual = True
+                
+            elif currentArgument in ("-mv"):
+                print ("Enable My novel")
+                enable_download_my_novel = True
+                
+            elif currentArgument in ("-d"):
+                debug = True
+                print ("Debug mode")
+                
+        function_execute_time('execute download manga', execute_download,
+                        enable_download_mam_mirror=enable_download_mam_mirror,
+                        enable_download_mam_mirror_manual=enable_download_mam_mirror_manual,
+                        enable_download_my_novel=enable_download_my_novel,
+                        debug=debug,
+                        )
+        
+    except getopt.error as err:
+        # output error, and return with an error code
+        print (str(err))
+    
