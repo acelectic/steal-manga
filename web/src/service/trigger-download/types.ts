@@ -5,3 +5,13 @@ export const enum TriggerDownloadTypeEnum {
 export interface ITriggerDownloadPayload {
   types: TriggerDownloadTypeEnum[]
 }
+
+export interface IDownloadMangaOnePayload {
+  projectName: string
+  cartoonName: string
+  cartoonId: string
+  latestChapter: number
+  maxChapter: number
+  disabled: boolean
+  downloaded: number
+}

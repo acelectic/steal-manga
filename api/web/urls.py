@@ -25,6 +25,7 @@ urlpatterns = [
     path('google-callback', views.google_callback, name='google_callback'),
     # path('download-manga', views.download_manga, name='download_manga'),
     path('api/v1/download-manga', views.download_manga, name='download_manga'),
+    path('api/v1/download-manga-one', views.download_manga_one, name='download_manga_one'),
     path('api/v1/manga-updated', views.manga_updated, name='manga_updated'),
     path('api/v1/auth-google-drive', views.auth_google_drive, name='auth_google_drive'),
 ]

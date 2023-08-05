@@ -10,6 +10,7 @@ from django.http import HttpRequest, JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_protect
 from download_script import execute_download
+from libs.action.download_manga_manual import download_manga_manual
 from libs.action.update_manga_config import update_manga_config
 from libs.upload_google_drive.google_auth import (
     get_google_creds,
@@ -175,6 +176,45 @@ def download_manga(request: WSGIRequest):
         )
     return redirect("/")
 
+def download_manga_one(request: WSGIRequest):
+    if request.method == 'POST':
+        body = json.loads(request.body)
+        cartoon_name = body['cartoon_name']
+        cartoon_id = body['cartoon_id']
+        latest_chapter = body['latest_chapter']
+        max_chapter = body['max_chapter']
+        disabled = body['disabled']
+        downloaded = body['downloaded']
+        project_name = body['project_name']
+
+        pprint({
+            "cartoon_name": cartoon_name,
+            "cartoon_id": cartoon_id,
+            "latest_chapter": latest_chapter,
+            "max_chapter": max_chapter,
+            "disabled": disabled,
+            "downloaded": downloaded,
+            "project_name": project_name,
+        })
+
+        d = UpdateMangaConfigData(
+            cartoon_name=cartoon_name,
+            cartoon_id=cartoon_id,
+            latest_chapter=latest_chapter,
+            max_chapter=max_chapter,
+            disabled=disabled,
+            downloaded=downloaded,
+            project_name=project_name,
+        )
+        res = download_manga_manual(d)
+        return JsonResponse({
+            "status":  200 if res else 400
+        })
+        
+    return JsonResponse({
+        "status":  200 
+    })
+   
 
 def manga_updated(request: WSGIRequest):
     if request.method == 'POST':

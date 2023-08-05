@@ -22,6 +22,7 @@ import { chain } from 'lodash'
 import { FilterConfirmProps, FilterValue } from 'antd/es/table/interface'
 import { SearchOutlined } from '@ant-design/icons'
 import Highlighter from 'react-highlight-words'
+import { triggerDownloadMangaOne } from '../../service/trigger-download'
 
 const warpCss = css`
   width: 100%;
@@ -356,22 +357,46 @@ export const MangaTable = (props: IMangaTableProps) => {
         key: 'cartoonId',
         render(value, record, index) {
           return (
-            <Button
-              onClick={async () => {
-                await updateMangeConfig({
-                  projectName: title,
-                  cartoonId: record.cartoonId,
-                  cartoonName: record.cartoonName,
-                  latestChapter: +record.latestChapter,
-                  maxChapter: +record.maxChapter,
-                  disabled: record.disabled,
-                  downloaded: record.downloaded,
-                })
-                message.success('Update Config Success')
-              }}
-            >
-              Save
-            </Button>
+            <Row gutter={8} wrap={false}>
+              <Col>
+                <Button
+                  size="small"
+                  onClick={async () => {
+                    await updateMangeConfig({
+                      projectName: title,
+                      cartoonId: record.cartoonId,
+                      cartoonName: record.cartoonName,
+                      latestChapter: +record.latestChapter,
+                      maxChapter: +record.maxChapter,
+                      disabled: record.disabled,
+                      downloaded: record.downloaded,
+                    })
+                    message.success('Update Config Success')
+                  }}
+                >
+                  Save
+                </Button>
+              </Col>
+              <Col>
+                <Button
+                  size="small"
+                  onClick={async () => {
+                    await triggerDownloadMangaOne({
+                      projectName: title,
+                      cartoonId: record.cartoonId,
+                      cartoonName: record.cartoonName,
+                      latestChapter: +record.latestChapter,
+                      maxChapter: +record.maxChapter,
+                      disabled: record.disabled,
+                      downloaded: record.downloaded,
+                    })
+                    message.success('Download Success')
+                  }}
+                >
+                  Download
+                </Button>
+              </Col>
+            </Row>
           )
         },
       },
