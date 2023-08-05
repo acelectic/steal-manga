@@ -23,6 +23,7 @@ import { FilterConfirmProps, FilterValue } from 'antd/es/table/interface'
 import { SearchOutlined } from '@ant-design/icons'
 import Highlighter from 'react-highlight-words'
 import { triggerDownloadMangaOne } from '../../service/trigger-download'
+import { usePaginationHandle } from '../../utils/custom-hook'
 
 const warpCss = css`
   width: 100%;
@@ -190,8 +191,8 @@ interface IMangaTableProps {
 }
 export const MangaTable = (props: IMangaTableProps) => {
   const { title, data } = props
+  const paginateHandle = usePaginationHandle(title)
   const [dataSource, setDataSource] = useState<IItem[]>([])
-  const [filteredValue, setFilteredValue] = useState<FilterValue>([])
 
   const [searchText, setSearchText] = useState('')
   const [searchedColumn, setSearchedColumn] = useState('')
@@ -309,8 +310,9 @@ export const MangaTable = (props: IMangaTableProps) => {
     [handleReset, handleSearch, searchText, searchedColumn],
   )
 
-  const defaultColumns = useMemo(
-    (): (ColumnType<IItem> & Partial<Pick<EditableCellProps, 'editable' | 'dataType'>>)[] => [
+  const defaultColumns = useMemo(() => {
+    const columns: (ColumnType<IItem> &
+      Partial<Pick<EditableCellProps, 'editable' | 'dataType'>>)[] = [
       {
         title: 'Cartoon Name',
         key: 'cartoonName',
@@ -328,6 +330,9 @@ export const MangaTable = (props: IMangaTableProps) => {
         key: 'cartoonId',
         dataIndex: 'cartoonId',
         width: 250,
+        render: (value) => {
+          return <Typography.Paragraph copyable>{value}</Typography.Paragraph>
+        },
       },
       {
         title: 'Latest Chapter',
@@ -335,74 +340,75 @@ export const MangaTable = (props: IMangaTableProps) => {
         dataIndex: 'latestChapter',
         editable: title === 'my-novel',
       },
-      title === 'man-mirror'
-        ? {
-            title: 'Max Chapter',
-            key: 'maxChapter',
-            dataIndex: 'maxChapter',
-            editable: title === 'man-mirror',
-          }
-        : {},
-      {
-        title: 'Disabled',
-        key: 'disabled',
-        dataIndex: 'disabled',
-        editable: true,
-        dataType: 'boolean',
-        render: (value: boolean) => !!value,
+    ]
+
+    if (title === 'man-mirror') {
+      columns.push({
+        title: 'Max Chapter',
+        key: 'maxChapter',
+        dataIndex: 'maxChapter',
+        editable: title === 'man-mirror',
+      })
+    }
+    columns.push({
+      title: 'Disabled',
+      key: 'disabled',
+      dataIndex: 'disabled',
+      editable: true,
+      dataType: 'boolean',
+      render: (value: boolean) => !!value,
+    })
+    columns.push({ title: 'Downloaded', key: 'downloaded', dataIndex: 'downloaded' })
+    columns.push({
+      title: 'Action',
+      key: 'cartoonId',
+      render(value, record, index) {
+        return (
+          <Row gutter={8} wrap={false}>
+            <Col>
+              <Button
+                size="small"
+                onClick={async () => {
+                  await updateMangeConfig({
+                    projectName: title,
+                    cartoonId: record.cartoonId,
+                    cartoonName: record.cartoonName,
+                    latestChapter: +record.latestChapter,
+                    maxChapter: +record.maxChapter,
+                    disabled: record.disabled,
+                    downloaded: record.downloaded,
+                  })
+                  message.success('Update Config Success')
+                }}
+              >
+                Save
+              </Button>
+            </Col>
+            <Col>
+              <Button
+                size="small"
+                onClick={async () => {
+                  await triggerDownloadMangaOne({
+                    projectName: title,
+                    cartoonId: record.cartoonId,
+                    cartoonName: record.cartoonName,
+                    latestChapter: +record.latestChapter,
+                    maxChapter: +record.maxChapter,
+                    disabled: record.disabled,
+                    downloaded: record.downloaded,
+                  })
+                  message.success('Download Success')
+                }}
+              >
+                Download
+              </Button>
+            </Col>
+          </Row>
+        )
       },
-      { title: 'Downloaded', key: 'downloaded', dataIndex: 'downloaded' },
-      {
-        title: 'Action',
-        key: 'cartoonId',
-        render(value, record, index) {
-          return (
-            <Row gutter={8} wrap={false}>
-              <Col>
-                <Button
-                  size="small"
-                  onClick={async () => {
-                    await updateMangeConfig({
-                      projectName: title,
-                      cartoonId: record.cartoonId,
-                      cartoonName: record.cartoonName,
-                      latestChapter: +record.latestChapter,
-                      maxChapter: +record.maxChapter,
-                      disabled: record.disabled,
-                      downloaded: record.downloaded,
-                    })
-                    message.success('Update Config Success')
-                  }}
-                >
-                  Save
-                </Button>
-              </Col>
-              <Col>
-                <Button
-                  size="small"
-                  onClick={async () => {
-                    await triggerDownloadMangaOne({
-                      projectName: title,
-                      cartoonId: record.cartoonId,
-                      cartoonName: record.cartoonName,
-                      latestChapter: +record.latestChapter,
-                      maxChapter: +record.maxChapter,
-                      disabled: record.disabled,
-                      downloaded: record.downloaded,
-                    })
-                    message.success('Download Success')
-                  }}
-                >
-                  Download
-                </Button>
-              </Col>
-            </Row>
-          )
-        },
-      },
-    ],
-    [getColumnSearchProps, title],
-  )
+    })
+    return columns
+  }, [getColumnSearchProps, title])
 
   const handleSave = (row: IItem) => {
     const newData = [...dataSource]
@@ -441,9 +447,11 @@ export const MangaTable = (props: IMangaTableProps) => {
         columns={columns as ColumnType<IItem>[]}
         rowKey={'cartoonId'}
         pagination={{
-          defaultPageSize: 5,
-          pageSizeOptions: [5, 10, 20, 30],
+          pageSizeOptions: [5, 10, 20, 30, 50],
           showSizeChanger: true,
+          current: paginateHandle.current,
+          pageSize: paginateHandle.pageSize,
+          onChange: paginateHandle.onChange,
         }}
         components={{
           body: {
