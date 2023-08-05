@@ -4,6 +4,7 @@ import {
   Col,
   Form,
   FormInstance,
+  Grid,
   Input,
   InputRef,
   Row,
@@ -24,6 +25,7 @@ import { SearchOutlined } from '@ant-design/icons'
 import Highlighter from 'react-highlight-words'
 import { triggerDownloadMangaOne } from '../../service/trigger-download'
 import { usePaginationHandle } from '../../utils/custom-hook'
+import { useMutation } from '@tanstack/react-query'
 
 const warpCss = css`
   width: 100%;
@@ -188,15 +190,38 @@ const EditableCell: React.FC<EditableCellProps> = ({
 interface IMangaTableProps {
   title: 'man-mirror' | 'my-novel'
   data: IGetMangaUpdatedResponse['manMirrorCartoons'] | IGetMangaUpdatedResponse['myNovelCartoons']
+  noHeader?: true
 }
 export const MangaTable = (props: IMangaTableProps) => {
-  const { title, data } = props
+  const { title, data, noHeader = false } = props
   const paginateHandle = usePaginationHandle(title)
   const [dataSource, setDataSource] = useState<IItem[]>([])
 
   const [searchText, setSearchText] = useState('')
   const [searchedColumn, setSearchedColumn] = useState('')
   const searchInput = useRef<InputRef>(null)
+
+  const { xs, sm } = Grid.useBreakpoint()
+
+  const {
+    mutate: updateConfig,
+    variables: updateConfigParams,
+    isLoading: isUpdateConfigLoading,
+  } = useMutation(updateMangeConfig, {
+    onSuccess: () => {
+      message.success('Update Config Success')
+    },
+  })
+
+  const {
+    mutate: downloadMangaOne,
+    variables: downloadOneParams,
+    isLoading: isDownloadMangeOneLoading,
+  } = useMutation(triggerDownloadMangaOne, {
+    onSuccess: () => {
+      message.success('Download Success')
+    },
+  })
 
   const handleSearch = useCallback(
     (
@@ -368,8 +393,8 @@ export const MangaTable = (props: IMangaTableProps) => {
             <Col>
               <Button
                 size="small"
-                onClick={async () => {
-                  await updateMangeConfig({
+                onClick={() => {
+                  updateConfig({
                     projectName: title,
                     cartoonId: record.cartoonId,
                     cartoonName: record.cartoonName,
@@ -378,8 +403,11 @@ export const MangaTable = (props: IMangaTableProps) => {
                     disabled: record.disabled,
                     downloaded: record.downloaded,
                   })
-                  message.success('Update Config Success')
                 }}
+                loading={
+                  isUpdateConfigLoading && updateConfigParams?.cartoonId === record.cartoonId
+                }
+                disabled={isUpdateConfigLoading || isDownloadMangeOneLoading}
               >
                 Save
               </Button>
@@ -387,8 +415,9 @@ export const MangaTable = (props: IMangaTableProps) => {
             <Col>
               <Button
                 size="small"
+                type="primary"
                 onClick={async () => {
-                  await triggerDownloadMangaOne({
+                  await downloadMangaOne({
                     projectName: title,
                     cartoonId: record.cartoonId,
                     cartoonName: record.cartoonName,
@@ -397,8 +426,11 @@ export const MangaTable = (props: IMangaTableProps) => {
                     disabled: record.disabled,
                     downloaded: record.downloaded,
                   })
-                  message.success('Download Success')
                 }}
+                loading={
+                  isDownloadMangeOneLoading && downloadOneParams?.cartoonId === record.cartoonId
+                }
+                disabled={isUpdateConfigLoading || isDownloadMangeOneLoading}
               >
                 Download
               </Button>
@@ -408,7 +440,16 @@ export const MangaTable = (props: IMangaTableProps) => {
       },
     })
     return columns
-  }, [getColumnSearchProps, title])
+  }, [
+    downloadMangaOne,
+    downloadOneParams?.cartoonId,
+    getColumnSearchProps,
+    isDownloadMangeOneLoading,
+    isUpdateConfigLoading,
+    title,
+    updateConfig,
+    updateConfigParams?.cartoonId,
+  ])
 
   const handleSave = (row: IItem) => {
     const newData = [...dataSource]
@@ -441,7 +482,7 @@ export const MangaTable = (props: IMangaTableProps) => {
 
   return (
     <Space className={warpCss} direction="vertical" size={8}>
-      <Typography.Title level={3}>{title}</Typography.Title>
+      {!noHeader && <Typography.Title level={3}>{title}</Typography.Title>}
       <Table
         dataSource={dataSource}
         columns={columns as ColumnType<IItem>[]}
@@ -458,6 +499,9 @@ export const MangaTable = (props: IMangaTableProps) => {
             row: EditableRow,
             cell: EditableCell,
           },
+        }}
+        scroll={{
+          x: sm || xs ? 500 : undefined,
         }}
         size="small"
         showSorterTooltip

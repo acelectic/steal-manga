@@ -1,6 +1,6 @@
 'use client'
 
-import { Button, Col, Layout, Row, Tag, Typography } from 'antd'
+import { Button, Col, Collapse, CollapseProps, Layout, Row, Tag, Typography } from 'antd'
 import { IGetMangaUpdatedResponse } from '../../service/manga-updated/types'
 import { MangaTable } from './MangaTable'
 import { ConsoleAction } from './ConsoleAction'
@@ -8,6 +8,7 @@ import { join } from 'lodash'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { css } from '@emotion/css'
+import { useMemo } from 'react'
 
 const layoutCss = css`
   border: 1px solid black;
@@ -30,6 +31,21 @@ export const Home = (props: IHomeProps) => {
     myNovelCartoons = [],
     resultsYetViewSorted = [],
   } = data || {}
+
+  const items: CollapseProps['items'] = useMemo(() => {
+    return [
+      {
+        key: 'man-mirror',
+        label: 'Man Mirror',
+        children: <MangaTable title="man-mirror" data={manMirrorCartoons} noHeader />,
+      },
+      {
+        key: 'my-novel',
+        label: 'My Novel',
+        children: <MangaTable title="my-novel" data={myNovelCartoons} noHeader />,
+      },
+    ]
+  }, [manMirrorCartoons, myNovelCartoons])
 
   return (
     <Row gutter={[16, 16]}>
@@ -62,10 +78,7 @@ export const Home = (props: IHomeProps) => {
       </Col>
 
       <Col span={24}>
-        <MangaTable title="man-mirror" data={manMirrorCartoons} />
-      </Col>
-      <Col span={24}>
-        <MangaTable title="my-novel" data={myNovelCartoons} />
+        <Collapse accordion items={items} />
       </Col>
       <Layout.Content style={{ backgroundColor: '#ffffff', borderRadius: '6px', padding: '20px' }}>
         <Row gutter={[18, 18]} style={{ width: '100%' }}>

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { PropsWithChildren } from 'react'
-import { Breadcrumb, Layout, Menu, theme } from 'antd'
+import { Breadcrumb, Grid, Layout, Menu, theme } from 'antd'
 import Navbar from './Navbar'
 import { ScreenSizeIndicator } from './ScreenSizeIndicator'
 
@@ -12,10 +12,12 @@ const AppLayout = (props: PropsWithChildren) => {
     token: { colorBgContainer },
   } = theme.useToken()
 
+  const { sm, md } = Grid.useBreakpoint()
+
   return (
     <Layout className="layout">
       <Navbar />
-      <Content style={{ padding: '0 50px' }}>
+      <Content style={{ padding: md ? '0 50px' : sm ? '0 20px' : '0' }}>
         {/* <Breadcrumb style={{ margin: '16px 0' }}>
           <Breadcrumb.Item>Home</Breadcrumb.Item>
           <Breadcrumb.Item>List</Breadcrumb.Item>
