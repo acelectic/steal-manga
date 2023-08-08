@@ -1,14 +1,14 @@
 'use client'
 
-import { Button, Col, Collapse, CollapseProps, Layout, Row, Tag, Typography } from 'antd'
+import { Col, Collapse, CollapseProps, Layout, Row, Tag, Typography } from 'antd'
 import { IGetMangaUpdatedResponse } from '../../service/manga-updated/types'
 import { MangaTable } from './MangaTable'
 import { ConsoleAction } from './ConsoleAction'
 import { join } from 'lodash'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { css } from '@emotion/css'
 import { useMemo } from 'react'
+import dayjs from 'dayjs'
 
 const layoutCss = css`
   border: 1px solid black;
@@ -54,7 +54,7 @@ export const Home = (props: IHomeProps) => {
           <Col flex="none">
             <Row gutter={[8, 8]} align="middle">
               <Col span={24}>
-                <Typography.Text>{updated}</Typography.Text>
+                <Typography.Text>{dayjs(updated).tz().format()}</Typography.Text>
               </Col>
               <Col>
                 <Typography.Text>Google Authen Status :</Typography.Text>
