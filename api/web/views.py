@@ -21,6 +21,8 @@ from libs.upload_google_drive.manga_result import get_manga_updated
 from libs.utils.constants import MANGE_ROOT_DIR
 from libs.utils.interface import UpdateMangaConfigData
 
+from ..libs.utils.constants import WEB_URL
+
 
 @csrf_protect
 def home(request: HttpRequest):
@@ -148,7 +150,7 @@ def google_callback(request: WSGIRequest):
     # )
     creds = flow.credentials
     write_google_token(creds)
-    return redirect("http://localhost:8001/")
+    return redirect(WEB_URL)
 
 
 def download_manga(request: WSGIRequest):
