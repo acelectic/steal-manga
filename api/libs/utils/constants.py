@@ -36,7 +36,7 @@ GOOGLE_JAVASCRIPT_ORIGINS:  List[str] = get_env_str_array('GOOGLE_JAVASCRIPT_ORI
 
 
 GOOGLE_CLIENT_CONFIG  = {
-    'web': {
+    'installed': {
         'client_id': GOOGLE_CLIENT_ID,
         'project_id': GOOGLE_PROJECT_ID,
         'auth_uri': 'https://accounts.google.com/o/oauth2/auth',
