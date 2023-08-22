@@ -41,7 +41,7 @@ class MyNovel:
     get_info_timeout: int = 30 * 1000
     get_image_timeout: int = 60 * 1000
 
-    def download_cartoons(self, product_id: str, manga_exists_json: Dict[Any, Any], start_ep_index: int = 1, max_workers: int = 4,
+    def download_cartoons(self, product_id: str, cartoon_name:str, manga_exists_json: Dict[Any, Any], start_ep_index: int = 1, max_workers: int = 4,
                           get_image_timeout: int = 60 * 1000,
                           ) -> None:
         """
@@ -59,8 +59,7 @@ class MyNovel:
         total_ep = len(product_ep_list)
         print(f'filter len: {total_ep}')
 
-        product_name = product_ep_list_res['ProductName'].replace(
-            '[', '(').replace(']', ')').replace("'s", ' is')
+        product_name = cartoon_name
 
         main_dir = self.__get_main_dir(product_name)
         mkdir(main_dir)

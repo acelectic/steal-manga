@@ -21,10 +21,10 @@ load_dotenv()
 argumentList = sys.argv[1:]
 
 # Options
-options = "hmo:"
+options = "hmond:"
  
 # Long options
-long_options = ["Help", "My_file", "Output="]
+long_options = []
 
 MAX_WORKERS = 1
 
@@ -48,7 +48,7 @@ def download_man_mirror_manual() -> None:
         ManualManMirrorMangaItem(
             cartoon_name="เส้นทางสู่สวรรค์",
             cartoon_id="21",
-            active=True,
+            active=False,
             prefix="V",
             chapters=["98"] + [str(x) for x in range(106, 110 + 1)]
         ),
@@ -58,6 +58,14 @@ def download_man_mirror_manual() -> None:
             active=False,
             prefix="LAG%20",
             chapters=[str(x) for x in range(1, 30 + 1)],
+            debug=True
+        ),
+        ManualManMirrorMangaItem(
+            cartoon_name="ครูฝึกผู้อ่อนแอ",
+            cartoon_id="27",
+            active=False,
+            prefix="WT",
+            chapters=[str(x) for x in range(71, 80 + 1)],
             debug=True
         ),
     ]
@@ -125,7 +133,7 @@ def download_my_novel():
         print(
             f'\ncartoon_name: {cartoon_name}\tkey: {cartoon_id}\tlatest_chapter: {latest_chapter}')
         if disabled is None or not disabled:
-            my_novel.download_cartoons(cartoon_id, start_ep_index=latest_chapter,
+            my_novel.download_cartoons(cartoon_id,cartoon_name=cartoon_name, start_ep_index=latest_chapter,
                                        manga_exists_json=manga_exists_json, max_workers=MAX_WORKERS)
     upload_to_drive(project_name=my_novel.root)
 
@@ -191,21 +199,21 @@ if __name__ == "__main__":
         
         # checking each argument
         for currentArgument, currentValue in arguments:
-    
+            print(f'currentArgument: {currentArgument} | {currentValue}')
             if currentArgument in ("-h", "--Help"):
                 print ("Displaying Help")
                 print ("\t -m | enable_download_mam_mirror")
                 print ("\t -mm | enable_download_mam_mirror_manual")
-                print ("\t --d | debug")
+                print ("\t -d | debug")
             elif currentArgument in ("-m"):
                 print ("Enable Man Mirror")
                 enable_download_mam_mirror = True
                 
-            elif currentArgument in ("-mm"):
+            elif currentArgument in ("-o"):
                 print ("Enable Man Mirror Manual")
                 enable_download_mam_mirror_manual = True
                 
-            elif currentArgument in ("-mv"):
+            elif currentArgument in ("-n"):
                 print ("Enable My novel")
                 enable_download_my_novel = True
                 

@@ -17,7 +17,7 @@ const AppLayout = (props: PropsWithChildren) => {
   return (
     <Layout className="layout">
       <Navbar />
-      <Content style={{ padding: md ? '0 50px' : sm ? '0 20px' : '0' }}>
+      <Content style={{ padding: md ? '0 50px' : sm ? '0 20px' : '0', minHeight: '100%' }}>
         {/* <Breadcrumb style={{ margin: '16px 0' }}>
           <Breadcrumb.Item>Home</Breadcrumb.Item>
           <Breadcrumb.Item>List</Breadcrumb.Item>
