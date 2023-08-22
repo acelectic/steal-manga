@@ -14,6 +14,18 @@ services:
     volumes:
       - ./api:/usr/src/app:delegated
       - ./api/config:/usr/src/app/config
+  # api2:
+  #   container_name: steal_manga_api
+  #   image: docker.io/acelectic/steal-manga:api-v3
+  #   env_file:
+  #     - ./api/.env
+  #   environment:
+  #     - PORT=8000
+  #   ports:
+  #     - '8000:8000'
+  #   volumes:
+  #     - ./api:/usr/src/app:delegated
+  #     - ./api/config:/usr/src/app/config
   web:
     container_name: steal_manga_web
     build:

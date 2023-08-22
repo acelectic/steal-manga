@@ -1,11 +1,10 @@
-FROM python:3.11.3 AS builder
+FROM python:3.11.4-slim AS builder
 
 RUN apt-get update && apt-get install -y --no-install-recommends apt-utils \
     && apt-get -y install curl \
     && apt-get install libgomp1
 
-# Default powerline10k theme, no plugins installed 
-# RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/v1.1.2/zsh-in-docker.sh)"
+
 
 FROM builder AS production
 
@@ -14,10 +13,12 @@ ENV PYTHONUNBUFFERED=1
 ARG PORT
 WORKDIR /usr/src/app
 
+# Default powerline10k theme, no plugins installed 
+RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/v1.1.2/zsh-in-docker.sh)"
+
 COPY ./api .
 
 RUN ls
-
 
 ENV PORT=$PORT
 
