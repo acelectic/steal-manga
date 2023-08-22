@@ -161,6 +161,8 @@ cython_debug/
 
 api/files/cartoons/*
 api/files/trash/*
-api/config/token.json
+api/config
+!api/config/manga
+!api/config/credentials.json
 
 .env*.local

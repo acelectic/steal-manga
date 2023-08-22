@@ -23,16 +23,20 @@ from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 
-from ..utils.constants import APP_URL, GOOGLE_AUTH_TOKEN_PATH
+from ..utils.constants import APP_URL, GOOGLE_AUTH_TOKEN_PATH, GOOGLE_CLIENT_CONFIG
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/drive']
 
 
+
+
 def get_google_flow(redirect_uri=f'{APP_URL}/google-callback') -> InstalledAppFlow:
+    """ get_google_flow """
+    
     print(f'redirect_uri: {redirect_uri}')
-    return InstalledAppFlow.from_client_secrets_file(
-        'config/credentials.json', scopes=SCOPES, redirect_uri=redirect_uri)
+    return InstalledAppFlow.from_client_config(
+        client_config=GOOGLE_CLIENT_CONFIG, scopes=SCOPES, redirect_uri=redirect_uri)
 
 
 def authen():

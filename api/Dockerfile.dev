@@ -4,9 +4,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils \
     && apt-get -y install curl \
     && apt-get install libgomp1
 
+COPY api/requirements.txt .
 
+RUN --mount=type=cache,target=/root/.cache/pip pip install pip --upgrade \
+    && pip install --user -r requirements.txt
 
-FROM builder AS production
+FROM python:3.11.4-slim AS production
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
@@ -16,27 +19,11 @@ WORKDIR /usr/src/app
 # Default powerline10k theme, no plugins installed 
 RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/v1.1.2/zsh-in-docker.sh)"
 
+COPY --from=builder /root/.local /root/.local
 COPY ./api .
 
-RUN ls
-
 ENV PORT=$PORT
-
-RUN --mount=type=cache,target=/root/.pip YARN_CACHE_FOLDER=/root/.pip pip install pip --upgrade
-RUN --mount=type=cache,target=/root/.pip YARN_CACHE_FOLDER=/root/.pip pip install -r requirements.txt
-# RUN pip install pip --upgrade \
-#     && pip install -r requirements.txt
-
-# RUN chgrp -R 0 /usr/scr/app \
-#     && chmod -R g=u /usr/scr/app \
-#     && pip install pip --upgrade \
-#     && pip install -r requirements.txt
 
 RUN mkdir -p /usr/scr/app/staticfiles
 
 EXPOSE $PORT
-
-# RUN ["chmod", "+x", "/entrypoint-dev.sh"]
-# ENTRYPOINT [ "/entrypoint-dev.sh" ]
-
-# CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
