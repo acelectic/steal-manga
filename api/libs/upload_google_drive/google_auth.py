@@ -29,7 +29,8 @@ from ..utils.constants import APP_URL, GOOGLE_AUTH_TOKEN_PATH
 SCOPES = ['https://www.googleapis.com/auth/drive']
 
 
-def get_google_flow(redirect_uri=f'${APP_URL}/google-callback') -> InstalledAppFlow:
+def get_google_flow(redirect_uri=f'{APP_URL}/google-callback') -> InstalledAppFlow:
+    print(f'redirect_uri: {redirect_uri}')
     return InstalledAppFlow.from_client_secrets_file(
         'config/credentials.json', scopes=SCOPES, redirect_uri=redirect_uri)
 
