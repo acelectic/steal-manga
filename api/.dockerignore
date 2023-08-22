@@ -18,5 +18,4 @@ node_modules
 ./files/cartoons/my-novel
 ./files/cartoons/man-mirror
 ./config/*
-!./config/credentials.json
 !./config/manga
