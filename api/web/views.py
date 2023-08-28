@@ -130,6 +130,7 @@ def google_auth(request: HttpRequest):
 
 
 def google_callback(request: WSGIRequest):
+    """ google auth callback """
     code = request.GET['code']
     pprint({
         "code": code,
@@ -305,26 +306,28 @@ def manga_updated(request: WSGIRequest):
             "manga_list": manga_list
         })
 
-    man_mirror_downloaded = manga_exists_json['man-mirror']['sub_dirs']
-    my_novel_downloaded = manga_exists_json['my-novel']['sub_dirs']
-    # print(projects)
-    man_mirror_cartoons = [{
-        "cartoon_name": cartoon_name,
-        "cartoon_id": cartoon_id,
-        "latest_chapter": latest_chapter,
-        "max_chapter": max_chapter,
-        "disabled": disabled or False,
-        "downloaded": man_mirror_downloaded[cartoon_name]['total'] or 0 if man_mirror_downloaded[cartoon_name] is not None else 0,
-    } for cartoon_name, cartoon_id, latest_chapter, max_chapter, disabled in man_mirror_cartoons]
+    if manga_exists_json['man-mirror'] is not None:
+        man_mirror_downloaded = manga_exists_json['man-mirror']['sub_dirs']
+    
+        man_mirror_cartoons = [{
+            "cartoon_name": cartoon_name,
+            "cartoon_id": cartoon_id,
+            "latest_chapter": latest_chapter,
+            "max_chapter": max_chapter,
+            "disabled": disabled or False,
+            "downloaded": man_mirror_downloaded[cartoon_name]['total'] or 0 if man_mirror_downloaded[cartoon_name] is not None else 0,
+        } for cartoon_name, cartoon_id, latest_chapter, max_chapter, disabled in man_mirror_cartoons]
 
-    my_novel_cartoons = [{
-        "cartoon_name": cartoon_name,
-        "cartoon_id": cartoon_id,
-        "latest_chapter": latest_chapter,
-        "max_chapter": '',
-        "disabled": disabled or False,
-        "downloaded": my_novel_downloaded[cartoon_name]['total'] or 0 if my_novel_downloaded[cartoon_name] is not None else 0,
-    } for cartoon_name, cartoon_id, latest_chapter, disabled in my_novel_cartoons]
+    if manga_exists_json['my-novel'] is not None:
+        my_novel_downloaded = manga_exists_json['my-novel']['sub_dirs']
+        my_novel_cartoons = [{
+            "cartoon_name": cartoon_name,
+            "cartoon_id": cartoon_id,
+            "latest_chapter": latest_chapter,
+            "max_chapter": '',
+            "disabled": disabled or False,
+            "downloaded": my_novel_downloaded[cartoon_name]['total'] or 0 if my_novel_downloaded[cartoon_name] is not None else 0,
+        } for cartoon_name, cartoon_id, latest_chapter, disabled in my_novel_cartoons]
 
     return JsonResponse({
         "updated": datetime.now().isoformat(sep='T', timespec='auto'),

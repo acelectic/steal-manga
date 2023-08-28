@@ -17,5 +17,4 @@ node_modules
 
 ./files/cartoons/my-novel
 ./files/cartoons/man-mirror
-./config/*
-!./config/manga
+./config/token.json

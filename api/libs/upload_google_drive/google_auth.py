@@ -16,6 +16,7 @@
 from __future__ import print_function
 
 import os
+import pprint
 
 from google.auth import external_account_authorized_user
 from google.auth.exceptions import RefreshError
@@ -34,9 +35,12 @@ SCOPES = ['https://www.googleapis.com/auth/drive']
 def get_google_flow(redirect_uri=f'{APP_URL}/google-callback') -> InstalledAppFlow:
     """ get_google_flow """
     
+    client_config = GOOGLE_CLIENT_CONFIG
     print(f'redirect_uri: {redirect_uri}')
+    pprint.pprint(client_config)
+    
     return InstalledAppFlow.from_client_config(
-        client_config=GOOGLE_CLIENT_CONFIG, scopes=SCOPES, redirect_uri=redirect_uri)
+        client_config=client_config, scopes=SCOPES, redirect_uri=redirect_uri)
 
 
 def authen():
