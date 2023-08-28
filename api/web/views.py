@@ -12,6 +12,7 @@ from django.views.decorators.csrf import csrf_protect
 from download_script import execute_download
 from libs.action.download_manga_manual import download_manga_manual
 from libs.action.update_manga_config import update_manga_config
+from libs.upload_google_drive import generate_drive_manga_exists
 from libs.upload_google_drive.google_auth import (
     get_google_creds,
     get_google_flow,
@@ -357,4 +358,15 @@ def auth_google_drive(request: HttpRequest):
 
     return JsonResponse({
         "google_authen_status": creds is not None and creds.valid and not creds.expired,
+    })
+
+
+def fetch_manga_updated(request: WSGIRequest):
+    """ fetch manga updated """
+    
+    if request.method == 'POST':
+      generate_drive_manga_exists(force_update=True)
+      
+    return JsonResponse({
+        "success": True
     })

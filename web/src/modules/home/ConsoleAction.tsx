@@ -34,6 +34,24 @@ export const ConsoleAction = () => {
     },
   )
 
+  const { mutateAsync: fetchMangaUpdated, isLoading: isFetchMangaUpdatedLoading } = useMutation(
+    async () => {
+      await fetch('/api/v1/fetch-manga-updated', {
+        method: 'POST',
+        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: 'same-origin', // include, *same-origin, omit
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+    },
+    {
+      onSuccess: () => {
+        message.success(`Fetch Manga Updated`)
+        router.refresh()
+      },
+    },
+  )
   return (
     <Row gutter={[16, 16]}>
       <Col span={24}>
@@ -76,6 +94,19 @@ export const ConsoleAction = () => {
           disabled={isLoading}
         >
           Both
+        </Button>
+      </Col>
+      <Col>
+        <Button
+          type="primary"
+          color="#ddff1f"
+          onClick={async () => {
+            await fetchMangaUpdated()
+          }}
+          loading={isFetchMangaUpdatedLoading}
+          disabled={isFetchMangaUpdatedLoading}
+        >
+          Fetch Manga Updated
         </Button>
       </Col>
     </Row>
