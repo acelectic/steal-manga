@@ -112,7 +112,6 @@ def home(request: HttpRequest):
     return render(request, template_name='home/index.html', context=context)
 
 
-@csrf_protect
 def google_auth(request: HttpRequest):
     flow = get_google_flow()
     auth_data = flow.authorization_url(
