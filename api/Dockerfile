@@ -1,5 +1,5 @@
 # syntax = docker/dockerfile:1.2
-FROM python:3.11.4-slim AS builder
+FROM python:3.11.5-slim AS builder
 
 # ENV PIP_DISABLE_PIP_VERSION_CHECK 1
 # ENV PYTHONDONTWRITEBYTECODE 1
@@ -25,7 +25,7 @@ RUN --mount=type=cache,target=/root/.cache/pip pip install --user -r requirement
 # Default powerline10k theme, no plugins installed 
 # RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/v1.1.2/zsh-in-docker.sh)"
 
-FROM python:3.11.4-slim AS production
+FROM python:3.11.5-slim AS production
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK 1
 ENV PYTHONDONTWRITEBYTECODE 1
