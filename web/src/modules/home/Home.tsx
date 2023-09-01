@@ -1,13 +1,13 @@
 'use client'
 
-import { Col, Collapse, CollapseProps, Layout, Row, Tag, Typography } from 'antd'
+import { Button, Col, Collapse, CollapseProps, Layout, Row, Tag, Typography } from 'antd'
 import { IGetMangaUpdatedResponse } from '../../service/manga-updated/types'
 import { MangaTable } from './MangaTable'
 import { ConsoleAction } from './ConsoleAction'
 import { join } from 'lodash'
 import { useRouter } from 'next/navigation'
 import { css } from '@emotion/css'
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import dayjs from 'dayjs'
 
 const layoutCss = css`
@@ -47,6 +47,12 @@ export const Home = (props: IHomeProps) => {
     ]
   }, [manMirrorCartoons, myNovelCartoons])
 
+  const onGoToDriveClick = useCallback(() => {
+    const googleDriveLink =
+      'https://drive.google.com/drive/u/0/folders/1iXUAF2N3YxLPvJyDTYYL1f8HFP1mU1Ek'
+    window.open(googleDriveLink, '_blank')
+  }, [])
+
   return (
     <Row gutter={[16, 16]}>
       <Col span={24}>
@@ -76,7 +82,9 @@ export const Home = (props: IHomeProps) => {
           </Col>
         </Row>
       </Col>
-
+      <Col span={24}>
+        <Button onClick={onGoToDriveClick}>Go To Drive</Button>
+      </Col>
       <Col span={24}>
         <Collapse accordion items={items} />
       </Col>
