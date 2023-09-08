@@ -1,1 +1,1 @@
-helm upgrade --install --atomic --values ./charts/api-service/environments/dev.yaml steal-manga-api ./charts/api-service
+helm upgrade --install --atomic --values ./charts/api-service/environments/dev.yaml api-service ./charts/api-service

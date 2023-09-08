@@ -1,1 +1,1 @@
-helm upgrade --install --atomic --values ./charts/web-service/environments/dev.yaml steal-manga-web ./charts/web-service
+helm upgrade --install --atomic --values ./charts/web-service/environments/dev.yaml web-service ./charts/web-service
