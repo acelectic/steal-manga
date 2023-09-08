@@ -5,10 +5,9 @@ import {
 } from '../../service/trigger-download/types'
 import { useMutation } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
-import { pascalize, pascalizeKeys } from 'humps'
-import { css } from '@emotion/css'
+import { pascalizeKeys } from 'humps'
 import { useState } from 'react'
-import { intersection, isEqual } from 'lodash'
+import { isEqual } from 'lodash'
 
 export const ConsoleAction = () => {
   const router = useRouter()
@@ -57,7 +56,6 @@ export const ConsoleAction = () => {
       <Col span={24}>
         <Row>
           <Typography>Download</Typography>
-          <pre>{JSON.stringify(typesDownloading)}</pre>
         </Row>
       </Col>
       <Col>
@@ -106,7 +104,7 @@ export const ConsoleAction = () => {
           loading={isFetchMangaUpdatedLoading}
           disabled={isFetchMangaUpdatedLoading}
         >
-          Fetch Manga Updated
+          Fetch Updates
         </Button>
       </Col>
     </Row>

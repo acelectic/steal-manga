@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation'
 import { css } from '@emotion/css'
 import { useCallback, useMemo } from 'react'
 import dayjs from 'dayjs'
+import { DriveProtal } from './DriveProtal'
 
 const layoutCss = css`
   border: 1px solid black;
@@ -47,12 +48,6 @@ export const Home = (props: IHomeProps) => {
     ]
   }, [manMirrorCartoons, myNovelCartoons])
 
-  const onGoToDriveClick = useCallback(() => {
-    const googleDriveLink =
-      'https://drive.google.com/drive/u/0/folders/1iXUAF2N3YxLPvJyDTYYL1f8HFP1mU1Ek'
-    window.open(googleDriveLink, '_blank')
-  }, [])
-
   return (
     <Row gutter={[16, 16]}>
       <Col span={24}>
@@ -83,7 +78,7 @@ export const Home = (props: IHomeProps) => {
         </Row>
       </Col>
       <Col span={24}>
-        <Button onClick={onGoToDriveClick}>Go To Drive</Button>
+        <DriveProtal />
       </Col>
       <Col span={24}>
         <Collapse accordion items={items} />

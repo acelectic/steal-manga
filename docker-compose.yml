@@ -54,6 +54,3 @@ services:
       NODE_ENV: development
     ports:
       - '8001:3000'
-    volumes:
-      - ./web:/app:delegated
-      - ./web/.next:/app/.next
