@@ -29,4 +29,5 @@ urlpatterns = [
     path('api/v1/manga-updated', views.manga_updated, name='manga_updated'),
     path('api/v1/auth-google-drive', views.auth_google_drive, name='auth_google_drive'),
     path('api/v1/fetch-manga-updated', views.fetch_manga_updated, name='fetch_manga_updated'),
+    path('api/v1/health', views.health, name='health'),
 ]

@@ -23,6 +23,9 @@ from libs.utils.constants import MANGE_ROOT_DIR, WEB_URL
 from libs.utils.interface import UpdateMangaConfigData
 
 
+def health(request: HttpRequest):
+    return HttpResponse()
+
 # @csrf_protect
 def home(request: HttpRequest):
     return HttpResponse()

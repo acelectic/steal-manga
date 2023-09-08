@@ -1,0 +1,14 @@
+env:
+  API_HOST: 'http://api:8000'
+  TZ: 'Asia/Bangkok'
+  NEXT_PUBLIC_LOG_ROCKET_APP_ID: 'kmlyfa/mini-bear'
+
+resources:
+  requests:
+    cpu: '50m'
+    memory: '128Mi'
+
+autoscaling:
+  minReplicas: 1
+  maxReplicas: 1
+  targetCPUUtilizationPercentage: 300

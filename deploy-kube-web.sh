@@ -1,0 +1,1 @@
+ helm install --generate-name ./charts/web-service -f ./charts/web-service/environments/dev.yaml

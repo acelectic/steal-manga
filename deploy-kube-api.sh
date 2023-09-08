@@ -1,0 +1,1 @@
+ helm install --generate-name ./charts/api-service -f ./charts/api-service/environments/dev.yaml
