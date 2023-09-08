@@ -1,1 +1,1 @@
- helm install --generate-name ./charts/web-service -f ./charts/web-service/environments/dev.yaml
+helm upgrade --install --atomic --values ./charts/web-service/environments/dev.yaml steal-manga-web ./charts/web-service

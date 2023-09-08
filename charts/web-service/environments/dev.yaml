@@ -1,5 +1,5 @@
 env:
-  API_HOST: 'http://api:8000'
+  API_HOST: 'http://steal-manga-api'
   TZ: 'Asia/Bangkok'
   NEXT_PUBLIC_LOG_ROCKET_APP_ID: 'kmlyfa/mini-bear'
 

@@ -1,1 +1,1 @@
- helm install --generate-name ./charts/api-service -f ./charts/api-service/environments/dev.yaml
+helm upgrade --install --atomic --values ./charts/api-service/environments/dev.yaml steal-manga-api ./charts/api-service
