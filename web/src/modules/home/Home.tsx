@@ -28,7 +28,6 @@ export const Home = (props: IHomeProps) => {
   const router = useRouter()
   const {
     updated,
-    // mangaExists,
     manMirrorCartoons = [],
     myNovelCartoons = [],
     resultsViewedSorted = [],
