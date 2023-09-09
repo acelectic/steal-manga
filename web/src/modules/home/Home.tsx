@@ -31,6 +31,7 @@ export const Home = (props: IHomeProps) => {
     // mangaExists,
     manMirrorCartoons = [],
     myNovelCartoons = [],
+    resultsViewedSorted = [],
     resultsYetViewSorted = [],
   } = data || {}
 
@@ -84,7 +85,10 @@ export const Home = (props: IHomeProps) => {
       <Col span={24}>
         <Collapse accordion items={items} />
       </Col>
-      <MangeUpdateList data={resultsYetViewSorted} />
+      <MangeUpdateList
+        resultsViewedSorted={resultsViewedSorted}
+        resultsYetViewSorted={resultsYetViewSorted}
+      />
     </Row>
   )
 }
