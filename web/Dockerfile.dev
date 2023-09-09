@@ -1,11 +1,11 @@
-FROM node:20.5.1-alpine3.18 AS deps
+FROM node:20.6.0-alpine3.18 AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 COPY ./web/package.json ./web/yarn.lock ./
 RUN --mount=type=cache,target=/root/.yarn YARN_CACHE_FOLDER=/root/.yarn yarn --frozen-lockfile
 
-FROM node:20.5.1-alpine3.18 AS runner
+FROM node:20.6.0-alpine3.18 AS runner
 WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules

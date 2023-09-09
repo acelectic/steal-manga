@@ -1,7 +1,7 @@
 import { get } from 'lodash'
 import config from 'next/config'
 
-const getConfig2 = <T extends any = string>(key: string) => {
+const getAppConfig = <T extends any = string>(key: string) => {
   const { serverRuntimeConfig, publicRuntimeConfig } = config as any
   // console.log({ serverRuntimeConfig, publicRuntimeConfig })
   return (get(serverRuntimeConfig || {}, key, '') ||
@@ -9,6 +9,9 @@ const getConfig2 = <T extends any = string>(key: string) => {
     get(process.env || {}, key, '')) as T
 }
 export const appConfig = {
-  API_HOST: getConfig2<string>('API_HOST') || '',
-  NEXT_PUBLIC_LOG_ROCKET_APP_ID: getConfig2<string>('NEXT_PUBLIC_LOG_ROCKET_APP_ID'),
+  API_HOST: getAppConfig<string>('API_HOST') || '',
+  NEXT_PUBLIC_LOG_ROCKET_APP_ID: getAppConfig<string>('NEXT_PUBLIC_LOG_ROCKET_APP_ID'),
+  KOYEB_API_HOST: getAppConfig<string>('KOYEB_API_HOST') || '',
+  KOYEB_API_SERVICE_ID: getAppConfig<string>('KOYEB_API_SERVICE_ID') || '',
+  KOYEB_API_KEY: getAppConfig<string>('KOYEB_API_KEY') || '',
 }

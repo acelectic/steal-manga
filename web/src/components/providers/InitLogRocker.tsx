@@ -6,7 +6,7 @@ import { appConfig } from '../../config/app-config'
 
 export const InitLogRocker = (props: { NEXT_PUBLIC_LOG_ROCKET_APP_ID: string }) => {
   useEffect(() => {
-    console.log({ effect: appConfig })
+    // console.log({ effect: appConfig })
     if (props?.NEXT_PUBLIC_LOG_ROCKET_APP_ID) {
       LogRocket.init(props.NEXT_PUBLIC_LOG_ROCKET_APP_ID || 'mlyfa/mini-bear')
 
