@@ -14,7 +14,7 @@ export const MangeUpdateList = (props: IMangeUpdateListProps) => {
   const renderData = useCallback((d: IGetMangaUpdatedResponse['resultsYetViewSorted']) => {
     return d.map(([updated, items = []]) => {
       return (
-        <Col sm={8} xs={12} md={4.8} key={updated.toString()}>
+        <Col sm={6} xs={12} md={4.8} key={updated.toString()}>
           <Typography.Title level={5}>{updated.toString()}</Typography.Title>
           <ul style={{ marginLeft: 20, maxHeight: 300, overflowY: 'auto' }}>
             {items.map((item) => {
@@ -32,11 +32,49 @@ export const MangeUpdateList = (props: IMangeUpdateListProps) => {
 
   return (
     <Layout.Content style={{ backgroundColor: '#ffffff', borderRadius: '6px', padding: '20px' }}>
-      <Row gutter={[18, 18]} style={{ width: '100%' }}>
+      <Row
+        gutter={[18, 18]}
+        style={{
+          width: '100%',
+          padding: '10px',
+          boxSizing: 'border-box',
+          border: '1px solid black',
+          borderRadius: '8px',
+        }}
+      >
+        <Col span={24}>
+          <Typography
+            style={{
+              color: '#25006b',
+              fontWeight: 'bold',
+            }}
+          >
+            ยังไม่อ่าน
+          </Typography>
+        </Col>
         {renderData(resultsYetViewSorted)}
       </Row>
       <Divider type="horizontal" orientationMargin="8px" />
-      <Row gutter={[18, 18]} style={{ width: '100%' }}>
+      <Row
+        gutter={[18, 18]}
+        style={{
+          width: '100%',
+          padding: '10px',
+          boxSizing: 'border-box',
+          border: '1px solid black',
+          borderRadius: '8px',
+        }}
+      >
+        <Col span={24}>
+          <Typography
+            style={{
+              color: '#25006b',
+              fontWeight: 'bold',
+            }}
+          >
+            อ่านแล้ว
+          </Typography>
+        </Col>
         {renderData(resultsViewedSorted)}
       </Row>
     </Layout.Content>
