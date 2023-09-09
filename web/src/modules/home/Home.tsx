@@ -10,6 +10,7 @@ import { css } from '@emotion/css'
 import { useCallback, useMemo } from 'react'
 import dayjs from 'dayjs'
 import { DriveProtal } from './DriveProtal'
+import { MangeUpdateList } from './MangeUpdateList'
 
 const layoutCss = css`
   border: 1px solid black;
@@ -83,26 +84,7 @@ export const Home = (props: IHomeProps) => {
       <Col span={24}>
         <Collapse accordion items={items} />
       </Col>
-      <Layout.Content style={{ backgroundColor: '#ffffff', borderRadius: '6px', padding: '20px' }}>
-        <Row gutter={[18, 18]} style={{ width: '100%' }}>
-          {resultsYetViewSorted.map(([updated, items = []]) => {
-            return (
-              <Col sm={8} xs={12} md={4.8} key={updated.toString()}>
-                <Typography.Title level={5}>{updated.toString()}</Typography.Title>
-                <ul style={{ marginLeft: 20, maxHeight: 300, overflowY: 'auto' }}>
-                  {items.map((item) => {
-                    return (
-                      <li key={item.project + item.manga + item.chapter}>
-                        <Typography>{join([item.manga, item.chapter], ' ')}</Typography>
-                      </li>
-                    )
-                  })}
-                </ul>
-              </Col>
-            )
-          })}
-        </Row>
-      </Layout.Content>
+      <MangeUpdateList data={resultsYetViewSorted} />
     </Row>
   )
 }
