@@ -50,7 +50,5 @@ services:
     image: docker.io/acelectic/steal-manga:web
     env_file:
       - ./web/.env
-    environment:
-      NODE_ENV: development
     ports:
       - '8001:3000'

@@ -4,6 +4,7 @@ const nextConfig = {
     reactStrictMode: true,
     experimental: {
         appDir: true,
+        serverActions: true
     },
     async redirects() {
         return [
@@ -16,7 +17,10 @@ const nextConfig = {
     },
     publicRuntimeConfig: {
         NEXT_PUBLIC_LOG_ROCKET_APP_ID: process.env.NEXT_PUBLIC_LOG_ROCKET_APP_ID,
-        test: 'hello'
+        test: 'hello',
+        KOYEB_API_HOST: process.env.KOYEB_API_HOST,
+        KOYEB_API_SERVICE_ID: process.env.KOYEB_API_SERVICE_ID,
+        KOYEB_API_KEY: process.env.KOYEB_API_KEY,
     }
 }
 
