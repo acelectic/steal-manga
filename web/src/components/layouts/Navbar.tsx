@@ -13,11 +13,11 @@ const Navbar = () => {
       key: 'home',
       label: <Link href="/home">Home</Link>,
     },
-    {
-      key: 'manga-list',
+    // {
+    //   key: 'manga-list',
 
-      label: <Link href="/manga-list">Manga List</Link>,
-    },
+    //   label: <Link href="/manga-list">Manga List</Link>,
+    // },
     {
       key: 'Refresh',
       label: (

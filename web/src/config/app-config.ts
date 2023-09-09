@@ -12,5 +12,3 @@ export const appConfig = {
   API_HOST: getConfig2<string>('API_HOST') || '',
   NEXT_PUBLIC_LOG_ROCKET_APP_ID: getConfig2<string>('NEXT_PUBLIC_LOG_ROCKET_APP_ID'),
 }
-
-console.log({ appConfig })
