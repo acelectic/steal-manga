@@ -55,7 +55,7 @@ export const MangeUpdateList = (props: IMangeUpdateListProps) => {
         {renderData(resultsYetViewSorted)}
       </Row>
       <Divider type="horizontal" orientationMargin="8px" />
-      <Row
+      {/* <Row
         gutter={[18, 18]}
         style={{
           width: '100%',
@@ -76,7 +76,7 @@ export const MangeUpdateList = (props: IMangeUpdateListProps) => {
           </Typography>
         </Col>
         {renderData(resultsViewedSorted)}
-      </Row>
+      </Row> */}
     </Layout.Content>
   )
 }
