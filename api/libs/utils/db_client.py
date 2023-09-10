@@ -7,7 +7,7 @@ from .constants import DB_PASSWORD, DB_USERNAME
 
 uri: str = f"mongodb+srv://{DB_USERNAME}:{DB_PASSWORD}@steal-manga.nlqv7lj.mongodb.net/?retryWrites=true&w=majority"
 # Create a new client and connect to the server
-db_client = MongoClient(uri, server_api=ServerApi('1'))
+db_client = MongoClient(uri, server_api=ServerApi('1'), connectTimeoutMS=60*1000, )
 # Send a ping to confirm a successful connection
 
 try:
