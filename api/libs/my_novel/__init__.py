@@ -14,7 +14,7 @@ from PIL import Image, ImageFile
 from tqdm import tqdm
 from tqdm.contrib.concurrent import thread_map
 
-from ..utils.constants import CARTOON_DIR
+from ..utils.constants import CARTOON_DIR, MY_NOVEL
 from ..utils.file_helper import mkdir
 from ..utils.pdf_helper import merge_images_to_pdf
 
@@ -36,7 +36,7 @@ class RequestError(Exception):
 
 class MyNovel:
     """ class """
-    root = 'my-novel'
+    project_name = MY_NOVEL
     app_key = "xdde8cNN5k7AuVTMgz7b"
     get_info_timeout: int = 30 * 1000
     get_image_timeout: int = 60 * 1000
@@ -121,7 +121,7 @@ class MyNovel:
                 is_file_exists = False
 
                 try:
-                    manga_id = manga_exists_json[self.root]["sub_dirs"][
+                    manga_id = manga_exists_json[self.project_name]["sub_dirs"][
                         product_name]["chapters"][f'{ep_name}.pdf']["id"]
                     is_file_exists = manga_id is not None
                 except Exception:
@@ -210,7 +210,7 @@ class MyNovel:
         return False
 
     def __get_main_dir(self, product_name: str) -> str:
-        return f'{CARTOON_DIR}/{self.root}/{product_name}'
+        return f'{CARTOON_DIR}/{self.project_name}/{product_name}'
 
     def __get_ep_dir(self, product_name: str, ep_name: str) -> str:
         main_dir = self.__get_main_dir(product_name)

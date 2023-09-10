@@ -7,12 +7,15 @@ from time import time
 from typing import List
 
 from dotenv import load_dotenv
+from pymongo import ReturnDocument
+from libs.utils.interface import UpdateMangaConfigData
 from libs.man_mirror import ManMirror
 from libs.my_novel import MyNovel
 from libs.upload_google_drive import generate_drive_manga_exists, upload_to_drive
 from libs.upload_google_drive.interface import ManualManMirrorMangaItem
 from libs.upload_google_drive.manga_result import get_manga_updated
-from libs.utils.constants import MANGE_ROOT_DIR
+from libs.utils.constants import MANGA_ROOT_DIR
+from libs.utils.db_client import db, get_manga_config
 
 load_dotenv()
  
@@ -30,7 +33,7 @@ MAX_WORKERS = 1
 
 
 def download_man_mirror_manual() -> None:
-    cartoons: list[ManualManMirrorMangaItem] = [
+    cartoons: List[ManualManMirrorMangaItem] = [
         ManualManMirrorMangaItem(
             cartoon_name="เทพมรณะ",
             cartoon_id="22",
@@ -94,48 +97,57 @@ def download_man_mirror_manual() -> None:
             )
 
     upload_to_drive(
-        project_name=man_mirror.root)
+        project_name=man_mirror.project_name)
 
 
 def download_man_mirror():
-    man_mirror_cartoons = []
-    with open(os.path.join(MANGE_ROOT_DIR, 'man-mirror.json'), encoding='utf-8') as f:
-        man_mirror_cartoons = json.load(f)
+    man_mirror_cartoons = get_manga_config(ManMirror.project_name)
+    # with open(os.path.join(MANGA_ROOT_DIR, 'man-mirror.json'), encoding='utf-8') as f:
+    #     man_mirror_cartoons = json.load(f)
 
     man_mirror = ManMirror()
     manga_exists_json = generate_drive_manga_exists(
-        force_update=True, project_name=man_mirror.root)
-    for cartoon_name, cartoon_id, latest_chapter, max_chapter, disabled in man_mirror_cartoons:
+        force_update=True, project_name=man_mirror.project_name)
+    for d in man_mirror_cartoons:
+        cartoon_name = d.cartoon_name
+        cartoon_id = d.cartoon_id
+        latest_chapter = d.latest_chapter
+        max_chapter = d.max_chapter
+        disabled = d.disabled
         print(
             f'\ncartoon_name: {cartoon_name}\tkey: {cartoon_id}\tlatest_chapter: {latest_chapter}\tmax_chapter: {max_chapter}')
         if disabled is None or not disabled:
             man_mirror.download_cartoons(
-                cartoon_name,
-                cartoon_id,
+                cartoon_name=cartoon_name,
+                cartoon_id=cartoon_id,
                 first_chapter=latest_chapter,
                 max_chapter=max_chapter,
                 manga_exists_json=manga_exists_json,
                 max_workers=MAX_WORKERS
             )
     upload_to_drive(
-        project_name=man_mirror.root)
+        project_name=man_mirror.project_name)
 
 
 def download_my_novel():
-    my_novel_cartoons = []
-    with open(os.path.join(MANGE_ROOT_DIR, 'my-novel.json'), encoding='utf-8') as f:
-        my_novel_cartoons = json.load(f)
+    my_novel_cartoons = get_manga_config(MyNovel.project_name)
+    # with open(os.path.join(MANGA_ROOT_DIR, 'my-novel.json'), encoding='utf-8') as f:
+    #     my_novel_cartoons = json.load(f)
 
     my_novel = MyNovel()
     manga_exists_json = generate_drive_manga_exists(
-        force_update=True,  project_name=my_novel.root)
-    for cartoon_name, cartoon_id, latest_chapter, disabled in my_novel_cartoons:
+        force_update=True,  project_name=my_novel.project_name)
+    for d in my_novel_cartoons:
+        cartoon_name = d.cartoon_name
+        cartoon_id = d.cartoon_id
+        latest_chapter = d.latest_chapter
+        disabled = d.disabled
         print(
             f'\ncartoon_name: {cartoon_name}\tkey: {cartoon_id}\tlatest_chapter: {latest_chapter}')
         if disabled is None or not disabled:
-            my_novel.download_cartoons(cartoon_id,cartoon_name=cartoon_name, start_ep_index=latest_chapter,
+            my_novel.download_cartoons(cartoon_id, cartoon_name=cartoon_name, start_ep_index=latest_chapter,
                                        manga_exists_json=manga_exists_json, max_workers=MAX_WORKERS)
-    upload_to_drive(project_name=my_novel.root)
+    upload_to_drive(project_name=my_novel.project_name)
 
 
 def function_execute_time(name: str, cb, **kwargs):
@@ -185,6 +197,63 @@ def execute_download(enable_download_mam_mirror=False,
 
     function_execute_time('show_manga_updated', get_manga_updated, debug=debug)
     print('END')
+
+
+def test_db():
+
+    data: list[UpdateMangaConfigData] = []
+    
+    my_novel_cartoons = []
+    with open(os.path.join(MANGA_ROOT_DIR, 'my-novel.json'), encoding='utf-8') as f:
+        my_novel_cartoons = json.load(f)
+
+    for cartoon_name, cartoon_id, latest_chapter, disabled in my_novel_cartoons:
+        data.append(UpdateMangaConfigData(
+            cartoon_name=cartoon_name,
+            cartoon_id=cartoon_id,
+            latest_chapter=latest_chapter,
+            max_chapter=0,
+            disabled=disabled,
+            downloaded=0,
+            project_name=MyNovel.project_name,
+        ))
+    
+    man_mirror_cartoons = []
+    with open(os.path.join(MANGA_ROOT_DIR, 'man-mirror.json'), encoding='utf-8') as f:
+        man_mirror_cartoons = json.load(f)
+
+    for cartoon_name, cartoon_id, latest_chapter, max_chapter, disabled in man_mirror_cartoons:
+        data.append(UpdateMangaConfigData(
+            cartoon_name=cartoon_name,
+            cartoon_id=cartoon_id,
+            latest_chapter=latest_chapter,
+            max_chapter=max_chapter,
+            disabled=disabled,
+            downloaded=0,
+            project_name=ManMirror.project_name,
+        ))
+
+    
+    for d in data:
+        result = db.configs.find_one_and_update(
+            filter={
+            "cartoon_id": d.cartoon_id,
+            },
+            update={
+                '$set': d.to_json()    
+            },
+            upsert=True,
+            return_document = ReturnDocument.AFTER
+        )
+        
+    man_mirror_manga_list =  db.configs.find({
+        "project_name": ManMirror.project_name
+    })
+    my_novel_manga_list =  db.configs.find({
+        "project_name": MyNovel.project_name
+    })
+    
+    print(f'{ManMirror.project_name} | {[x for x in man_mirror_manga_list]}')
 
 
 if __name__ == "__main__":

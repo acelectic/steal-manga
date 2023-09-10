@@ -18,7 +18,7 @@ import requests
 from PIL import Image, ImageFile
 from tqdm import tqdm
 
-from ..utils.constants import CARTOON_DIR
+from ..utils.constants import CARTOON_DIR, MAN_MIRROR
 from ..utils.file_helper import mkdir
 from ..utils.pdf_helper import merge_images_to_pdf
 from .image_json_shuffle import ImageJsonShuffle
@@ -57,11 +57,11 @@ class AppError(Exception):
 
 class ManMirror:
     """ class """
-    root: str = 'man-mirror'
+    project_name: str = MAN_MIRROR
     get_json_timeout: int = 10 * 1000
     get_image_timeout: int = 60 * 1000
 
-    def download_cartoons(self, cartoon_name: str, post_id: int,  max_chapter: int, manga_exists_json: Dict[Any, Any],  first_chapter: int = 1, max_workers: int = 4,
+    def download_cartoons(self, cartoon_name: str, cartoon_id: str,  max_chapter: int, manga_exists_json: Dict[Any, Any],  first_chapter: int = 1, max_workers: int = 4,
                           get_json_timeout: int = 10 * 1000,
                           get_image_timeout: int = 60 * 1000,
                           ) -> None:
@@ -87,27 +87,27 @@ class ManMirror:
             is_file_exists = False
 
             try:
-                manga_id = manga_exists_json[self.root]["sub_dirs"][
+                manga_id = manga_exists_json[self.project_name]["sub_dirs"][
                     cartoon_name]["chapters"][f'{chapter}.pdf']["id"]
                 is_file_exists = manga_id is not None
             except Exception:
                 is_file_exists = False
 
             if not is_file_exists and not is_file_local_exists:
-                pool.submit(self.__perform_download_chapter, cartoon_name, post_id,
+                pool.submit(self.__perform_download_chapter, cartoon_name, cartoon_id,
                             chapter, chapter_dir, output_pdf_path)
         pool.shutdown(wait=True)
 
-    def __perform_download_chapter(self, cartoon_name: str, post_id: int, chapter: int, chapter_dir: str, output_pdf_path: str):
+    def __perform_download_chapter(self, cartoon_name: str, cartoon_id: str, chapter: int, chapter_dir: str, output_pdf_path: str):
         some_error, is_some_json_error = self._download_cartoon_chapter(
-            cartoon_name, post_id, chapter)
+            cartoon_name, cartoon_id, chapter)
         if not is_some_json_error:
             self.__merge_to_pdf(
                 chapter_dir, output_pdf_path)
         if not some_error and not is_some_json_error:
             self.__remove_chapter_dir(chapter_dir)
 
-    def _download_cartoon_chapter(self, cartoon_name: str, post_id: int, chapter: int) -> Tuple[bool, bool]:
+    def _download_cartoon_chapter(self, cartoon_name: str, cartoon_id: str, chapter: int) -> Tuple[bool, bool]:
         """ download man mirror by post id with page"""
         chapter_dir = self.__get_chapter_dir(cartoon_name, chapter)
         mkdir(chapter_dir)
@@ -122,7 +122,7 @@ class ManMirror:
         image_json_list: List[ImageJsonShuffle] = []
         while not is_error:
             try:
-                image_json: ImageJsonShuffle = self.__get_json(post_id, chapter, max_page)
+                image_json: ImageJsonShuffle = self.__get_json(cartoon_id, chapter, max_page)
                 image_json_list.append(image_json)
                 if image_json.must_debug:
                     is_some_json_error = True
@@ -150,14 +150,14 @@ class ManMirror:
 
         if len(image_json_list) > 0:
             is_some_page_error = self.download_manga_by_image_json(
-                cartoon_name, post_id, chapter, chapter_dir, max_page, image_json_list)
+                cartoon_name, cartoon_id, chapter, chapter_dir, max_page, image_json_list)
         else:
             is_some_page_error = self.download_manga_normal(
-                cartoon_name, post_id, chapter, chapter_dir)
+                cartoon_name, cartoon_id, chapter, chapter_dir)
 
         return is_some_page_error, is_some_json_error
 
-    def download_manga_by_image_json(self, cartoon_name: str, post_id: int, chapter: int, main_dir: str, max_page: int, image_json_list: List[ImageJsonShuffle]):
+    def download_manga_by_image_json(self, cartoon_name: str, cartoon_id: str, chapter: int, main_dir: str, max_page: int, image_json_list: List[ImageJsonShuffle]):
         is_some_page_error = False
         pages = range(0, max_page + 1)
 
@@ -168,7 +168,7 @@ class ManMirror:
                     image_json = image_json_list[i]
 
                 some_error = self._download_cartoon_chapter_page(
-                    post_id=post_id, chapter=chapter, main_dir=main_dir, page=page, image_json=image_json)
+                    cartoon_id=cartoon_id, chapter=chapter, main_dir=main_dir, page=page, image_json=image_json)
                 if some_error:
                     is_some_page_error = some_error
             except RequestError:
@@ -182,7 +182,7 @@ class ManMirror:
 
         return is_some_page_error
 
-    def download_manga_normal(self, cartoon_name: str, post_id: int, chapter: int, main_dir: str):
+    def download_manga_normal(self, cartoon_name: str, cartoon_id: str, chapter: int, main_dir: str):
         is_some_page_error = False
         max_page = 200
         pages = range(0, max_page + 1)
@@ -193,7 +193,7 @@ class ManMirror:
                 break
             try:
                 some_error = self._download_cartoon_chapter_page(
-                    post_id=post_id, chapter=chapter, main_dir=main_dir, page=page + 1, image_extension='jpg')
+                    cartoon_id=cartoon_id, chapter=chapter, main_dir=main_dir, page=page + 1, image_extension='jpg')
                 if some_error:
                     is_some_page_error = some_error
             except RequestError:
@@ -210,7 +210,7 @@ class ManMirror:
 
         return is_some_page_error
 
-    def _download_cartoon_chapter_page(self, post_id: int, chapter: int, main_dir: str, page: int, image_json: ImageJsonShuffle | None = None, image_extension: str = 'png'):
+    def _download_cartoon_chapter_page(self, cartoon_id: str, chapter: int, main_dir: str, page: int, image_json: ImageJsonShuffle | None = None, image_extension: str = 'png'):
         image_path = f'{main_dir}/{page}.png'
         is_file_exists = os.path.isfile(image_path)
         has_some_error = False
@@ -219,13 +219,13 @@ class ManMirror:
             new_image = None
 
             try:
-                image = self.__get_image(post_id, chapter, page=str(page))
+                image = self.__get_image(cartoon_id, chapter, page=str(page))
             except RequestError:
                 raw_page_title = f'หน้า-{str(page).zfill(2)}'.encode('utf-8')
                 page_title = urllib.parse.quote_plus(raw_page_title)
                 # print(f'raw_page_title: {raw_page_title}\t page_title: {page_title}')
                 new_image = self.__get_image(
-                    post_id, chapter, page=page_title,  image_extension=image_extension)
+                    cartoon_id, chapter, page=page_title,  image_extension=image_extension)
 
             # if (image.shape[0] < image.shape[1]):
             #     old_image_file = Image.fromarray(image)
@@ -281,13 +281,13 @@ class ManMirror:
         return False
 
     def __get_main_dir(self, cartoon_name: str) -> str:
-        return f'{CARTOON_DIR}/{self.root}/{cartoon_name}'
+        return f'{CARTOON_DIR}/{self.project_name}/{cartoon_name}'
 
     def __get_chapter_dir(self, cartoon_name: str, chapter: int) -> str:
         main_dir = self.__get_main_dir(cartoon_name)
         return f'{main_dir}/chapter-{chapter}'
 
-    def __get_json(self, post_id: int, chapter: int, page: int) -> ImageJsonShuffle:
+    def __get_json(self, cartoon_id: str, chapter: int, page: int) -> ImageJsonShuffle:
         """function for get man mirror json suffer
             example response
             {
@@ -299,7 +299,7 @@ class ManMirror:
             }
         """
 
-        url = f'https://www.manmirror.net/test/{post_id}/{chapter}/{page}.json'
+        url = f'https://www.manmirror.net/test/{cartoon_id}/{chapter}/{page}.json'
         # print(f'get json {url}')
         response = requests.get(url, timeout=self.get_json_timeout)
         if response.status_code == 200:
@@ -339,9 +339,9 @@ class ManMirror:
         raise RequestError(
             {"message": 'can not get json', "response": response})
 
-    def __get_image(self, post_id: int, chapter: int, page: str, image_extension: str = 'png') -> np.ndarray:
+    def __get_image(self, cartoon_id: str, chapter: int, page: str, image_extension: str = 'png') -> np.ndarray:
         """function for get man mirror image"""
-        url = f'https://www.manmirror.net/test/{post_id}/{chapter}/{page}.{image_extension}'
+        url = f'https://www.manmirror.net/test/{cartoon_id}/{chapter}/{page}.{image_extension}'
         if image_extension == 'jpg':
             # print(f'get image {url}')
             response = requests.get(url, timeout=self.get_image_timeout, stream=True)
@@ -474,7 +474,7 @@ class ManMirror:
         is_file_local_exists = os.path.exists(output_pdf_path)
         is_file_exists = False
         try:
-            manga_id = manga_exists_json[self.root]["sub_dirs"][
+            manga_id = manga_exists_json[self.project_name]["sub_dirs"][
                 cartoon_name]["chapters"][f'{chapter}.pdf']["id"]
             is_file_exists = manga_id is not None
         except Exception:

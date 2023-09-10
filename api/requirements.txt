@@ -15,3 +15,4 @@ python-dotenv==1.0.0
 requests==2.31.0
 tqdm==4.62.3
 urllib3==2.0.4
+pymongo==4.5.0

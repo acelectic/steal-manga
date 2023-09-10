@@ -1,6 +1,4 @@
-import glob
 import json
-import os
 from datetime import datetime
 from pprint import pprint
 from typing import Any, List
@@ -8,7 +6,9 @@ from typing import Any, List
 from django.core.handlers.wsgi import WSGIRequest
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
-from django.views.decorators.csrf import csrf_protect
+
+from libs.my_novel import MyNovel
+from libs.man_mirror import ManMirror
 from download_script import execute_download
 from libs.action.download_manga_manual import download_manga_manual
 from libs.action.update_manga_config import update_manga_config
@@ -19,103 +19,17 @@ from libs.upload_google_drive.google_auth import (
     write_google_token,
 )
 from libs.upload_google_drive.manga_result import get_manga_updated
-from libs.utils.constants import MANGE_ROOT_DIR, WEB_URL
+from libs.utils.constants import MANGA_ROOT_DIR, WEB_URL
 from libs.utils.interface import UpdateMangaConfigData
+from libs.utils.db_client import db, get_manga_config
+
 
 
 def health(request: HttpRequest):
     return HttpResponse()
 
-# @csrf_protect
 def home(request: HttpRequest):
     return HttpResponse()
-#     projects = []
-#     creds = get_google_creds()
-
-#     manga_exists_json, results_viewed_sorted, results_yet_view_sorted = get_manga_updated()
-
-#     man_mirror_cartoons = []
-#     with open(os.path.join(MANGE_ROOT_DIR, 'man-mirror.json'), encoding='utf-8') as f:
-#         man_mirror_cartoons = json.load(f)
-
-#     my_novel_cartoons = []
-#     with open(os.path.join(MANGE_ROOT_DIR, 'my-novel.json'), encoding='utf-8') as f:
-#         my_novel_cartoons = json.load(f)
-
-#     # for project_dir in os.listdir(f'{CARTOON_DIR}'):
-#     #     if not os.path.isdir(os.path.join(CARTOON_DIR, project_dir)):
-#     #         continue
-#     #     # for name in files:
-#     #     #     print(os.path.join(root, name))
-#     #     title = project_dir
-
-#     #     sub_dirs = []
-
-#     #     for sub_project_cartoon_dir in os.listdir(os.path.join(CARTOON_DIR, project_dir)):
-#     #         # print(f'{sub_project_cartoon_dir}')
-#     #         image_pdf_list = glob.glob(os.path.join(
-#     #             CARTOON_DIR, project_dir, sub_project_cartoon_dir, '*.pdf'))
-#     #         sub_dirs.append({
-#     #             "title": sub_project_cartoon_dir,
-#     #             "image_pdf_list": image_pdf_list
-#     #         })
-
-#     #     projects.append({
-#     #         "title": project_dir,
-#     #         "sub_dirs": sub_dirs
-#     #     })
-
-#         # for name in dirs:
-#         # print(os.path.join(root, name))
-
-#     manga_exists = []
-
-#     for project_name, project_json in manga_exists_json.items():
-#         # print(f'project: {project}')
-#         manga_list: List[Any] = [{
-#             "manga_name": manga_name,
-#             "total":  manga_json['total'] or 0
-#         } for manga_name, manga_json in project_json['sub_dirs'].items()]
-#         manga_exists.append({
-#             "project_name": project_name,
-#             "manga_list": manga_list
-#         })
-
-#     man_mirror_downloaded = manga_exists_json['man-mirror']['sub_dirs']
-#     my_novel_downloaded = manga_exists_json['my-novel']['sub_dirs']
-#     # print(projects)
-#     man_mirror_cartoons = [{
-#         "cartoon_name": cartoon_name,
-#         "cartoon_id": cartoon_id,
-#         "latest_chapter": latest_chapter,
-#         "max_chapter": max_chapter,
-#         "disabled": disabled or False,
-#         "downloaded": man_mirror_downloaded[cartoon_name]['total'] or 0 if man_mirror_downloaded[cartoon_name] is not None else 0,
-#     } for cartoon_name, cartoon_id, latest_chapter, max_chapter, disabled in man_mirror_cartoons]
-
-#     my_novel_cartoons = [{
-#         "cartoon_name": cartoon_name,
-#         "cartoon_id": cartoon_id,
-#         "latest_chapter": latest_chapter,
-#         "max_chapter": '',
-#         "disabled": disabled or False,
-#         "downloaded": my_novel_downloaded[cartoon_name]['total'] or 0 if my_novel_downloaded[cartoon_name] is not None else 0,
-#     } for cartoon_name, cartoon_id, latest_chapter, disabled in my_novel_cartoons]
-#     # pprint({
-#     #     "man_mirror_cartoons": man_mirror_cartoons,
-#     #     "my_novel_cartoons": my_novel_cartoons,
-#     # })
-#     context = {
-#         # "projects": projects,
-#         "manga_exists": manga_exists,
-#         "man_mirror_cartoons": man_mirror_cartoons,
-#         "my_novel_cartoons": my_novel_cartoons or [],
-#         "google_auth_ok": creds is not None and creds.valid and not creds.expired,
-#         "results_viewed_sorted": results_viewed_sorted,
-#         "results_yet_view_sorted": results_yet_view_sorted
-#     }
-#     return render(request, template_name='home/index.html', context=context)
-
 
 def google_auth(request: HttpRequest):
     flow = get_google_flow()
@@ -267,13 +181,14 @@ def manga_updated(request: WSGIRequest):
     manga_exists_json, results_viewed_sorted, results_yet_view_sorted = get_manga_updated(
         latest_update=latest_update)
 
-    man_mirror_cartoons = []
-    with open(os.path.join(MANGE_ROOT_DIR, 'man-mirror.json'), encoding='utf-8') as f:
-        man_mirror_cartoons = json.load(f)
+    man_mirror_cartoons = get_manga_config(ManMirror.project_name)
+    # with open(os.path.join(MANGE_ROOT_DIR, 'man-mirror.json'), encoding='utf-8') as f:
+    #     man_mirror_cartoons = json.load(f)
 
-    my_novel_cartoons = []
-    with open(os.path.join(MANGE_ROOT_DIR, 'my-novel.json'), encoding='utf-8') as f:
-        my_novel_cartoons = json.load(f)
+    my_novel_cartoons = get_manga_config(MyNovel.project_name)
+    
+    # with open(os.path.join(MANGE_ROOT_DIR, 'my-novel.json'), encoding='utf-8') as f:
+    #     my_novel_cartoons = json.load(f)
 
     # for project_dir in os.listdir(f'{CARTOON_DIR}'):
     #     if not os.path.isdir(os.path.join(CARTOON_DIR, project_dir)):
@@ -318,24 +233,24 @@ def manga_updated(request: WSGIRequest):
         man_mirror_downloaded = manga_exists_json['man-mirror']['sub_dirs']
     
         man_mirror_cartoons = [{
-            "cartoon_name": cartoon_name,
-            "cartoon_id": cartoon_id,
-            "latest_chapter": latest_chapter,
-            "max_chapter": max_chapter,
-            "disabled": disabled or False,
-            "downloaded": man_mirror_downloaded[cartoon_name]['total'] or 0 if man_mirror_downloaded[cartoon_name] is not None else 0,
-        } for cartoon_name, cartoon_id, latest_chapter, max_chapter, disabled in man_mirror_cartoons]
+            "cartoon_name": d.cartoon_name,
+            "cartoon_id": d.cartoon_id,
+            "latest_chapter": d.latest_chapter,
+            "max_chapter": d.max_chapter,
+            "disabled": d.disabled or False,
+            "downloaded": man_mirror_downloaded[d.cartoon_name]['total'] or 0 if man_mirror_downloaded[d.cartoon_name] is not None else 0,
+        } for d in man_mirror_cartoons]
 
     if 'my-novel' in manga_exists_json and manga_exists_json['my-novel'] is not None:
         my_novel_downloaded = manga_exists_json['my-novel']['sub_dirs']
         my_novel_cartoons = [{
-            "cartoon_name": cartoon_name,
-            "cartoon_id": cartoon_id,
-            "latest_chapter": latest_chapter,
-            "max_chapter": '',
-            "disabled": disabled or False,
-            "downloaded": my_novel_downloaded[cartoon_name]['total'] or 0 if my_novel_downloaded[cartoon_name] is not None else 0,
-        } for cartoon_name, cartoon_id, latest_chapter, disabled in my_novel_cartoons]
+            "cartoon_name": d.cartoon_name,
+            "cartoon_id": d.cartoon_id,
+            "latest_chapter": d.latest_chapter,
+            "max_chapter": d.max_chapter,
+            "disabled": d.disabled or False,
+            "downloaded": my_novel_downloaded[d.cartoon_name]['total'] or 0 if my_novel_downloaded[d.cartoon_name] is not None else 0,
+        } for d in my_novel_cartoons]
 
     return JsonResponse({
         "updated": datetime.now().isoformat(sep='T', timespec='auto'),
