@@ -314,6 +314,7 @@ def generate_drive_manga_exists(target_project_name=None, target_cartoon_name=No
         # TODO(developer) - Handle errors from drive API.
         print(f'An error occurred: {error}')
 
+    print('generate_drive_manga_exists completed')
     return manga_exists_json
 
 
