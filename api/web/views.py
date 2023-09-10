@@ -19,9 +19,9 @@ from libs.upload_google_drive.google_auth import (
     write_google_token,
 )
 from libs.upload_google_drive.manga_result import get_manga_updated
-from libs.utils.constants import MANGA_ROOT_DIR, WEB_URL
+from libs.utils.constants import WEB_URL
 from libs.utils.interface import UpdateMangaConfigData
-from libs.utils.db_client import db, get_manga_config
+from libs.utils.db_client import get_manga_config
 
 
 

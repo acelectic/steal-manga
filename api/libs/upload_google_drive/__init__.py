@@ -30,6 +30,10 @@ from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload
 from tqdm import tqdm
 
+from ..utils.db_client import get_manga_config, StealMangaDb
+
+from ..utils.interface import MangaUploadedToDrive, UpdateMangaConfigData
+
 from ..utils.constants import (
     CARTOON_DIR,
     DELETE_FILE_AFTER_UPLOADED,
@@ -157,14 +161,14 @@ def upload_file(service, logging: bool, sub_dir_id: str, file_name: str, file_pa
         })
 
 
-def generate_drive_manga_exists(project_name=None, cartoon_name=None, force_update=False, logging=False) -> Dict[Any, Any]:
+def generate_drive_manga_exists(target_project_name=None, target_cartoon_name=None, force_update=False, logging=False) -> Dict[Any, Any]:
     """
         get and generate manga in drive
     """
     manga_exists_json = {}
     is_early_update = False
 
-    print(f'generate_drive_manga_exists | {project_name or "all"} {cartoon_name or ""}')
+    print(f'generate_drive_manga_exists | {target_project_name or "all"} {target_cartoon_name or ""}')
 
     try:
         if os.path.exists(UPDATE_TIMESTAMP_FILE_PATH):
@@ -188,7 +192,15 @@ def generate_drive_manga_exists(project_name=None, cartoon_name=None, force_upda
 
         service = get_drive_service()
         drive_project_dirs = list_drive_dirs(service, DRIVE_CARTOONS_DIR_ID)
+        all_manga_config = get_manga_config()
+        all_manga_config_hash: dict[str, UpdateMangaConfigData] = {}
+        
+        manga_uploaded_to_drive: list[MangaUploadedToDrive]= []
 
+        
+        for d in all_manga_config:
+            all_manga_config_hash[d.cartoon_name] = d
+        
         if not drive_project_dirs:
             print('No files found.')
             return manga_exists_json
@@ -196,13 +208,16 @@ def generate_drive_manga_exists(project_name=None, cartoon_name=None, force_upda
         if logging:
             print('Files:')
         for project_dir in drive_project_dirs[::]:
-            if project_name is not None and project_name != project_dir['name']:
+            if target_project_name is not None and target_project_name != project_dir['name']:
                 # print(f'skip project_name: {project_name} {project_dir["name"]}')
                 continue
 
             if logging:
                 print('{0} ({1})'.format(project_dir['name'], project_dir['id']))
 
+            project_name = project_dir['name']
+            project_drive_id = project_dir['id']
+            
             manga_exists_json[project_dir['name']] = {
                 "id": project_dir['id'],
                 "sub_dirs": {}
@@ -211,10 +226,14 @@ def generate_drive_manga_exists(project_name=None, cartoon_name=None, force_upda
             drive_project_manga_dirs = list_drive_dirs(
                 service, project_dir['id'])
             for manga_dir in drive_project_manga_dirs[::]:
-                if cartoon_name is not None and cartoon_name != manga_dir['name']:
+                if target_cartoon_name is not None and target_cartoon_name != manga_dir['name']:
                     # print(f'skip cartoon_name: {cartoon_name} {manga_dir["name"]}')
                     continue
-
+                cartoon_name = manga_dir['name']
+                cartoon_drive_id = manga_dir['id']
+                mange_config = all_manga_config_hash.get(cartoon_name)
+                
+                
                 if logging:
                     print('\t{0} ({1})'.format(
                         manga_dir['name'], manga_dir['id']))
@@ -237,6 +256,24 @@ def generate_drive_manga_exists(project_name=None, cartoon_name=None, force_upda
                         "modifiedByMeTime": drive_manga_chapter['modifiedByMeTime'],
                         "viewedByMe": drive_manga_chapter['viewedByMe'],
                     }
+                    manga_chapter_name = drive_manga_chapter['name']
+                    manga_chapter_drive_id = drive_manga_chapter['id']
+                    created_time = drive_manga_chapter['createdTime']
+                    modified_by_me_time = drive_manga_chapter['modifiedByMeTime']
+                    viewed_by_me = drive_manga_chapter['viewedByMe']
+                    
+                    manga_uploaded_to_drive.append( MangaUploadedToDrive(
+                        project_name=project_name,
+                        project_drive_id=project_drive_id,
+                        cartoon_id=mange_config.cartoon_id if mange_config is not None else '',
+                        cartoon_name=cartoon_name,
+                        cartoon_drive_id=cartoon_drive_id,
+                        manga_chapter_name=manga_chapter_name,
+                        manga_chapter_drive_id=manga_chapter_drive_id,
+                        created_time=created_time,
+                        modified_by_me_time=modified_by_me_time,
+                        viewed_by_me=viewed_by_me,
+                    ))
 
                 manga_exists_json[project_dir['name']]["sub_dirs"][manga_dir['name']]["chapters"] = order_keys_in_json(
                     manga_exists_json[project_dir['name']]["sub_dirs"][manga_dir['name']]["chapters"])
@@ -246,6 +283,17 @@ def generate_drive_manga_exists(project_name=None, cartoon_name=None, force_upda
 
         # Serializing json
         json_object = json.dumps(manga_exists_json, indent=2, ensure_ascii=False)
+        
+        steal_manga_db = StealMangaDb()
+        print(f'manga_uploaded_to_drive: {len(manga_uploaded_to_drive)}')
+        for d in manga_uploaded_to_drive:
+            steal_manga_db.table_manga_upload.find_one_and_replace(filter={
+                "project_name": d.project_name,
+                "cartoon_id": d.cartoon_id,
+                "manga_chapter_name": d.manga_chapter_name,
+            },
+            replacement=d.to_json(),
+            upsert=True)
 
         if not os.path.exists(CARTOON_DIR):
             mkdir(CARTOON_DIR)

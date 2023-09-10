@@ -18,7 +18,7 @@ def download_manga_manual(data: UpdateMangaConfigData):
     if data.project_name == 'man-mirror':
         man_mirror = ManMirror()
         manga_exists_json = generate_drive_manga_exists(
-        force_update=True, project_name=man_mirror.project_name)
+        force_update=True, target_project_name=man_mirror.project_name)
        
         print(
             f'\ncartoon_name: {cartoon_name}\tkey: {cartoon_id}\tlatest_chapter: {latest_chapter}\tmax_chapter: {max_chapter}')
@@ -33,19 +33,19 @@ def download_manga_manual(data: UpdateMangaConfigData):
         upload_to_drive(
             project_name=man_mirror.project_name)
         generate_drive_manga_exists(
-            force_update=True, project_name=man_mirror.project_name)
+            force_update=True, target_project_name=man_mirror.project_name)
         success = True
 
     if data.project_name == 'my-novel':
         my_novel = MyNovel()
         manga_exists_json = generate_drive_manga_exists(
-        force_update=True,  project_name=my_novel.project_name)
+        force_update=True,  target_project_name=my_novel.project_name)
         print(
             f'\ncartoon_name: {cartoon_name}\tkey: {cartoon_id}\tlatest_chapter: {latest_chapter}')
         my_novel.download_cartoons(str(cartoon_id), cartoon_name=cartoon_name, start_ep_index=latest_chapter,
                                        manga_exists_json=manga_exists_json, max_workers=1)
         upload_to_drive(project_name=my_novel.project_name)
         generate_drive_manga_exists(
-            force_update=True,  project_name=my_novel.project_name)
+            force_update=True,  target_project_name=my_novel.project_name)
         success = True
     return success

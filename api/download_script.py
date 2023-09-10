@@ -15,7 +15,7 @@ from libs.upload_google_drive import generate_drive_manga_exists, upload_to_driv
 from libs.upload_google_drive.interface import ManualManMirrorMangaItem
 from libs.upload_google_drive.manga_result import get_manga_updated
 from libs.utils.constants import MANGA_ROOT_DIR
-from libs.utils.db_client import db, get_manga_config
+from libs.utils.db_client import StealMangaDb, get_manga_config
 
 load_dotenv()
  
@@ -107,7 +107,7 @@ def download_man_mirror():
 
     man_mirror = ManMirror()
     manga_exists_json = generate_drive_manga_exists(
-        force_update=True, project_name=man_mirror.project_name)
+        force_update=True, target_project_name=man_mirror.project_name)
     for d in man_mirror_cartoons:
         cartoon_name = d.cartoon_name
         cartoon_id = d.cartoon_id
@@ -136,7 +136,7 @@ def download_my_novel():
 
     my_novel = MyNovel()
     manga_exists_json = generate_drive_manga_exists(
-        force_update=True,  project_name=my_novel.project_name)
+        force_update=True,  target_project_name=my_novel.project_name)
     for d in my_novel_cartoons:
         cartoon_name = d.cartoon_name
         cartoon_id = d.cartoon_id
@@ -233,9 +233,9 @@ def test_db():
             project_name=ManMirror.project_name,
         ))
 
-    
+    steal_manga_db = StealMangaDb()
     for d in data:
-        result = db.configs.find_one_and_update(
+        result = steal_manga_db.table_config.find_one_and_update(
             filter={
             "cartoon_id": d.cartoon_id,
             },
@@ -246,14 +246,14 @@ def test_db():
             return_document = ReturnDocument.AFTER
         )
         
-    man_mirror_manga_list =  db.configs.find({
-        "project_name": ManMirror.project_name
-    })
-    my_novel_manga_list =  db.configs.find({
-        "project_name": MyNovel.project_name
-    })
+    # man_mirror_manga_list =  steal_manga_db.table_config.find({
+    #     "project_name": ManMirror.project_name
+    # })
+    # my_novel_manga_list =  steal_manga_db.table_config.find({
+    #     "project_name": MyNovel.project_name
+    # })
     
-    print(f'{ManMirror.project_name} | {[x for x in man_mirror_manga_list]}')
+    # print(f'{ManMirror.project_name} | {[x for x in man_mirror_manga_list]}')
 
 
 if __name__ == "__main__":

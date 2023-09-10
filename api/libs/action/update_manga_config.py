@@ -2,14 +2,16 @@
 from pymongo import ReturnDocument
 
 from ..utils.interface import UpdateMangaConfigData
-from ..utils.db_client import db
+from ..utils.db_client import StealMangaDb
 
 
 def update_manga_config(data: UpdateMangaConfigData):
     """ update_manga_config """
     success = False
+    steal_manga_db = StealMangaDb()
+    
     try:
-        db.configs.find_one_and_update(
+        steal_manga_db.table_config.find_one_and_update(
             filter={
                 "cartoon_id": data.cartoon_id,
             },
