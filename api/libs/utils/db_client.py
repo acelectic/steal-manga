@@ -1,6 +1,5 @@
-from pprint import pprint
 
-from pymongo import ReturnDocument
+from pymongo import UpdateOne
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 
@@ -90,41 +89,33 @@ def get_manga_uploaded(where=None):
 def get_count_manga_downloaded():
     steal_manga_db = StealMangaDb()
     count_manga_downloaded = steal_manga_db.table_manga_upload.aggregate([
-        {"$group": {"_id": "$cartoon_id", "count": {"$sum": 1}}}
+        {"$group": {"_id": "$cartoon_id", "downloaded": {"$sum": 1}}}
     ])
     count_manga_downloaded_hash:dict[str, int] = {}
     for d in count_manga_downloaded:
-        count_manga_downloaded_hash[d['_id']] = d['count']
+        count_manga_downloaded_hash[d['_id']] = d['downloaded']
+
     return count_manga_downloaded_hash
 
 def update_manga_downloaded():
     print('update_manga_downloaded')
     steal_manga_db = StealMangaDb()
     count_manga_downloaded = steal_manga_db.table_manga_upload.aggregate([
-        {"$group": {"_id": "$cartoon_id", "count": {"$sum": 1}}}
-    ])
-    count_manga_downloaded2 = steal_manga_db.table_manga_upload.aggregate([
-        {"$group": {"_id": "$cartoon_name", "count": {"$sum": 1}}}
+        {"$group": {"_id": "$cartoon_id", "downloaded": {"$sum": 1}}}
     ])
 
-    pprint(list(count_manga_downloaded2))
-    print(f'update_manga_downloaded: {len(list(count_manga_downloaded))}')
-
-    for d in count_manga_downloaded:
-        cartoon_id = d['_id']
-        downloaded = d['count']
-        result_downloaded = steal_manga_db.table_config.find_one_and_update(
+    requests = [UpdateOne(
             filter={
-                "cartoon_id": cartoon_id,
+                "cartoon_id": d['_id'],
             },
             update={
                 '$set': {
-                    "downloaded": downloaded
+                    "downloaded": d['downloaded']
                 }
             },
-            upsert=False,
-            return_document = ReturnDocument.AFTER
-        )
-        pprint(result_downloaded)
+            upsert=False
+        ) for d in count_manga_downloaded]
+    results = steal_manga_db.table_manga_upload.bulk_write(requests)
     print('update_manga_downloaded end')
 
+    return results

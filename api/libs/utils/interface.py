@@ -71,3 +71,25 @@ class MangaUploadedToDrive:
             "modified_by_me_time": self.modified_by_me_time,
             "viewed_by_me": self.viewed_by_me,
         }
+        
+    def to_where(self):
+        where = {}
+        if self.project_name != '' and self.project_name is not None:
+            where["project_name"]= self.project_name
+        if self.project_drive_id != '' and self.project_drive_id is not None:
+            where["project_drive_id"]= self.project_drive_id
+        if self.cartoon_id != '' and self.cartoon_id is not None:
+            where["cartoon_id"]= self.cartoon_id
+        if self.cartoon_name != '' and self.cartoon_name is not None:
+            where["cartoon_name"]= self.cartoon_name
+        if self.cartoon_drive_id != '' and self.cartoon_drive_id is not None:
+            where["cartoon_drive_id"]= self.cartoon_drive_id
+        if self.manga_chapter_name != '' and self.manga_chapter_name is not None:
+            where["manga_chapter_name"]= self.manga_chapter_name
+        if self.manga_chapter_drive_id != '' and self.manga_chapter_drive_id is not None:
+            where["manga_chapter_drive_id"]= self.manga_chapter_drive_id
+        if self.created_time != '' and self.created_time is not None:
+            where["created_time"]= self.created_time
+        if self.modified_by_me_time != '' and self.modified_by_me_time is not None:
+            where["modified_by_me_time"]= self.modified_by_me_time
+        return where

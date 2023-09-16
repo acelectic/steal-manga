@@ -17,28 +17,28 @@
 from __future__ import print_function
 
 import glob
-import json
 import os
 import pprint
 import shutil
-import sys
-from datetime import datetime
-from typing import Any, Dict, List
+from typing import List
 
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload
+from pymongo import ReplaceOne
 from tqdm import tqdm
 
 from ..utils.constants import (
     CARTOON_DIR,
     DELETE_FILE_AFTER_UPLOADED,
     DRIVE_CARTOONS_DIR_ID,
-    MANGE_EXISTS_FILE_PATH,
-    UPDATE_MINUTE_THRESHOLD,
-    UPDATE_TIMESTAMP_FILE_PATH,
 )
-from ..utils.db_client import StealMangaDb, get_manga_config, update_manga_downloaded
+from ..utils.db_client import (
+    StealMangaDb,
+    get_manga_config,
+    get_manga_uploaded,
+    update_manga_downloaded,
+)
 from ..utils.file_helper import mkdir
 from ..utils.interface import MangaUploadedToDrive, UpdateMangaConfigData
 from .google_auth import authen
@@ -159,49 +159,28 @@ def upload_file(service, logging: bool, sub_dir_id: str, file_name: str, file_pa
         })
 
 
-def generate_drive_manga_exists(target_project_name=None, target_cartoon_name=None, force_update=False, logging=False) -> Dict[Any, Any]:
+def generate_drive_manga_exists(target_project_name=None, target_cartoon_name=None, logging=False)->list[MangaUploadedToDrive]:
     """
         get and generate manga in drive
     """
-    manga_exists_json = {}
-    is_early_update = False
-
     print(f'generate_drive_manga_exists | {target_project_name or "all"} {target_cartoon_name or ""}')
 
     try:
-        if os.path.exists(UPDATE_TIMESTAMP_FILE_PATH):
-            with open(UPDATE_TIMESTAMP_FILE_PATH, "r", encoding='utf-8') as read_file:
-                update_timestamp = read_file.read()
-                if update_timestamp is not None:
-                    now = datetime.now()
-                    timestamp = datetime.fromtimestamp(float(update_timestamp), tz=None)
-                    print(f'last update manga exists: {timestamp.strftime("%Y-%m-%d %H:%M:%S")}')
-                    time_diff = now - timestamp
-                    if time_diff.total_seconds() / 60 < UPDATE_MINUTE_THRESHOLD:
-                        is_early_update = True
-
-        # Opening JSON file
-        if os.path.exists(MANGE_EXISTS_FILE_PATH):
-            with open(MANGE_EXISTS_FILE_PATH, "r", encoding='utf-8') as read_file:
-                manga_exists_json = json.load(read_file)
-
-        if is_early_update and not force_update:
-            return manga_exists_json
+        steal_manga_db = StealMangaDb()
 
         service = get_drive_service()
         drive_project_dirs = list_drive_dirs(service, DRIVE_CARTOONS_DIR_ID)
         all_manga_config = get_manga_config()
         all_manga_config_hash: dict[str, UpdateMangaConfigData] = {}
-        
+
         manga_uploaded_to_drive: list[MangaUploadedToDrive]= []
 
-        
         for d in all_manga_config:
             all_manga_config_hash[d.cartoon_name] = d
         
         if not drive_project_dirs:
             print('No files found.')
-            return manga_exists_json
+            return []
 
         if logging:
             print('Files:')
@@ -215,11 +194,7 @@ def generate_drive_manga_exists(target_project_name=None, target_cartoon_name=No
 
             project_name = project_dir['name']
             project_drive_id = project_dir['id']
-            
-            manga_exists_json[project_dir['name']] = {
-                "id": project_dir['id'],
-                "sub_dirs": {}
-            }
+
 
             drive_project_manga_dirs = list_drive_dirs(
                 service, project_dir['id'])
@@ -239,21 +214,10 @@ def generate_drive_manga_exists(target_project_name=None, target_cartoon_name=No
                 drive_manga_chapters = list_drive_manga(
                     service, manga_dir['id'])
 
-                manga_exists_json[project_dir['name']]["sub_dirs"][manga_dir['name']] = {
-                    "id": manga_dir['id'],
-                    'total':  len(drive_manga_chapters),
-                    "chapters": {}
-                }
-
                 for drive_manga_chapter in drive_manga_chapters[::]:
                     if logging:
                         print(f'\t\t{drive_manga_chapter["name"]} ({drive_manga_chapter["id"]})')
-                    manga_exists_json[project_dir['name']]["sub_dirs"][manga_dir['name']]["chapters"][drive_manga_chapter['name']] = {
-                        "id": drive_manga_chapter['id'],
-                        "createdTime": drive_manga_chapter['createdTime'],
-                        "modifiedByMeTime": drive_manga_chapter['modifiedByMeTime'],
-                        "viewedByMe": drive_manga_chapter['viewedByMe'],
-                    }
+                   
                     manga_chapter_name = drive_manga_chapter['name']
                     manga_chapter_drive_id = drive_manga_chapter['id']
                     created_time = drive_manga_chapter['createdTime']
@@ -273,49 +237,31 @@ def generate_drive_manga_exists(target_project_name=None, target_cartoon_name=No
                         viewed_by_me=viewed_by_me,
                     ))
 
-                manga_exists_json[project_dir['name']]["sub_dirs"][manga_dir['name']]["chapters"] = order_keys_in_json(
-                    manga_exists_json[project_dir['name']]["sub_dirs"][manga_dir['name']]["chapters"])
-            manga_exists_json[project_dir['name']]["sub_dirs"] = order_keys_in_json(
-                manga_exists_json[project_dir['name']]["sub_dirs"])
-        manga_exists_json = order_keys_in_json(manga_exists_json)
 
-        # Serializing json
-        json_object = json.dumps(manga_exists_json, indent=2, ensure_ascii=False)
-
-        steal_manga_db = StealMangaDb()
         print(f'manga_uploaded_to_drive: {len(manga_uploaded_to_drive)}')
-        for d in manga_uploaded_to_drive:
-            steal_manga_db.table_manga_upload.find_one_and_replace(filter={
+        
+        requests = [ReplaceOne(
+            filter={
                 "project_name": d.project_name,
                 "cartoon_id": d.cartoon_id,
                 "manga_chapter_name": d.manga_chapter_name,
             },
             replacement=d.to_json(),
-            upsert=True)
+            upsert=True
+        ) for d in manga_uploaded_to_drive]
+        steal_manga_db.table_manga_upload.bulk_write(requests)
 
         update_manga_downloaded()
 
         if not os.path.exists(CARTOON_DIR):
             mkdir(CARTOON_DIR)
 
-        # Writing to sample.json
-        with open(MANGE_EXISTS_FILE_PATH, "w", encoding='utf-8') as outfile:
-            outfile.write(json_object)
-
-        with open(UPDATE_TIMESTAMP_FILE_PATH, "w", encoding='utf-8') as outfile:
-            # Getting the current date and time
-            dt = datetime.now()
-
-            # getting the timestamp
-            ts = datetime.timestamp(dt)
-            outfile.write(str(ts))
-
     except HttpError as error:
         # TODO(developer) - Handle errors from drive API.
         print(f'An error occurred: {error}')
 
     print('generate_drive_manga_exists completed')
-    return manga_exists_json
+    return get_manga_uploaded()
 
 
 def get_drive_service():

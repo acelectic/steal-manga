@@ -7,8 +7,6 @@ from time import time
 from typing import List
 
 from dotenv import load_dotenv
-from pymongo import ReturnDocument
-from libs.utils.interface import UpdateMangaConfigData
 from libs.man_mirror import ManMirror
 from libs.my_novel import MyNovel
 from libs.upload_google_drive import generate_drive_manga_exists, upload_to_drive
@@ -16,6 +14,8 @@ from libs.upload_google_drive.interface import ManualManMirrorMangaItem
 from libs.upload_google_drive.manga_result import get_manga_updated
 from libs.utils.constants import MANGA_ROOT_DIR
 from libs.utils.db_client import StealMangaDb, get_manga_config
+from libs.utils.interface import UpdateMangaConfigData
+from pymongo import ReturnDocument
 
 load_dotenv()
  
@@ -74,7 +74,7 @@ def download_man_mirror_manual() -> None:
     ]
 
     man_mirror = ManMirror()
-    manga_exists_json = generate_drive_manga_exists(force_update=True)
+    generate_drive_manga_exists()
 
     for cartoon in cartoons:
         cartoon_name: str = cartoon.cartoon_name
@@ -92,7 +92,6 @@ def download_man_mirror_manual() -> None:
                 cartoon_name=cartoon_name,
                 chapter=int(chapter),
                 prefix=prefix,
-                manga_exists_json=manga_exists_json,
                 debug=debug
             )
 
@@ -106,8 +105,7 @@ def download_man_mirror():
     #     man_mirror_cartoons = json.load(f)
 
     man_mirror = ManMirror()
-    manga_exists_json = generate_drive_manga_exists(
-        force_update=True, target_project_name=man_mirror.project_name)
+    generate_drive_manga_exists(target_project_name=man_mirror.project_name)
     for d in man_mirror_cartoons:
         cartoon_name = d.cartoon_name
         cartoon_id = d.cartoon_id
@@ -122,7 +120,6 @@ def download_man_mirror():
                 cartoon_id=cartoon_id,
                 first_chapter=latest_chapter,
                 max_chapter=max_chapter,
-                manga_exists_json=manga_exists_json,
                 max_workers=MAX_WORKERS
             )
     upload_to_drive(
@@ -135,8 +132,7 @@ def download_my_novel():
     #     my_novel_cartoons = json.load(f)
 
     my_novel = MyNovel()
-    manga_exists_json = generate_drive_manga_exists(
-        force_update=True,  target_project_name=my_novel.project_name)
+    generate_drive_manga_exists(target_project_name=my_novel.project_name)
     for d in my_novel_cartoons:
         cartoon_name = d.cartoon_name
         cartoon_id = d.cartoon_id
@@ -146,7 +142,7 @@ def download_my_novel():
             f'\ncartoon_name: {cartoon_name}\tkey: {cartoon_id}\tlatest_chapter: {latest_chapter}')
         if disabled is None or not disabled:
             my_novel.download_cartoons(cartoon_id, cartoon_name=cartoon_name, start_ep_index=latest_chapter,
-                                       manga_exists_json=manga_exists_json, max_workers=MAX_WORKERS)
+                                    max_workers=MAX_WORKERS)
     upload_to_drive(project_name=my_novel.project_name)
 
 
@@ -235,7 +231,7 @@ def test_db():
 
     steal_manga_db = StealMangaDb()
     for d in data:
-        result = steal_manga_db.table_config.find_one_and_update(
+        steal_manga_db.table_config.find_one_and_update(
             filter={
             "cartoon_id": d.cartoon_id,
             },

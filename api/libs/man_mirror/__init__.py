@@ -19,7 +19,9 @@ from PIL import Image, ImageFile
 from tqdm import tqdm
 
 from ..utils.constants import CARTOON_DIR, MAN_MIRROR
+from ..utils.db_client import StealMangaDb
 from ..utils.file_helper import mkdir
+from ..utils.interface import MangaUploadedToDrive
 from ..utils.pdf_helper import merge_images_to_pdf
 from .image_json_shuffle import ImageJsonShuffle
 
@@ -61,7 +63,7 @@ class ManMirror:
     get_json_timeout: int = 10 * 1000
     get_image_timeout: int = 60 * 1000
 
-    def download_cartoons(self, cartoon_name: str, cartoon_id: str,  max_chapter: int, manga_exists_json: Dict[Any, Any],  first_chapter: int = 1, max_workers: int = 4,
+    def download_cartoons(self, cartoon_name: str, cartoon_id: str,  max_chapter: int, first_chapter: int = 1, max_workers: int = 4,
                           get_json_timeout: int = 10 * 1000,
                           get_image_timeout: int = 60 * 1000,
                           ) -> None:
@@ -85,11 +87,16 @@ class ManMirror:
             output_pdf_path = f'{main_dir}/{chapter}.pdf'
             is_file_local_exists = os.path.isfile(output_pdf_path)
             is_file_exists = False
-
+            
+            steal_manga_db = StealMangaDb()
+                    
             try:
-                manga_id = manga_exists_json[self.project_name]["sub_dirs"][
-                    cartoon_name]["chapters"][f'{chapter}.pdf']["id"]
-                is_file_exists = manga_id is not None
+                result = steal_manga_db.table_manga_upload.find_one(MangaUploadedToDrive(
+                        project_name=self.project_name,
+                        cartoon_name=cartoon_name,
+                        manga_chapter_name=f'{chapter}.pdf'
+                    ).to_where())
+                is_file_exists = result is not None
             except Exception:
                 is_file_exists = False
 
@@ -466,17 +473,24 @@ class ManMirror:
             # break
         return new_image, has_some_error
 
-    def download_manual(self, cartoon_name: str, cartoon_id: str, chapter: int, manga_exists_json: Dict[Any, Any], prefix: str, debug=False):
+    def download_manual(self, cartoon_name: str, cartoon_id: str, chapter: int, prefix: str, debug=False):
         main_dir = self.__get_main_dir(cartoon_name)
         chapter_dir = self.__get_chapter_dir(cartoon_name, chapter)
         mkdir(chapter_dir)
         output_pdf_path = f'{main_dir}/{chapter}.pdf'
         is_file_local_exists = os.path.exists(output_pdf_path)
         is_file_exists = False
+
+        steal_manga_db = StealMangaDb()
+
         try:
-            manga_id = manga_exists_json[self.project_name]["sub_dirs"][
-                cartoon_name]["chapters"][f'{chapter}.pdf']["id"]
-            is_file_exists = manga_id is not None
+            result = steal_manga_db.table_manga_upload.find_one(MangaUploadedToDrive(
+                        project_name=self.project_name,
+                        cartoon_name=cartoon_name,
+                        manga_chapter_name=f'{chapter}.pdf'
+                    ).to_where())
+
+            is_file_exists = result is not None
         except Exception:
             is_file_exists = False
 

@@ -15,7 +15,9 @@ from tqdm import tqdm
 from tqdm.contrib.concurrent import thread_map
 
 from ..utils.constants import CARTOON_DIR, MY_NOVEL
+from ..utils.db_client import StealMangaDb
 from ..utils.file_helper import mkdir
+from ..utils.interface import MangaUploadedToDrive
 from ..utils.pdf_helper import merge_images_to_pdf
 
 # sys.path.append("../utils")  # Adds higher directory to python modules path.
@@ -41,7 +43,7 @@ class MyNovel:
     get_info_timeout: int = 30 * 1000
     get_image_timeout: int = 60 * 1000
 
-    def download_cartoons(self, product_id: str, cartoon_name:str, manga_exists_json: Dict[Any, Any], start_ep_index: int = 1, max_workers: int = 4,
+    def download_cartoons(self, product_id: str, cartoon_name:str, start_ep_index: int = 1, max_workers: int = 4,
                           get_image_timeout: int = 60 * 1000,
                           ) -> None:
         """
@@ -59,12 +61,10 @@ class MyNovel:
         total_ep = len(product_ep_list)
         print(f'filter len: {total_ep}')
 
-        product_name = cartoon_name
-
-        main_dir = self.__get_main_dir(product_name)
+        main_dir = self.__get_main_dir(cartoon_name)
         mkdir(main_dir)
 
-        print(f'download {product_name}\ttotal ep: {total_ep}')
+        print(f'download {cartoon_name}\ttotal ep: {total_ep}')
 
         # def sub_process(args):
         #     i, product_ep = args
@@ -106,7 +106,7 @@ class MyNovel:
 
         with ThreadPoolExecutor(max_workers=max_workers) as pool:
             for i, product_ep in tqdm(enumerate(product_ep_list_split, start=start_ep_index),
-                                      desc=f'Main | {product_name}',
+                                      desc=f'Main | {cartoon_name}',
                                       total=len(product_ep_list_split)):
                 raw_ep_name = product_ep['EpName'].replace('[', '(').replace(']', ')')
                 ep_index = i
@@ -114,16 +114,20 @@ class MyNovel:
                 # continue
 
                 ep_id = product_ep["EpId"]
-                ep_dir = self.__get_ep_dir(product_name, ep_name)
+                ep_dir = self.__get_ep_dir(cartoon_name, ep_name)
 
                 output_pdf_path = f'{main_dir}/{ep_name}.pdf'
                 is_file_local_exists = os.path.isfile(output_pdf_path)
                 is_file_exists = False
-
+                
+                steal_manga_db = StealMangaDb()
                 try:
-                    manga_id = manga_exists_json[self.project_name]["sub_dirs"][
-                        product_name]["chapters"][f'{ep_name}.pdf']["id"]
-                    is_file_exists = manga_id is not None
+                    result = steal_manga_db.table_manga_upload.find_one(MangaUploadedToDrive(
+                        project_name=self.project_name,
+                        cartoon_name=cartoon_name,
+                        manga_chapter_name=f'{ep_name}.pdf'
+                    ).to_where())
+                    is_file_exists = result is not None
                 except Exception:
                     is_file_exists = False
 
@@ -136,7 +140,7 @@ class MyNovel:
                     #     product_name, ep_name,
                     #     ep_id, ep_dir, output_pdf_path)
                     pool.submit(self._perform_download_ep,
-                                product_name, ep_name,
+                                cartoon_name, ep_name,
                                 ep_id, ep_dir, output_pdf_path)
 
             # wait for all tasks to complete

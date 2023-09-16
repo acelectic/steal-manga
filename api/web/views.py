@@ -236,7 +236,7 @@ def manga_updated(request: WSGIRequest):
         "latest_chapter": d.latest_chapter,
         "max_chapter": d.max_chapter,
         "disabled": d.disabled or False,
-        "downloaded": count_manga_downloaded_hash[d.cartoon_id] or 0 if count_manga_downloaded_hash[d.cartoon_id] is not None else 0,
+        "downloaded": count_manga_downloaded_hash.get(d.cartoon_id, 0),
     } for d in man_mirror_cartoons]
 
     # if 'my-novel' in manga_exists_json and manga_exists_json['my-novel'] is not None:
@@ -247,7 +247,7 @@ def manga_updated(request: WSGIRequest):
         "latest_chapter": d.latest_chapter,
         "max_chapter": d.max_chapter,
         "disabled": d.disabled or False,
-        "downloaded": count_manga_downloaded_hash[d.cartoon_id] or 0 if count_manga_downloaded_hash[d.cartoon_id] is not None else 0,
+        "downloaded": count_manga_downloaded_hash.get(d.cartoon_id, 0),
     } for d in my_novel_cartoons]
 
     return JsonResponse({
@@ -287,10 +287,10 @@ def auth_google_drive(request: HttpRequest):
 
 def fetch_manga_updated(request: WSGIRequest):
     """ fetch manga updated """
-    
+
     if request.method == 'POST':
-      generate_drive_manga_exists(force_update=True)
-      
+      generate_drive_manga_exists()
+
     return JsonResponse({
         "success": True
     })
