@@ -13,6 +13,7 @@ import {
   Table,
   Typography,
   message,
+  theme,
 } from 'antd'
 import { IGetMangaUpdatedResponse } from '../../service/manga-updated/types'
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
@@ -200,7 +201,7 @@ export const MangaTable = (props: IMangaTableProps) => {
   const [searchText, setSearchText] = useState('')
   const [searchedColumn, setSearchedColumn] = useState('')
   const searchInput = useRef<InputRef>(null)
-
+  const { colorBgMask, colorSuccessActive } = theme.getDesignToken()
   const { xs, sm } = Grid.useBreakpoint()
 
   const {
@@ -381,7 +382,11 @@ export const MangaTable = (props: IMangaTableProps) => {
       dataIndex: 'disabled',
       editable: true,
       dataType: 'boolean',
-      render: (value: boolean) => !!value,
+      render: (value: boolean) => (
+        <Typography.Text color={!!value ? colorSuccessActive : colorBgMask}>
+          {!!value}
+        </Typography.Text>
+      ),
     })
     columns.push({ title: 'Downloaded', key: 'downloaded', dataIndex: 'downloaded' })
     columns.push({
