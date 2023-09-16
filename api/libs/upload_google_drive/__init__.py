@@ -30,10 +30,6 @@ from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload
 from tqdm import tqdm
 
-from ..utils.db_client import get_manga_config, StealMangaDb
-
-from ..utils.interface import MangaUploadedToDrive, UpdateMangaConfigData
-
 from ..utils.constants import (
     CARTOON_DIR,
     DELETE_FILE_AFTER_UPLOADED,
@@ -42,7 +38,9 @@ from ..utils.constants import (
     UPDATE_MINUTE_THRESHOLD,
     UPDATE_TIMESTAMP_FILE_PATH,
 )
+from ..utils.db_client import StealMangaDb, get_manga_config, update_manga_downloaded
 from ..utils.file_helper import mkdir
+from ..utils.interface import MangaUploadedToDrive, UpdateMangaConfigData
 from .google_auth import authen
 from .interface import ProjectCartoonItem, ProjectItem
 
@@ -283,7 +281,7 @@ def generate_drive_manga_exists(target_project_name=None, target_cartoon_name=No
 
         # Serializing json
         json_object = json.dumps(manga_exists_json, indent=2, ensure_ascii=False)
-        
+
         steal_manga_db = StealMangaDb()
         print(f'manga_uploaded_to_drive: {len(manga_uploaded_to_drive)}')
         for d in manga_uploaded_to_drive:
@@ -295,9 +293,11 @@ def generate_drive_manga_exists(target_project_name=None, target_cartoon_name=No
             replacement=d.to_json(),
             upsert=True)
 
+        update_manga_downloaded()
+
         if not os.path.exists(CARTOON_DIR):
             mkdir(CARTOON_DIR)
-        
+
         # Writing to sample.json
         with open(MANGE_EXISTS_FILE_PATH, "w", encoding='utf-8') as outfile:
             outfile.write(json_object)

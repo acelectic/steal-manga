@@ -3,14 +3,6 @@
 
 class UpdateMangaConfigData:
     """ UpdateMangaConfigData """
-    cartoon_name: str
-    cartoon_id: str
-    latest_chapter: int
-    max_chapter: int
-    disabled: bool
-    downloaded: int
-    project_name: str
-
     def __init__(self,
                  cartoon_name: str,
                  cartoon_id: str,
@@ -42,29 +34,17 @@ class UpdateMangaConfigData:
 
 class MangaUploadedToDrive:
     """ UpdateMangaConfigData """
-    project_name: str
-    project_drive_id: str
-    cartoon_id: str
-    cartoon_name: str
-    cartoon_drive_id: str
-    manga_chapter_name: str
-    manga_chapter_drive_id: str
-    
-    created_time: str
-    modified_by_me_time: str
-    viewed_by_me: str
-
     def __init__(self,
-                project_name: str,
-                project_drive_id: str,
-                cartoon_id: str,
-                cartoon_name: str,
-                cartoon_drive_id: str,
-                manga_chapter_name: str,
-                manga_chapter_drive_id: str,
-                created_time: str,
-                modified_by_me_time: str,
-                viewed_by_me: str,
+                project_name: str = '',
+                project_drive_id: str = '',
+                cartoon_id: str = '',
+                cartoon_name: str = '',
+                cartoon_drive_id: str = '',
+                manga_chapter_name: str = '',
+                manga_chapter_drive_id: str = '',
+                created_time: str = '',
+                modified_by_me_time: str = '',
+                viewed_by_me: bool = False,
 ) -> None:
         self.project_name = project_name
         self.project_drive_id = project_drive_id

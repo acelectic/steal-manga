@@ -8,9 +8,15 @@ export interface IGetMangaUpdatedResponse {
 }
 
 export interface ResultsViewedSortedClass {
-  project: Project
-  manga: string
-  chapter: string
+  projectName: Project
+  projectDriveId: string
+  cartoonId: string
+  cartoonName: string
+  cartoonDriveId: string
+  mangaChapterName: string
+  mangaChapterDriveId: string
+  createdTime: string
+  modifiedByMeTime: string
   viewedByMe: boolean
 }
 

@@ -19,8 +19,8 @@ export const MangeUpdateList = (props: IMangeUpdateListProps) => {
           <ul style={{ marginLeft: 20, maxHeight: 300, overflowY: 'auto' }}>
             {items.map((item) => {
               return (
-                <li key={item.project + item.manga + item.chapter}>
-                  <Typography>{join([item.manga, item.chapter], ' ')}</Typography>
+                <li key={item.projectName + item.cartoonName + item.mangaChapterName}>
+                  <Typography>{join([item.cartoonName, item.mangaChapterName], ' ')}</Typography>
                 </li>
               )
             })}
