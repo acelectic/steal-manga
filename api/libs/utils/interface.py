@@ -3,6 +3,7 @@
 
 class UpdateMangaConfigData:
     """ UpdateMangaConfigData """
+
     def __init__(self,
                  cartoon_name: str,
                  cartoon_id: str,
@@ -18,7 +19,7 @@ class UpdateMangaConfigData:
         self.disabled = disabled
         self.downloaded = downloaded
         self.project_name = project_name
-        
+
     def to_json(self):
         """ to json """
         return {
@@ -34,18 +35,19 @@ class UpdateMangaConfigData:
 
 class MangaUploadedToDrive:
     """ UpdateMangaConfigData """
+
     def __init__(self,
-                project_name: str = '',
-                project_drive_id: str = '',
-                cartoon_id: str = '',
-                cartoon_name: str = '',
-                cartoon_drive_id: str = '',
-                manga_chapter_name: str = '',
-                manga_chapter_drive_id: str = '',
-                created_time: str = '',
-                modified_by_me_time: str = '',
-                viewed_by_me: bool = False,
-) -> None:
+                 project_name: str = '',
+                 project_drive_id: str = '',
+                 cartoon_id: str = '',
+                 cartoon_name: str = '',
+                 cartoon_drive_id: str = '',
+                 manga_chapter_name: str = '',
+                 manga_chapter_drive_id: str = '',
+                 created_time: str = '',
+                 modified_by_me_time: str = '',
+                 viewed_by_me: bool = False,
+                 ) -> None:
         self.project_name = project_name
         self.project_drive_id = project_drive_id
         self.cartoon_id = cartoon_id
@@ -56,7 +58,7 @@ class MangaUploadedToDrive:
         self.created_time = created_time
         self.modified_by_me_time = modified_by_me_time
         self.viewed_by_me = viewed_by_me
-        
+
     def to_json(self):
         """ to json """
         return {
@@ -71,25 +73,25 @@ class MangaUploadedToDrive:
             "modified_by_me_time": self.modified_by_me_time,
             "viewed_by_me": self.viewed_by_me,
         }
-        
+
     def to_where(self):
         where = {}
         if self.project_name != '' and self.project_name is not None:
-            where["project_name"]= self.project_name
+            where["project_name"] = self.project_name
         if self.project_drive_id != '' and self.project_drive_id is not None:
-            where["project_drive_id"]= self.project_drive_id
+            where["project_drive_id"] = self.project_drive_id
         if self.cartoon_id != '' and self.cartoon_id is not None:
-            where["cartoon_id"]= self.cartoon_id
+            where["cartoon_id"] = self.cartoon_id
         if self.cartoon_name != '' and self.cartoon_name is not None:
-            where["cartoon_name"]= self.cartoon_name
+            where["cartoon_name"] = self.cartoon_name
         if self.cartoon_drive_id != '' and self.cartoon_drive_id is not None:
-            where["cartoon_drive_id"]= self.cartoon_drive_id
+            where["cartoon_drive_id"] = self.cartoon_drive_id
         if self.manga_chapter_name != '' and self.manga_chapter_name is not None:
-            where["manga_chapter_name"]= self.manga_chapter_name
+            where["manga_chapter_name"] = self.manga_chapter_name
         if self.manga_chapter_drive_id != '' and self.manga_chapter_drive_id is not None:
-            where["manga_chapter_drive_id"]= self.manga_chapter_drive_id
+            where["manga_chapter_drive_id"] = self.manga_chapter_drive_id
         if self.created_time != '' and self.created_time is not None:
-            where["created_time"]= self.created_time
+            where["created_time"] = self.created_time
         if self.modified_by_me_time != '' and self.modified_by_me_time is not None:
-            where["modified_by_me_time"]= self.modified_by_me_time
+            where["modified_by_me_time"] = self.modified_by_me_time
         return where

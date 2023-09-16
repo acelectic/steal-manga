@@ -135,18 +135,18 @@ const EditableCell: React.FC<EditableCellProps> = ({
   // }, [dataIndex, dataType, editable, form, record])
 
   const renderChildren = useMemo(() => {
-    if (dataType === 'boolean') {
-      if (Array.isArray(children)) {
-        return chain(children)
-          .map((e) => {
-            if (typeof e === 'boolean') return e === true ? 'True' : 'False'
-            return e
-          })
-          .value()
-      }
-    }
+    // if (dataType === 'boolean') {
+    //   if (Array.isArray(children)) {
+    //     return chain(children)
+    //       .map((e) => {
+    //         if (typeof e === 'boolean') return e === true ? 'True' : 'False'
+    //         return e
+    //       })
+    //       .value()
+    //   }
+    // }
     return children
-  }, [children, dataType])
+  }, [children])
 
   if (editable) {
     childNode = editing ? (
@@ -383,8 +383,11 @@ export const MangaTable = (props: IMangaTableProps) => {
       editable: true,
       dataType: 'boolean',
       render: (value: boolean) => (
-        <Typography.Text color={!!value ? colorSuccessActive : colorBgMask}>
-          {!!value}
+        <Typography.Text
+          color={!!value ? colorSuccessActive : colorBgMask}
+          style={{ fontWeight: 'bold' }}
+        >
+          {!!value ? 'True' : 'False'}
         </Typography.Text>
       ),
     })
@@ -446,6 +449,8 @@ export const MangaTable = (props: IMangaTableProps) => {
     })
     return columns
   }, [
+    colorBgMask,
+    colorSuccessActive,
     downloadMangaOne,
     downloadOneParams?.cartoonId,
     getColumnSearchProps,

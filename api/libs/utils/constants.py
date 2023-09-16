@@ -37,7 +37,7 @@ GOOGLE_JAVASCRIPT_ORIGINS:  List[str] = get_env_str_array('GOOGLE_JAVASCRIPT_ORI
 DB_USERNAME: str = get_env('DB_USERNAME') or ''
 DB_PASSWORD: str = get_env('DB_PASSWORD') or ''
 
-GOOGLE_CLIENT_CONFIG  = {}
+GOOGLE_CLIENT_CONFIG = {}
 GOOGLE_CLIENT_CONFIG[GOOGLE_AUTH_TYPE] = {
     'client_id': GOOGLE_CLIENT_ID,
     'project_id': GOOGLE_PROJECT_ID,

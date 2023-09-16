@@ -1,10 +1,9 @@
 import datetime
 from collections import defaultdict
+from pprint import pprint
 
 from ..utils.db_client import get_count_manga_downloaded, get_manga_uploaded
 from ..utils.interface import MangaUploadedToDrive
-
-# sys.path.append("../../libs")  # Adds higher directory to python modules path.
 
 
 def get_manga_updated(latest_update=None, debug=False):
@@ -20,7 +19,8 @@ def get_manga_updated(latest_update=None, debug=False):
         "viewed_by_me": True
     })
     count_manga_downloaded_hash = get_count_manga_downloaded()
-
+    if debug:
+        pprint(count_manga_downloaded_hash)
 
     def transform_data(data: list[MangaUploadedToDrive]):
         results = defaultdict(list)
@@ -38,4 +38,3 @@ def get_manga_updated(latest_update=None, debug=False):
     results_viewed_sorted = sorted(results_viewed.items(), reverse=True)[:latest_update:]
 
     return results_viewed_sorted, results_yet_view_sorted, count_manga_downloaded_hash
-

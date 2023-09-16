@@ -18,14 +18,14 @@ from libs.utils.interface import UpdateMangaConfigData
 from pymongo import ReturnDocument
 
 load_dotenv()
- 
+
 # Remove 1st argument from the
 # list of command line arguments
 argumentList = sys.argv[1:]
 
 # Options
 options = "hmond:"
- 
+
 # Long options
 long_options = []
 
@@ -142,7 +142,7 @@ def download_my_novel():
             f'\ncartoon_name: {cartoon_name}\tkey: {cartoon_id}\tlatest_chapter: {latest_chapter}')
         if disabled is None or not disabled:
             my_novel.download_cartoons(cartoon_id, cartoon_name=cartoon_name, start_ep_index=latest_chapter,
-                                    max_workers=MAX_WORKERS)
+                                       max_workers=MAX_WORKERS)
     upload_to_drive(project_name=my_novel.project_name)
 
 
@@ -185,7 +185,7 @@ def execute_download(enable_download_mam_mirror=False,
 def test_db():
 
     data: list[UpdateMangaConfigData] = []
-    
+
     my_novel_cartoons = []
     with open(os.path.join(MANGA_ROOT_DIR, 'my-novel.json'), encoding='utf-8') as f:
         my_novel_cartoons = json.load(f)
@@ -200,7 +200,7 @@ def test_db():
             downloaded=0,
             project_name=MyNovel.project_name,
         ))
-    
+
     man_mirror_cartoons = []
     with open(os.path.join(MANGA_ROOT_DIR, 'man-mirror.json'), encoding='utf-8') as f:
         man_mirror_cartoons = json.load(f)
@@ -220,67 +220,66 @@ def test_db():
     for d in data:
         steal_manga_db.table_config.find_one_and_update(
             filter={
-            "cartoon_id": d.cartoon_id,
+                "cartoon_id": d.cartoon_id,
             },
             update={
-                '$set': d.to_json()    
+                '$set': d.to_json()
             },
             upsert=True,
-            return_document = ReturnDocument.AFTER
+            return_document=ReturnDocument.AFTER
         )
-        
+
     # man_mirror_manga_list =  steal_manga_db.table_config.find({
     #     "project_name": ManMirror.project_name
     # })
     # my_novel_manga_list =  steal_manga_db.table_config.find({
     #     "project_name": MyNovel.project_name
     # })
-    
+
     # print(f'{ManMirror.project_name} | {[x for x in man_mirror_manga_list]}')
 
 
 if __name__ == "__main__":
     try:
         debug = False
-        enable_download_mam_mirror=False
-        enable_download_mam_mirror_manual=False
-        enable_download_my_novel=False
+        enable_download_mam_mirror = False
+        enable_download_mam_mirror_manual = False
+        enable_download_my_novel = False
 
         # Parsing argument
         arguments, values = getopt.getopt(argumentList, options, long_options)
-        
+
         # checking each argument
         for currentArgument, currentValue in arguments:
             print(f'currentArgument: {currentArgument} | {currentValue}')
             if currentArgument in ("-h", "--Help"):
-                print ("Displaying Help")
-                print ("\t -m | enable_download_mam_mirror")
-                print ("\t -mm | enable_download_mam_mirror_manual")
-                print ("\t -d | debug")
+                print("Displaying Help")
+                print("\t -m | enable_download_mam_mirror")
+                print("\t -mm | enable_download_mam_mirror_manual")
+                print("\t -d | debug")
             elif currentArgument in ("-m"):
-                print ("Enable Man Mirror")
+                print("Enable Man Mirror")
                 enable_download_mam_mirror = True
-                
+
             elif currentArgument in ("-o"):
-                print ("Enable Man Mirror Manual")
+                print("Enable Man Mirror Manual")
                 enable_download_mam_mirror_manual = True
-                
+
             elif currentArgument in ("-n"):
-                print ("Enable My novel")
+                print("Enable My novel")
                 enable_download_my_novel = True
-                
+
             elif currentArgument in ("-d"):
                 debug = True
-                print ("Debug mode")
-                
+                print("Debug mode")
+
         function_execute_time('execute download manga', execute_download,
-                        enable_download_mam_mirror=enable_download_mam_mirror,
-                        enable_download_mam_mirror_manual=enable_download_mam_mirror_manual,
-                        enable_download_my_novel=enable_download_my_novel,
-                        debug=debug,
-                        )
-        
+                              enable_download_mam_mirror=enable_download_mam_mirror,
+                              enable_download_mam_mirror_manual=enable_download_mam_mirror_manual,
+                              enable_download_my_novel=enable_download_my_novel,
+                              debug=debug,
+                              )
+
     except getopt.error as err:
         # output error, and return with an error code
-        print (str(err))
-    
+        print(str(err))

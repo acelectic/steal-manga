@@ -30,15 +30,13 @@ from ..utils.constants import APP_URL, GOOGLE_AUTH_TOKEN_PATH, GOOGLE_CLIENT_CON
 SCOPES = ['https://www.googleapis.com/auth/drive']
 
 
-
-
 def get_google_flow(redirect_uri=f'{APP_URL}/google-callback') -> InstalledAppFlow:
     """ get_google_flow """
-    
+
     client_config = GOOGLE_CLIENT_CONFIG
     print(f'redirect_uri: {redirect_uri}')
     pprint.pprint(client_config)
-    
+
     return InstalledAppFlow.from_client_config(
         client_config=client_config, scopes=SCOPES, redirect_uri=redirect_uri)
 

@@ -87,15 +87,15 @@ class ManMirror:
             output_pdf_path = f'{main_dir}/{chapter}.pdf'
             is_file_local_exists = os.path.isfile(output_pdf_path)
             is_file_exists = False
-            
+
             steal_manga_db = StealMangaDb()
-                    
+
             try:
                 result = steal_manga_db.table_manga_upload.find_one(MangaUploadedToDrive(
-                        project_name=self.project_name,
-                        cartoon_name=cartoon_name,
-                        manga_chapter_name=f'{chapter}.pdf'
-                    ).to_where())
+                    project_name=self.project_name,
+                    cartoon_name=cartoon_name,
+                    manga_chapter_name=f'{chapter}.pdf'
+                ).to_where())
                 is_file_exists = result is not None
             except Exception:
                 is_file_exists = False
@@ -146,7 +146,7 @@ class ManMirror:
                 # print(f'get image json page: {max_page}', end='\r')
                 max_page += 1
 
-            except RequestErrorMustDebug as error:
+            except RequestErrorMustDebug:
                 is_error = True
             except RequestError:
                 is_error = True
@@ -485,10 +485,10 @@ class ManMirror:
 
         try:
             result = steal_manga_db.table_manga_upload.find_one(MangaUploadedToDrive(
-                        project_name=self.project_name,
-                        cartoon_name=cartoon_name,
-                        manga_chapter_name=f'{chapter}.pdf'
-                    ).to_where())
+                project_name=self.project_name,
+                cartoon_name=cartoon_name,
+                manga_chapter_name=f'{chapter}.pdf'
+            ).to_where())
 
             is_file_exists = result is not None
         except Exception:

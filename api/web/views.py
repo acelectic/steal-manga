@@ -26,8 +26,10 @@ from libs.utils.interface import UpdateMangaConfigData
 def health(request: HttpRequest):
     return HttpResponse()
 
+
 def home(request: HttpRequest):
     return HttpResponse()
+
 
 def google_auth(request: HttpRequest):
     flow = get_google_flow()
@@ -97,6 +99,7 @@ def download_manga(request: WSGIRequest):
         )
     return redirect("/")
 
+
 def download_manga_one(request: WSGIRequest):
     if request.method == 'POST':
         body = json.loads(request.body)
@@ -131,11 +134,11 @@ def download_manga_one(request: WSGIRequest):
         return JsonResponse({
             "status":  200 if res else 400
         })
-        
+
     return JsonResponse({
-        "status":  200 
+        "status":  200
     })
-   
+
 
 def manga_updated(request: WSGIRequest):
     if request.method == 'POST':
@@ -184,7 +187,7 @@ def manga_updated(request: WSGIRequest):
     #     man_mirror_cartoons = json.load(f)
 
     my_novel_cartoons = get_manga_config(MyNovel.project_name)
-    
+
     # with open(os.path.join(MANGE_ROOT_DIR, 'my-novel.json'), encoding='utf-8') as f:
     #     my_novel_cartoons = json.load(f)
 
@@ -211,8 +214,8 @@ def manga_updated(request: WSGIRequest):
     #         "sub_dirs": sub_dirs
     #     })
 
-        # for name in dirs:
-        # print(os.path.join(root, name))
+    # for name in dirs:
+    # print(os.path.join(root, name))
 
     manga_exists = []
 
@@ -289,7 +292,7 @@ def fetch_manga_updated(request: WSGIRequest):
     """ fetch manga updated """
 
     if request.method == 'POST':
-      generate_drive_manga_exists()
+        generate_drive_manga_exists()
 
     return JsonResponse({
         "success": True

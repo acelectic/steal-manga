@@ -43,7 +43,7 @@ class MyNovel:
     get_info_timeout: int = 30 * 1000
     get_image_timeout: int = 60 * 1000
 
-    def download_cartoons(self, product_id: str, cartoon_name:str, start_ep_index: int = 1, max_workers: int = 4,
+    def download_cartoons(self, product_id: str, cartoon_name: str, start_ep_index: int = 1, max_workers: int = 4,
                           get_image_timeout: int = 60 * 1000,
                           ) -> None:
         """
@@ -119,7 +119,7 @@ class MyNovel:
                 output_pdf_path = f'{main_dir}/{ep_name}.pdf'
                 is_file_local_exists = os.path.isfile(output_pdf_path)
                 is_file_exists = False
-                
+
                 steal_manga_db = StealMangaDb()
                 try:
                     result = steal_manga_db.table_manga_upload.find_one(MangaUploadedToDrive(
