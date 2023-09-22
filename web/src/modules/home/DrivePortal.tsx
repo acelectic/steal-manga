@@ -1,13 +1,13 @@
 import { Button, Col, Row } from 'antd'
 import { useCallback, useMemo } from 'react'
 
-interface IDriveProtalItem {
+interface IDrivePortalItem {
   name: string
   driveId: string
 }
 
-export const DriveProtal = () => {
-  const items = useMemo<IDriveProtalItem[]>(() => {
+export const DrivePortal = () => {
+  const items = useMemo<IDrivePortalItem[]>(() => {
     return [
       {
         name: 'steal-manga',

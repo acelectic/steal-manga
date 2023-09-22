@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation'
 import { css } from '@emotion/css'
 import { useCallback, useMemo } from 'react'
 import dayjs from 'dayjs'
-import { DriveProtal } from './DriveProtal'
+import { DrivePortal } from './DrivePortal'
 import { MangeUpdateList } from './MangeUpdateList'
 
 const layoutCss = css`
@@ -79,7 +79,7 @@ export const Home = (props: IHomeProps) => {
         </Row>
       </Col>
       <Col span={24}>
-        <DriveProtal />
+        <DrivePortal />
       </Col>
       <Col span={24}>
         <Collapse accordion items={items} />
