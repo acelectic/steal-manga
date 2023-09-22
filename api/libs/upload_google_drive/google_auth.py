@@ -15,6 +15,7 @@
 # [START drive_quickstart]
 from __future__ import print_function
 
+import json
 import os
 import pprint
 
@@ -25,9 +26,12 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 
 from ..utils.constants import APP_URL, GOOGLE_AUTH_TOKEN_PATH, GOOGLE_CLIENT_CONFIG
+from ..utils.db_client import StealMangaDb
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/drive']
+
+steal_manga_db = StealMangaDb()
 
 
 def get_google_flow(redirect_uri=f'{APP_URL}/google-callback') -> InstalledAppFlow:
@@ -49,9 +53,8 @@ def authen():
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
     # time.
-    if os.path.exists(GOOGLE_AUTH_TOKEN_PATH):
-        creds = Credentials.from_authorized_user_file(
-            GOOGLE_AUTH_TOKEN_PATH, SCOPES)
+    creds = __get_creds()
+
     # If there are no (valid) credentials available, let the user log in.
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
@@ -60,21 +63,20 @@ def authen():
             except RefreshError:
                 if os.path.exists(GOOGLE_AUTH_TOKEN_PATH):
                     os.remove(GOOGLE_AUTH_TOKEN_PATH)
+                steal_manga_db.delete_google_token()
                 return authen()
         else:
             flow = get_google_flow()
             creds = flow.run_local_server(port=0)
-
         write_google_token(creds)
-
     return creds
 
 
 def write_google_token(creds: external_account_authorized_user.Credentials | Credentials):
     if creds:
         # Save the credentials for the next run
-        with open(GOOGLE_AUTH_TOKEN_PATH, 'w', encoding='utf-8') as token:
-            token.write(creds.to_json())
+        token_json = creds.to_json()
+        steal_manga_db.replace_google_token(json.loads(token_json))
 
 
 def get_google_creds():
@@ -85,9 +87,8 @@ def get_google_creds():
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
     # time.
-    if os.path.exists(GOOGLE_AUTH_TOKEN_PATH):
-        creds = Credentials.from_authorized_user_file(
-            GOOGLE_AUTH_TOKEN_PATH, SCOPES)
+    creds = __get_creds()
+
     # If there are no (valid) credentials available, let the user log in.
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
@@ -96,4 +97,16 @@ def get_google_creds():
             except RefreshError:
                 if os.path.exists(GOOGLE_AUTH_TOKEN_PATH):
                     os.remove(GOOGLE_AUTH_TOKEN_PATH)
+                steal_manga_db.delete_google_token()
     return creds
+
+
+def __get_creds():
+    token_json = steal_manga_db.get_google_token()
+    pprint.pprint(token_json)
+    if token_json is not None:
+        with open(GOOGLE_AUTH_TOKEN_PATH, 'w', encoding='utf-8') as f:
+            f.write(json.dumps(token_json))
+
+        return Credentials.from_authorized_user_file(
+            GOOGLE_AUTH_TOKEN_PATH, SCOPES)

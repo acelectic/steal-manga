@@ -1,5 +1,5 @@
 
-from pymongo import UpdateOne
+from pymongo import ReturnDocument, UpdateOne
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 
@@ -24,6 +24,9 @@ class StealMangaDb:
     db_name = 'steal-manga'
     table_name_config = 'configs'
     table_name_manga_upload = 'manga_uploads'
+    table_name_google_token = 'google_tokens'
+
+    google_token_id = 'google_token'
 
     def __init__(self) -> None:
         self.steal_manga_db = db_client.get_database(self.db_name)
@@ -36,15 +39,41 @@ class StealMangaDb:
         if self.table_name_manga_upload not in list_collection_names:
             self.steal_manga_db.create_collection(self.table_name_manga_upload)
 
+        if self.table_name_google_token not in list_collection_names:
+            self.steal_manga_db.create_collection(self.table_name_google_token)
+
         # assign collection
         self.table_config = self.steal_manga_db[self.table_name_config]
         self.table_manga_upload = self.steal_manga_db[self.table_name_manga_upload]
+        self.table_google_token = self.steal_manga_db[self.table_name_google_token]
+
+    def replace_google_token(self, token_json: dict):
+        if token_json is not None:
+            token_json['_id'] = self.google_token_id
+            return self.table_google_token.find_one_and_replace(
+                filter={
+                    "_id": self.google_token_id
+                },
+                replacement=token_json,
+                return_document=ReturnDocument.AFTER,
+                upsert=True
+            )
+
+    def get_google_token(self):
+        return self.table_google_token.find_one(filter={
+            "_id": self.google_token_id
+        })
+
+    def delete_google_token(self):
+        return self.table_google_token.delete_one({
+            '_id': self.google_token_id
+        })
 
 
 def get_manga_config(project_name: str = ''):
     """ get_manga_config """
     where = None
-    if (project_name != ''):
+    if project_name != '':
         where = {
             "project_name": project_name
         }
