@@ -12,10 +12,7 @@ export const getMangaUpdated = async (options?: RequestInit) => {
         latest_update: 5,
       }),
     {
-      next: {
-        revalidate: 2,
-        // tags: ['manga-list'],
-      },
+      cache: 'no-store',
       ...options,
     },
   )
@@ -23,7 +20,7 @@ export const getMangaUpdated = async (options?: RequestInit) => {
   return camelizeKeys(responseData) as IGetMangaUpdatedResponse
 }
 
-export const updateMangeConfig = async (payload: IUpdateMangaConfigPayload) => {
+export const updateMangaConfig = async (payload: IUpdateMangaConfigPayload) => {
   const response = await fetch('/api/v1/update-config', {
     method: 'POST',
     cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached

@@ -3,12 +3,12 @@ import { IGetMangaUpdatedResponse } from '../../service/manga-updated/types'
 import { join } from 'lodash'
 import { useCallback } from 'react'
 
-interface IMangeUpdateListProps {
+interface IMangaUpdateListProps {
   resultsYetViewSorted: IGetMangaUpdatedResponse['resultsYetViewSorted']
   resultsViewedSorted: IGetMangaUpdatedResponse['resultsViewedSorted']
 }
 
-export const MangeUpdateList = (props: IMangeUpdateListProps) => {
+export const MangaUpdateList = (props: IMangaUpdateListProps) => {
   const { resultsViewedSorted = [], resultsYetViewSorted = [] } = props
 
   const renderData = useCallback((d: IGetMangaUpdatedResponse['resultsYetViewSorted']) => {

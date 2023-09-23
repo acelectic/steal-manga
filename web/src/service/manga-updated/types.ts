@@ -25,14 +25,17 @@ export enum Project {
   MyNovel = 'my-novel',
 }
 
-export interface ManMirrorCartoon {
+interface MangaConfig {
   cartoonName: string
   cartoonId: string
   latestChapter: number
-  maxChapter: string
+  maxChapter: number
   disabled: boolean
   downloaded: number
+  projectName: Project
+  cartoonDriveId: string
 }
+export type ManMirrorCartoon = MangaConfig
 
 export interface MangaExist {
   projectName: string
@@ -44,14 +47,7 @@ export interface MangaList {
   total: number
 }
 
-export interface MyNovelCartoon {
-  cartoonName: string
-  cartoonId: string
-  latestChapter: number
-  maxChapter: number
-  disabled: boolean
-  downloaded: number
-}
+export type MyNovelCartoon = MangaConfig
 
 export interface IUpdateMangaConfigPayload {
   projectName: string

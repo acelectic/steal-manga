@@ -183,81 +183,12 @@ def manga_updated(request: WSGIRequest):
         latest_update=latest_update)
 
     man_mirror_cartoons = get_manga_config(ManMirror.project_name)
-    # with open(os.path.join(MANGE_ROOT_DIR, 'man-mirror.json'), encoding='utf-8') as f:
-    #     man_mirror_cartoons = json.load(f)
-
     my_novel_cartoons = get_manga_config(MyNovel.project_name)
-
-    # with open(os.path.join(MANGE_ROOT_DIR, 'my-novel.json'), encoding='utf-8') as f:
-    #     my_novel_cartoons = json.load(f)
-
-    # for project_dir in os.listdir(f'{CARTOON_DIR}'):
-    #     if not os.path.isdir(os.path.join(CARTOON_DIR, project_dir)):
-    #         continue
-    #     # for name in files:
-    #     #     print(os.path.join(root, name))
-    #     title = project_dir
-
-    #     sub_dirs = []
-
-    #     for sub_project_cartoon_dir in os.listdir(os.path.join(CARTOON_DIR, project_dir)):
-    #         # print(f'{sub_project_cartoon_dir}')
-    #         image_pdf_list = glob.glob(os.path.join(
-    #             CARTOON_DIR, project_dir, sub_project_cartoon_dir, '*.pdf'))
-    #         sub_dirs.append({
-    #             "title": sub_project_cartoon_dir,
-    #             "image_pdf_list": image_pdf_list
-    #         })
-
-    #     projects.append({
-    #         "title": project_dir,
-    #         "sub_dirs": sub_dirs
-    #     })
-
-    # for name in dirs:
-    # print(os.path.join(root, name))
-
-    manga_exists = []
-
-    # for project_name, project_json in manga_exists_json.items():
-    #     # print(f'project: {project}')
-    #     manga_list: List[Any] = [{
-    #         "manga_name": manga_name,
-    #         "total":  manga_json['total'] or 0
-    #     } for manga_name, manga_json in project_json['sub_dirs'].items()]
-    #     manga_exists.append({
-    #         "project_name": project_name,
-    #         "manga_list": manga_list
-    #     })
-
-    # if 'man-mirror' in manga_exists_json and manga_exists_json['man-mirror'] is not None:
-    #     man_mirror_downloaded = manga_exists_json['man-mirror']['sub_dirs']
-
-    man_mirror_cartoons = [{
-        "cartoon_name": d.cartoon_name,
-        "cartoon_id": d.cartoon_id,
-        "latest_chapter": d.latest_chapter,
-        "max_chapter": d.max_chapter,
-        "disabled": d.disabled or False,
-        "downloaded": count_manga_downloaded_hash.get(d.cartoon_id, 0),
-    } for d in man_mirror_cartoons]
-
-    # if 'my-novel' in manga_exists_json and manga_exists_json['my-novel'] is not None:
-    #     my_novel_downloaded = manga_exists_json['my-novel']['sub_dirs']
-    my_novel_cartoons = [{
-        "cartoon_name": d.cartoon_name,
-        "cartoon_id": d.cartoon_id,
-        "latest_chapter": d.latest_chapter,
-        "max_chapter": d.max_chapter,
-        "disabled": d.disabled or False,
-        "downloaded": count_manga_downloaded_hash.get(d.cartoon_id, 0),
-    } for d in my_novel_cartoons]
 
     return JsonResponse({
         "updated": datetime.now().isoformat(sep='T', timespec='auto'),
-        "manga_exists": manga_exists or [],
-        "man_mirror_cartoons": man_mirror_cartoons or [],
-        "my_novel_cartoons": my_novel_cartoons or [],
+        "man_mirror_cartoons":  [d.to_json() for d in man_mirror_cartoons],
+        "my_novel_cartoons":  [d.to_json() for d in my_novel_cartoons],
         "results_viewed_sorted": results_viewed_sorted or [],
         "results_yet_view_sorted": results_yet_view_sorted or []
     })

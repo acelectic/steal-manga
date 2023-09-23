@@ -3,7 +3,7 @@ from pymongo import ReturnDocument, UpdateOne
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 
-from .constants import DB_PASSWORD, DB_USERNAME
+from .constants import DB_NAME, DB_PASSWORD, DB_USERNAME
 from .interface import MangaUploadedToDrive, UpdateMangaConfigData
 
 uri: str = f"mongodb+srv://{DB_USERNAME}:{DB_PASSWORD}@steal-manga.nlqv7lj.mongodb.net/?retryWrites=true&w=majority"
@@ -21,7 +21,7 @@ except Exception as e:
 class StealMangaDb:
     """ StealMangaDb """
 
-    db_name = 'steal-manga'
+    db_name = DB_NAME
     table_name_config = 'configs'
     table_name_manga_upload = 'manga_uploads'
     table_name_google_token = 'google_tokens'
@@ -89,6 +89,7 @@ def get_manga_config(project_name: str = ''):
             disabled=x['disabled'],
             downloaded=x['downloaded'],
             project_name=x['project_name'],
+            cartoon_drive_id=x['cartoon_drive_id'],
         ))
     return data
 

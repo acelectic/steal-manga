@@ -1,4 +1,5 @@
 'use client'
+
 import { SearchOutlined } from '@ant-design/icons'
 import { css } from '@emotion/css'
 import { useMutation } from '@tanstack/react-query'
@@ -16,18 +17,15 @@ import {
   Table,
   Typography,
   message,
-  theme,
 } from 'antd'
 import { ColumnType } from 'antd/es/table'
 import { FilterConfirmProps } from 'antd/es/table/interface'
+import axios from 'axios'
 import { chain } from 'lodash'
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import Highlighter from 'react-highlight-words'
-import { updateMangaConfig } from '../../service/manga-updated'
-import { IGetMangaUpdatedResponse, ManMirrorCartoon } from '../../service/manga-updated/types'
-import { triggerDownloadMangaOne } from '../../service/trigger-download'
 import { usePaginationHandle } from '../../utils/custom-hook'
-import { openGoogleDrive } from '../../utils/helper'
+import { IMangaWebData, IUpdateMangaWebPayload } from '../../utils/db-client/collection-interface'
 
 const warpCss = css`
   width: 100%;
@@ -51,7 +49,7 @@ const warpCss = css`
 
 const EditableContext = React.createContext<FormInstance<any> | null>(null)
 
-type IItem = ManMirrorCartoon
+type IItem = IMangaWebData
 
 type DataIndex = keyof IItem
 
@@ -161,7 +159,12 @@ const EditableCell: React.FC<EditableCellProps> = ({
             {dataType === 'boolean' ? (
               <Switch />
             ) : (
-              <Input ref={inputRef} onPressEnter={save} onBlur={save} />
+              <Input
+                ref={inputRef}
+                onPressEnter={save}
+                onBlur={save}
+                placeholder={typeof title === 'string' ? title : 'fill here'}
+              />
             )}
           </Form.Item>
         </Col>
@@ -183,41 +186,34 @@ const EditableCell: React.FC<EditableCellProps> = ({
   return <td {...restProps}>{childNode}</td>
 }
 
-interface IMangaTableProps {
-  title: 'man-mirror' | 'my-novel'
-  data: IGetMangaUpdatedResponse['manMirrorCartoons'] | IGetMangaUpdatedResponse['myNovelCartoons']
-  noHeader?: true
+interface IMangaWebTableProps {
+  data: IMangaWebData[]
 }
-export const MangaTable = (props: IMangaTableProps) => {
-  const { title, data, noHeader = false } = props
-  const paginateHandle = usePaginationHandle(title)
+
+export const MangaWebTable = (props: IMangaWebTableProps) => {
+  const { data } = props
+  const paginateHandle = usePaginationHandle('manga-web')
   const [dataSource, setDataSource] = useState<IItem[]>([])
 
   const [searchText, setSearchText] = useState('')
-  const [searchedColumn, setSearchedColumn] = useState('')
+  const [searchedColumn, setSearchedColumn] = useState<DataIndex>('')
   const searchInput = useRef<InputRef>(null)
-  const { colorBgMask, colorSuccessActive } = theme.getDesignToken()
   const { xs, sm } = Grid.useBreakpoint()
 
-  const {
-    mutate: updateConfig,
-    variables: updateConfigParams,
-    isLoading: isUpdateConfigLoading,
-  } = useMutation(updateMangaConfig, {
-    onSuccess: () => {
-      message.success('Update Config Success')
-    },
-  })
+  const { mutate: saveMangaWeb } = useMutation(
+    async (payload: IUpdateMangaWebPayload) => {
+      const { data } = await axios.post('api/v1/manga-webs', {
+        data: payload,
+      })
 
-  const {
-    mutate: downloadMangaOne,
-    variables: downloadOneParams,
-    isLoading: isDownloadMangaOneLoading,
-  } = useMutation(triggerDownloadMangaOne, {
-    onSuccess: () => {
-      message.success('Download Success')
+      return data
     },
-  })
+    {
+      onError() {
+        message.error('Save Failed')
+      },
+    },
+  )
 
   const handleSearch = useCallback(
     (
@@ -240,17 +236,12 @@ export const MangaTable = (props: IMangaTableProps) => {
   useEffect(() => {
     const _data = data.map(
       (e): IItem => ({
-        cartoonName: e.cartoonName,
-        cartoonId: e.cartoonId,
-        latestChapter: +e.latestChapter,
-        maxChapter: +e.maxChapter,
-        disabled: !!e.disabled,
-        downloaded: +e.downloaded,
-        cartoonDriveId: e.cartoonDriveId,
-        projectName: e.projectName,
+        id: e.id,
+        name: e.name,
+        link: e.link,
       }),
     )
-    setDataSource(chain(_data).orderBy(['cartoonName'], ['asc']).value())
+    setDataSource(chain(_data).orderBy(['name'], ['asc']).value())
   }, [data])
 
   const getColumnSearchProps = useCallback(
@@ -337,61 +328,37 @@ export const MangaTable = (props: IMangaTableProps) => {
     const columns: (ColumnType<IItem> &
       Partial<Pick<EditableCellProps, 'editable' | 'dataType'>>)[] = [
       {
-        title: 'Cartoon Name',
-        key: 'cartoonName',
-        dataIndex: 'cartoonName',
-        width: 400,
+        title: 'Name',
+        key: 'name',
+        dataIndex: 'name',
+        width: 250,
+        editable: true,
         sorter: (a, b) => {
-          if (a.cartoonName.toLowerCase() < b.cartoonName.toLowerCase()) return -1
-          if (a.cartoonName.toLowerCase() > b.cartoonName.toLowerCase()) return 1
+          if (a.name.toLowerCase() < b.name.toLowerCase()) return -1
+          if (a.name.toLowerCase() > b.name.toLowerCase()) return 1
           return 0
         },
-        ...getColumnSearchProps('cartoonName'),
+        ...getColumnSearchProps('name'),
       },
       {
-        title: 'Cartoon Id',
-        key: 'cartoonId',
-        dataIndex: 'cartoonId',
-        width: 250,
+        title: 'Url',
+        key: 'link',
+        dataIndex: 'link',
+        editable: true,
         render: (value) => {
-          return <Typography.Paragraph copyable>{value}</Typography.Paragraph>
+          return (
+            <Typography.Paragraph style={{ margin: 0 }} copyable>
+              {value}
+            </Typography.Paragraph>
+          )
         },
-      },
-      {
-        title: 'Latest Chapter',
-        key: 'latestChapter',
-        dataIndex: 'latestChapter',
-        editable: title === 'my-novel',
       },
     ]
 
-    if (title === 'man-mirror') {
-      columns.push({
-        title: 'Max Chapter',
-        key: 'maxChapter',
-        dataIndex: 'maxChapter',
-        editable: title === 'man-mirror',
-      })
-    }
-    columns.push({
-      title: 'Disabled',
-      key: 'disabled',
-      dataIndex: 'disabled',
-      editable: true,
-      dataType: 'boolean',
-      render: (value: boolean) => (
-        <Typography.Text
-          color={!!value ? colorSuccessActive : colorBgMask}
-          style={{ fontWeight: 'bold' }}
-        >
-          {!!value ? 'True' : 'False'}
-        </Typography.Text>
-      ),
-    })
-    columns.push({ title: 'Downloaded', key: 'downloaded', dataIndex: 'downloaded' })
     columns.push({
       title: 'Action',
-      key: 'cartoonId',
+      key: 'name',
+      width: 150,
       render(value, record, index) {
         return (
           <Row gutter={[8, 8]} wrap={false}>
@@ -399,55 +366,24 @@ export const MangaTable = (props: IMangaTableProps) => {
               <Button
                 size="small"
                 onClick={() => {
-                  updateConfig({
-                    projectName: title,
-                    cartoonId: record.cartoonId,
-                    cartoonName: record.cartoonName,
-                    latestChapter: +record.latestChapter,
-                    maxChapter: +record.maxChapter,
-                    disabled: record.disabled,
-                    downloaded: record.downloaded,
+                  saveMangaWeb({
+                    mangaWebs: [
+                      {
+                        id: record.id,
+                        name: record.name,
+                        link: record.link,
+                      },
+                    ],
                   })
                 }}
-                loading={
-                  isUpdateConfigLoading && updateConfigParams?.cartoonId === record.cartoonId
-                }
-                disabled={isUpdateConfigLoading || isDownloadMangaOneLoading}
               >
                 Save
               </Button>
             </Col>
-            <Col>
-              <Button
-                size="small"
-                type="primary"
-                onClick={async () => {
-                  await downloadMangaOne({
-                    projectName: title,
-                    cartoonId: record.cartoonId,
-                    cartoonName: record.cartoonName,
-                    latestChapter: +record.latestChapter,
-                    maxChapter: +record.maxChapter,
-                    disabled: record.disabled,
-                    downloaded: record.downloaded,
-                  })
-                }}
-                loading={
-                  isDownloadMangaOneLoading && downloadOneParams?.cartoonId === record.cartoonId
-                }
-                disabled={isUpdateConfigLoading || isDownloadMangaOneLoading}
-              >
-                Download
-              </Button>
-            </Col>
-            {!!record.cartoonDriveId && (
+            {!!record.link && (
               <Col>
-                <Button
-                  size="small"
-                  type="link"
-                  onClick={openGoogleDrive.bind(null, record.cartoonDriveId)}
-                >
-                  Drive
+                <Button size="small" type="link" href={record.link}>
+                  open
                 </Button>
               </Col>
             )}
@@ -456,18 +392,7 @@ export const MangaTable = (props: IMangaTableProps) => {
       },
     })
     return columns
-  }, [
-    colorBgMask,
-    colorSuccessActive,
-    downloadMangaOne,
-    downloadOneParams?.cartoonId,
-    getColumnSearchProps,
-    isDownloadMangaOneLoading,
-    isUpdateConfigLoading,
-    title,
-    updateConfig,
-    updateConfigParams?.cartoonId,
-  ])
+  }, [getColumnSearchProps, saveMangaWeb])
 
   const handleSave = (row: IItem) => {
     const newData = [...dataSource]
@@ -486,7 +411,6 @@ export const MangaTable = (props: IMangaTableProps) => {
     }
     return {
       ...col,
-      width: '200px',
       onCell: (record: IItem) => ({
         record,
         editable: col.editable,
@@ -500,11 +424,10 @@ export const MangaTable = (props: IMangaTableProps) => {
 
   return (
     <Space className={warpCss} direction="vertical" size={8}>
-      {!noHeader && <Typography.Title level={3}>{title}</Typography.Title>}
       <Table
         dataSource={dataSource}
         columns={columns as ColumnType<IItem>[]}
-        rowKey={'cartoonId'}
+        rowKey={'name'}
         pagination={{
           pageSizeOptions: [5, 10, 20, 30, 50],
           showSizeChanger: true,

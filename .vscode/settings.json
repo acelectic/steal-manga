@@ -9,6 +9,10 @@
   "autopep8.args": ["--max-line-length", "100"],
   "editor.formatOnPaste": true,
   "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": true,
+    "source.fixAll": true
+  },
   "cSpell.words": [
     "creds",
     "dotenv",

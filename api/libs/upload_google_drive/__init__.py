@@ -25,7 +25,7 @@ from typing import List
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload
-from pymongo import ReplaceOne
+from pymongo import ReplaceOne, UpdateOne
 from tqdm import tqdm
 
 from ..utils.constants import (
@@ -174,6 +174,7 @@ def generate_drive_manga_exists(target_project_name=None, target_cartoon_name=No
         all_manga_config = get_manga_config()
         all_manga_config_hash: dict[str, UpdateMangaConfigData] = {}
 
+        manga_config_update_drive_id_list: list[UpdateMangaConfigData] = []
         manga_uploaded_to_drive: list[MangaUploadedToDrive] = []
 
         for d in all_manga_config:
@@ -204,7 +205,11 @@ def generate_drive_manga_exists(target_project_name=None, target_cartoon_name=No
                     continue
                 cartoon_name = manga_dir['name']
                 cartoon_drive_id = manga_dir['id']
-                mange_config = all_manga_config_hash.get(cartoon_name)
+                manga_config = all_manga_config_hash.get(cartoon_name)
+
+                if manga_config is not None:
+                    manga_config.cartoon_drive_id = cartoon_drive_id
+                    manga_config_update_drive_id_list.append(manga_config)
 
                 if logging:
                     print('\t{0} ({1})'.format(
@@ -226,7 +231,7 @@ def generate_drive_manga_exists(target_project_name=None, target_cartoon_name=No
                     manga_uploaded_to_drive.append(MangaUploadedToDrive(
                         project_name=project_name,
                         project_drive_id=project_drive_id,
-                        cartoon_id=mange_config.cartoon_id if mange_config is not None else '',
+                        cartoon_id=manga_config.cartoon_id if manga_config is not None else '',
                         cartoon_name=cartoon_name,
                         cartoon_drive_id=cartoon_drive_id,
                         manga_chapter_name=manga_chapter_name,
@@ -238,6 +243,7 @@ def generate_drive_manga_exists(target_project_name=None, target_cartoon_name=No
 
         print(f'manga_uploaded_to_drive: {len(manga_uploaded_to_drive)}')
 
+        # update manga uploaded
         requests = [ReplaceOne(
             filter={
                 "project_name": d.project_name,
@@ -248,6 +254,18 @@ def generate_drive_manga_exists(target_project_name=None, target_cartoon_name=No
             upsert=True
         ) for d in manga_uploaded_to_drive]
         steal_manga_db.table_manga_upload.bulk_write(requests)
+
+        # update manga config
+        update_config_requests: list[UpdateOne] = [UpdateOne(
+            filter={
+                "cartoon_id": d.cartoon_id,
+            },
+            update={
+                '$set': d.to_json()
+            },
+            upsert=False,
+        ) for d in manga_config_update_drive_id_list]
+        steal_manga_db.table_config.bulk_write(update_config_requests)
 
         update_manga_downloaded()
 

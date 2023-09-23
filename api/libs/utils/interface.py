@@ -11,7 +11,9 @@ class UpdateMangaConfigData:
                  max_chapter: int,
                  disabled: bool,
                  downloaded: int,
-                 project_name: str) -> None:
+                 project_name: str,
+                 cartoon_drive_id: str = ''
+                 ) -> None:
         self.cartoon_name = cartoon_name
         self.cartoon_id = cartoon_id
         self.latest_chapter = latest_chapter
@@ -19,6 +21,7 @@ class UpdateMangaConfigData:
         self.disabled = disabled
         self.downloaded = downloaded
         self.project_name = project_name
+        self.cartoon_drive_id = cartoon_drive_id
 
     def to_json(self):
         """ to json """
@@ -30,6 +33,7 @@ class UpdateMangaConfigData:
             "disabled": self.disabled,
             "downloaded": self.downloaded,
             "project_name": self.project_name,
+            "cartoon_drive_id": self.cartoon_drive_id
         }
 
 

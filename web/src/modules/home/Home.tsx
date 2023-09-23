@@ -1,23 +1,14 @@
 'use client'
 
-import { Button, Col, Collapse, CollapseProps, Layout, Row, Tag, Typography } from 'antd'
-import { IGetMangaUpdatedResponse } from '../../service/manga-updated/types'
-import { MangaTable } from './MangaTable'
-import { ConsoleAction } from './ConsoleAction'
-import { join } from 'lodash'
-import { useRouter } from 'next/navigation'
-import { css } from '@emotion/css'
-import { useCallback, useMemo } from 'react'
+import { Col, Collapse, CollapseProps, Row, Tag, Typography } from 'antd'
 import dayjs from 'dayjs'
+import { useRouter } from 'next/navigation'
+import { useMemo } from 'react'
+import { IGetMangaUpdatedResponse } from '../../service/manga-updated/types'
+import { ConsoleAction } from './ConsoleAction'
 import { DrivePortal } from './DrivePortal'
-import { MangeUpdateList } from './MangeUpdateList'
-
-const layoutCss = css`
-  border: 1px solid black;
-  border-radius: 6px;
-  padding: 10px;
-  margin: 0 20px;
-`
+import { MangaTable } from './MangaTable'
+import { MangaUpdateList } from './MangaUpdateList'
 
 export interface IHomeProps {
   data?: IGetMangaUpdatedResponse
@@ -84,7 +75,7 @@ export const Home = (props: IHomeProps) => {
       <Col span={24}>
         <Collapse accordion items={items} />
       </Col>
-      <MangeUpdateList
+      <MangaUpdateList
         resultsViewedSorted={resultsViewedSorted}
         resultsYetViewSorted={resultsYetViewSorted}
       />

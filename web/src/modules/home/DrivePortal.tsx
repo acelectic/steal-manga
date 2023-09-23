@@ -1,10 +1,16 @@
 import { Button, Col, Row } from 'antd'
 import { useCallback, useMemo } from 'react'
+import { openGoogleDrive } from '../../utils/helper'
 
-interface IDrivePortalItem {
-  name: string
-  driveId: string
-}
+type IDrivePortalItem =
+  | {
+      name: string
+      driveId: string
+    }
+  | {
+      name: string
+      link: string
+    }
 
 export const DrivePortal = () => {
   const items = useMemo<IDrivePortalItem[]>(() => {
@@ -17,20 +23,31 @@ export const DrivePortal = () => {
         name: 'กิลด์บุรุษเที่ยงคืน',
         driveId: '1TA9Q7m5PeH1Qa-qRKb8poT7tflO0pjQ3',
       },
+      {
+        name: 'Man Mirror',
+        link: 'https://www.manmirror.net/main.php?page=phome',
+      },
+      {
+        name: 'My Novel',
+        link: 'https://mynovel.co',
+      },
     ]
   }, [])
 
-  const onGoToDriveClick = useCallback((driveId: string) => {
-    const googleDriveLink = `https://drive.google.com/drive/u/0/folders/${driveId}`
-    window.open(googleDriveLink, '_blank')
+  const onGoToDriveClick = useCallback((item: IDrivePortalItem) => {
+    if ('driveId' in item) {
+      openGoogleDrive(item.driveId)
+    } else if ('link' in item) {
+      window.open(item.link, '_blank')
+    }
   }, [])
 
   return (
     <Row gutter={[12, 12]}>
       {items.map((item) => {
         return (
-          <Col key={item.driveId}>
-            <Button onClick={onGoToDriveClick.bind(null, item.driveId)}>{item.name}</Button>
+          <Col key={item.name}>
+            <Button onClick={onGoToDriveClick.bind(null, item)}>{item.name}</Button>
           </Col>
         )
       })}
