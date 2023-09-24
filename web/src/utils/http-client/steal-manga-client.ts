@@ -8,19 +8,12 @@ class StealMangaClient extends BaseHttpClient {
   constructor(prefix = 'api', version = 'v1') {
     super({
       baseURL: path.join(appConfig.API_HOST, prefix, version),
-      // withCredentials: true,
     })
   }
 
   protected async onRequest(
     request: InternalAxiosRequestConfig<any>,
   ): Promise<InternalAxiosRequestConfig<any>> {
-    // const accessToken = localStorage.getItem('accessToken')
-    // if (accessToken) {
-    //   request.headers.Authorization = 'Bearer ' + accessToken
-    // }
-    console.log(request.baseURL, request.url)
-
     return request
   }
 

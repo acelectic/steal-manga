@@ -4,13 +4,10 @@ import concurrent.futures
 import glob
 import json
 import os
-import random
 import shutil
-import sys
 import urllib.parse
 from pprint import pprint
-from time import process_time, sleep
-from typing import Any, Dict, List, Tuple
+from typing import List, Tuple
 
 import imageio.v3 as iio
 import numpy as np
@@ -24,9 +21,6 @@ from ..utils.file_helper import mkdir
 from ..utils.interface import MangaUploadedToDrive
 from ..utils.pdf_helper import merge_images_to_pdf
 from .image_json_shuffle import ImageJsonShuffle
-
-# sys.path.append("../utils")  # Adds higher directory to python modules path.
-# sys.path.append("../../libs")  # Adds higher directory to python modules path.
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
@@ -123,8 +117,6 @@ class ManMirror:
         is_error = False
         is_some_page_error = False
         is_some_json_error = False
-        # print(f'{cartoon_name} chapter {chapter}')
-        # print('')
 
         image_json_list: List[ImageJsonShuffle] = []
         while not is_error:
@@ -143,7 +135,6 @@ class ManMirror:
                     if image_json.raw:
                         with open(os.path.join(chapter_dir, f'{max_page}.json'), 'w', encoding='utf-8') as error_file:
                             error_file.write(json.dumps(image_json.raw))
-                # print(f'get image json page: {max_page}', end='\r')
                 max_page += 1
 
             except RequestErrorMustDebug:
@@ -179,7 +170,6 @@ class ManMirror:
                 if some_error:
                     is_some_page_error = some_error
             except RequestError:
-                # print(f'request error: {e}')
                 continue
             except AppError as error:
                 print(f'app error: {error}')
@@ -204,7 +194,6 @@ class ManMirror:
                 if some_error:
                     is_some_page_error = some_error
             except RequestError:
-                # print(f'request error: {e}')
                 is_error = True
                 continue
             except AppError as error:
@@ -230,26 +219,21 @@ class ManMirror:
             except RequestError:
                 raw_page_title = f'หน้า-{str(page).zfill(2)}'.encode('utf-8')
                 page_title = urllib.parse.quote_plus(raw_page_title)
-                # print(f'raw_page_title: {raw_page_title}\t page_title: {page_title}')
                 new_image = self.__get_image(
                     cartoon_id, chapter, page=page_title,  image_extension=image_extension)
 
-            # if (image.shape[0] < image.shape[1]):
-            #     old_image_file = Image.fromarray(image)
-            #     old_image_file.save(f'{main_dir}/{page}-old.png')
-
             if image_json is not None and image is not None:
 
-                # if image_json.must_debug:
-                #     old_image_file = Image.fromarray(image)
-                #     old_image_file.save(f'{main_dir}/{page}-debug.png')
-                # else:
-                #     new_image, has_some_order_error = self.__re_order_images(
-                #         image, image_json)
-                #     if has_some_order_error:
-                #         has_some_error = has_some_order_error
-                #         old_image_file = Image.fromarray(image)
-                #         old_image_file.save(f'{main_dir}/{page}-before-order.png')
+                if image_json.must_debug:
+                    old_image_file = Image.fromarray(image)
+                    old_image_file.save(f'{main_dir}/{page}-debug.png')
+                else:
+                    new_image, has_some_order_error = self.__re_order_images(
+                        image, image_json)
+                    if has_some_order_error:
+                        has_some_error = has_some_order_error
+                        old_image_file = Image.fromarray(image)
+                        old_image_file.save(f'{main_dir}/{page}-before-order.png')
                 new_image, has_some_order_error = self.__re_order_images(
                     image, image_json)
                 if has_some_order_error:
@@ -307,7 +291,7 @@ class ManMirror:
         """
 
         url = f'https://www.manmirror.net/test/{cartoon_id}/{chapter}/{page}.json'
-        # print(f'get json {url}')
+
         response = requests.get(url, timeout=self.get_json_timeout)
         if response.status_code == 200:
             data = response.json()
@@ -330,19 +314,8 @@ class ManMirror:
                 raise RequestError(
                     {"message": message, "response": response})
 
-            # if image_json_result.must_debug:
-            #     message = f'shuffles size is too many [{len(shuffles)}] '
-            #     # print(message)
-            #     raise RequestErrorMustDebug(
-            #         data,
-            #         image_json_result,
-            #         {"message": message, "response": response},
-            #     )
-
-            # print(f'data json {data}')
             return image_json_result
 
-        # print(response.status_code)
         raise RequestError(
             {"message": 'can not get json', "response": response})
 
@@ -350,13 +323,11 @@ class ManMirror:
         """function for get man mirror image"""
         url = f'https://www.manmirror.net/test/{cartoon_id}/{chapter}/{page}.{image_extension}'
         if image_extension == 'jpg':
-            # print(f'get image {url}')
             response = requests.get(url, timeout=self.get_image_timeout, stream=True)
             if response.status_code == 200:
                 img = Image.open(response.raw)
                 return np.array(img)
             elif response.status_code == 404:
-                # print(f'url: {url}')
                 pass
         else:
             response = requests.get(url, timeout=self.get_image_timeout)
@@ -364,15 +335,8 @@ class ManMirror:
                 response = iio.imread(url)
                 return response
             elif response.status_code == 404:
-                # print(f'url: {url}')
                 pass
 
-        # if image_extension == 'jpg':
-        #     print(f'url: {url}')
-        #     print(response.status_code)
-        #     print(response.json())
-
-        # print(f'get image {url}')
         raise RequestError(
             {"message": 'can not get image', "response": response})
 
@@ -381,9 +345,7 @@ class ManMirror:
         new_image = np.zeros_like(image)
         if image_json.must_debug:
             pprint(image_json)
-        # print(f'image.shape: {image.shape}')
-        # print(f'new_image.shape: {new_image.shape}')
-        # print(f'image_json.shuffles: {image_json.shuffles}')
+
         for new_row in range(1, image_json.all_row + 1):
             for new_col in range(1, image_json.all_col + 1):
                 sort = (new_col - 1) + ((new_row - 1) * image_json.all_col)
@@ -402,7 +364,6 @@ class ManMirror:
                     old_row * image_json.sub_height, image_json.height)
                 old_right = min(
                     old_col * image_json.sub_width, image_json.width)
-                # print("sort", image_json.shuffles, sort)
                 image_info = {
                     "sort": sort,
                     "new_row": new_row,
@@ -426,12 +387,6 @@ class ManMirror:
                     "all_col": image_json.all_col,
                     "all_row": image_json.all_row,
                 }
-                # print(json.dumps(image_info, indent=0, ))
-
-                # print('new area')
-                # print(new_image[new_left: new_right,
-                #                 new_top: new_bottom])
-                # print('old area')
 
                 try:
                     sub_image_from_old = image[old_top: old_bottom,
@@ -440,14 +395,6 @@ class ManMirror:
                               new_left: new_right] = sub_image_from_old
                 except Exception as error:
                     has_some_error = True
-                    # sub_image_from_old = image[old_top: old_bottom,
-                    #                            old_left: old_right]
-                    # sub_image_from_target = new_image[new_top: new_bottom,
-                    #                                   new_left: new_right]
-                    # print('sub_image_from_old')
-                    # print(sub_image_from_old)
-                    # print('sub_image_from_target')
-                    # print(sub_image_from_target)
 
                     print('error')
                     print('error')
@@ -462,15 +409,11 @@ class ManMirror:
                     })
                     print(f'image.shape: {image.shape}')
                     print(f'new_image.shape: {new_image.shape}')
-                    # print(
-                    #     f'image_json.shuffles: {image_json.shuffles} [{len(image_json.shuffles)}]')
-                    # print(f'image_json.must_debug: {image_json.must_debug}')
+
                     raise AppError({
                         "message": "re_order_images error",
                         "error": error
                     }) from error
-                # break
-            # break
         return new_image, has_some_error
 
     def download_manual(self, cartoon_name: str, cartoon_id: str, chapter: int, prefix: str, debug=False):

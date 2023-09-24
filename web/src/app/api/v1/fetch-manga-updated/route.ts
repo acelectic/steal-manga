@@ -1,10 +1,6 @@
 import to from 'await-to-js'
-import { NextRequest, NextResponse } from 'next/server'
-import path from 'path'
-import { appConfig } from '../../../../config/app-config'
-import { decamelizeKeys } from 'humps'
 import { revalidatePath } from 'next/cache'
-import { triggerDownloadManga } from '../../../../service/trigger-download'
+import { NextRequest, NextResponse } from 'next/server'
 import { fetchMangaUpdated } from '../../../../service/fetch-manga-updated'
 
 export async function POST(request: NextRequest) {

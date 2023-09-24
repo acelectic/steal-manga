@@ -37,4 +37,4 @@ def get_manga_updated(latest_update=None, debug=False):
         :latest_update:]
     results_viewed_sorted = sorted(results_viewed.items(), reverse=True)[:latest_update:]
 
-    return results_viewed_sorted, results_yet_view_sorted, count_manga_downloaded_hash
+    return results_viewed_sorted, results_yet_view_sorted

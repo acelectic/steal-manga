@@ -96,8 +96,6 @@ def download_man_mirror_manual() -> None:
 
 def download_man_mirror():
     man_mirror_cartoons = get_manga_config(ManMirror.project_name)
-    # with open(os.path.join(MANGA_ROOT_DIR, 'man-mirror.json'), encoding='utf-8') as f:
-    #     man_mirror_cartoons = json.load(f)
 
     man_mirror = ManMirror()
     generate_drive_manga_exists(target_project_name=man_mirror.project_name)
@@ -123,8 +121,6 @@ def download_man_mirror():
 
 def download_my_novel():
     my_novel_cartoons = get_manga_config(MyNovel.project_name)
-    # with open(os.path.join(MANGA_ROOT_DIR, 'my-novel.json'), encoding='utf-8') as f:
-    #     my_novel_cartoons = json.load(f)
 
     my_novel = MyNovel()
     generate_drive_manga_exists(target_project_name=my_novel.project_name)

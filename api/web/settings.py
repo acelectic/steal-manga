@@ -23,10 +23,10 @@ ROOT_DIR = BASE_DIR.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-@2o5q#8mmeb&0=gx)&td4!=_xlt!d-m1ee_$k1sy=p6g-6!ly+'
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY') or ''
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('APP_MODE') == 'development'
 
 ALLOWED_HOSTS = ['*', 'steal_manga_api', 'steal_manga_api:8000', 'localhost:8001']
 

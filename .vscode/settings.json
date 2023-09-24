@@ -52,7 +52,7 @@
   ],
   "prettier.prettierPath": "./web/node_modules/prettier",
   "sonarlint.connectedMode.project": {
-    "connectionId": "",
-    "projectKey": ""
+    "connectionId": "http-localhost-9000",
+    "projectKey": "steal-manga"
   }
 }

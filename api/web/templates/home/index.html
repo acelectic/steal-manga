@@ -59,7 +59,6 @@
   <form action="/download-manga" method="post" >
     {% csrf_token %}
     <button name="type" type="submit" value="man-mirror">Download man-mirror</button>
-    <!-- <button name="type" type="submit" value="man-mirror-manual">Download man-mirror-manual</button> -->
     <button name="type" type="submit" value="my-novel">Download my-novel</button>
   </form>
   <h2>Manga List</h2>
@@ -99,7 +98,6 @@
             <th class="manga-table-header">CartoonName</th>
             <th class="manga-table-header">CartoonId</th>
             <th class="manga-table-header">LatestChapter</th>
-            <!-- <th class="manga-table-header">MaxChapter</th> -->
             <th class="manga-table-header">Downloaded</th>
             <th class="manga-table-header">Disabled</th>
           </tr>
@@ -110,7 +108,6 @@
                 <td>{{d.cartoon_name}}</td>
                 <td>{{d.cartoon_id}}</td>
                 <td>{{d.latest_chapter}}</td>
-                <!-- <td>{{d.max_chapter}}</td> -->
                 <td>{{d.downloaded}}</td>
                 <td>{{d.disabled}}</td>
               </tr>
@@ -134,47 +131,5 @@
       {% endfor %}
     </ul>
     {% endfor %}
-    <!-- {% for project in projects %}
-    <div class="col-md-4">
-      <div class="card mb-2">
-        <div class="card-body">
-          <h2 class="card-title">{{ project.title }}</h2>
-          {% for sub_dir in project.sub_dirs %}
-          <div class="col-md-4" style="margin-left: 2rem">
-            <div class="card mb-2">
-              <h3 class="card-title">- {{ sub_dir.title }}</h3>
-              <ul class="card-body">
-                {% for pdf_path in sub_dir.image_pdf_list %}
-                <li class="col-md-4">
-                  <div class="card mb-2">
-                    <div
-                      class="card-body"
-                      style="
-                        display: grid;
-                        grid-template-columns: max-content max-content;
-                        grid-column-gap: 12px;
-                        align-items: center;
-                      "
-                    >
-                      <div class="card-title">{{ pdf_path }}</div>
-                      <a
-                        href="pdf-view?pdf_path={{ pdf_path }}"
-                        class="btn btn-primary"
-                      >
-                        View
-                      </a>
-                    </div>
-                  </div>
-                </li>
-                {% endfor %}
-              </ul>
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-      </div>
-    </div>
-    {% endfor %} -->
   </div>
-
 </div>

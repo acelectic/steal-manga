@@ -179,7 +179,7 @@ def manga_updated(request: WSGIRequest):
 
     # print(f'latest_update: {latest_update}')
 
-    results_viewed_sorted, results_yet_view_sorted, count_manga_downloaded_hash = get_manga_updated(
+    results_viewed_sorted, results_yet_view_sorted = get_manga_updated(
         latest_update=latest_update)
 
     man_mirror_cartoons = get_manga_config(ManMirror.project_name)

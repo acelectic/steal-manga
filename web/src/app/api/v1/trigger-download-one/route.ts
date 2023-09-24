@@ -1,25 +1,18 @@
 import to from 'await-to-js'
-import { NextRequest, NextResponse } from 'next/server'
-import path from 'path'
-import { appConfig } from '../../../../config/app-config'
-import { decamelizeKeys } from 'humps'
 import { revalidatePath } from 'next/cache'
-import {
-  downloadMangaOne,
-  triggerDownloadManga,
-  triggerDownloadMangaOne,
-} from '../../../../service/trigger-download'
+import { NextRequest, NextResponse } from 'next/server'
+import { downloadMangaOne } from '../../../../service/trigger-download'
 
 export async function POST(request: NextRequest) {
   const payload = await request.json()
-  console.log({ payload })
-  const [error, responseData] = await to(downloadMangaOne(payload))
-  console.log({ error })
+  const [, responseData] = await to(downloadMangaOne(payload))
 
   const dataRes = await responseData?.json()
-  console.log({ dataRes })
-  const pathUrl = request.nextUrl.searchParams.get('path') || '/'
-  console.log({ pathUrl })
+  let pathUrl = request.nextUrl.searchParams.get('path')
+
+  if (!pathUrl) {
+    pathUrl = '/'
+  }
 
   revalidatePath(pathUrl)
   const response = new NextResponse(JSON.stringify(dataRes), {

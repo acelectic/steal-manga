@@ -1,9 +1,9 @@
 import to from 'await-to-js'
+import { decamelizeKeys } from 'humps'
+import { revalidateTag } from 'next/cache'
 import { NextRequest, NextResponse } from 'next/server'
 import path from 'path'
 import { appConfig } from '../../../../config/app-config'
-import { decamelizeKeys } from 'humps'
-import { revalidatePath, revalidateTag } from 'next/cache'
 
 export async function POST(request: NextRequest) {
   const payload = await request.json()
@@ -21,8 +21,6 @@ export async function POST(request: NextRequest) {
   )
 
   const dataRes = await responseData?.json()
-  // const pathUrl = request.nextUrl.searchParams.get('path') || '/'
-  // revalidatePath(pathUrl)
 
   return NextResponse.json(
     { ...dataRes, revalidated: true },

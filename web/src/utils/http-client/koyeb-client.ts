@@ -15,10 +15,6 @@ class KoyebClient extends BaseHttpClient {
   protected async onRequest(
     request: InternalAxiosRequestConfig<any>,
   ): Promise<InternalAxiosRequestConfig<any>> {
-    // const accessToken = localStorage.getItem('accessToken')
-    // if (accessToken) {
-    //   request.headers.Authorization = 'Bearer ' + accessToken
-    // }
     request.headers.Authorization = 'Bearer ' + appConfig.KOYEB_API_KEY
 
     console.log(request.baseURL, request.url)

@@ -166,3 +166,5 @@ api/config
 !api/config/credentials.json
 
 .env*.local
+
+.scannerwork

@@ -1,8 +1,8 @@
 import { camelizeKeys } from 'humps'
-import { appConfig } from '../../config/app-config'
-import { IGetMangaUpdatedResponse, IUpdateMangaConfigPayload } from './types'
 import path from 'path'
 import qs from 'qs'
+import { appConfig } from '../../config/app-config'
+import { IGetMangaUpdatedResponse, IUpdateMangaConfigPayload } from './types'
 
 export const getMangaUpdated = async (options?: RequestInit) => {
   const response = await fetch(
@@ -17,6 +17,11 @@ export const getMangaUpdated = async (options?: RequestInit) => {
     },
   )
   const responseData = await response.json()
+  console.log(
+    JSON.stringify({
+      responseData,
+    }),
+  )
   return camelizeKeys(responseData) as IGetMangaUpdatedResponse
 }
 
