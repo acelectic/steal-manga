@@ -116,30 +116,7 @@ const EditableCell: React.FC<EditableCellProps> = ({
 
   let childNode = children
 
-  // useEffect(() => {
-  //   if (editable && dataType === 'boolean') {
-  //     const formValues = form.getFieldsValue()
-  //     const formValuesData = formValues?.[dataIndex]
-  //     const data = record?.[dataIndex]
-  //     console.log({ formValues, formValuesData, record, data })
-  //     if (formValuesData === undefined && record && data !== undefined) {
-  //       console.log({ dataIndex, formValuesData, record, data })
-  //       form.setFieldsValue({ [dataIndex]: data })
-  //     }
-  //   }
-  // }, [dataIndex, dataType, editable, form, record])
-
   const renderChildren = useMemo(() => {
-    // if (dataType === 'boolean') {
-    //   if (Array.isArray(children)) {
-    //     return chain(children)
-    //       .map((e) => {
-    //         if (typeof e === 'boolean') return e === true ? 'True' : 'False'
-    //         return e
-    //       })
-    //       .value()
-    //   }
-    // }
     return children
   }, [children])
 
@@ -190,7 +167,9 @@ interface IMangaTableProps {
 }
 export const MangaTable = (props: IMangaTableProps) => {
   const { title, data, noHeader = false } = props
-  const paginateHandle = usePaginationHandle(title)
+  const paginateHandle = usePaginationHandle({
+    prefix: title,
+  })
   const [dataSource, setDataSource] = useState<IItem[]>([])
 
   const [searchText, setSearchText] = useState('')

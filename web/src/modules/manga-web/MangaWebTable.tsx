@@ -183,7 +183,10 @@ interface IMangaWebTableProps {
 
 export const MangaWebTable = (props: IMangaWebTableProps) => {
   const { data } = props
-  const paginateHandle = usePaginationHandle('manga-web')
+  const paginateHandle = usePaginationHandle({
+    prefix: 'manga-web',
+    defaultPageSize: 5,
+  })
   const [dataSource, setDataSource] = useState<IItem[]>([])
   const router = useRouter()
 
@@ -416,7 +419,7 @@ export const MangaWebTable = (props: IMangaWebTableProps) => {
 
   const handleSave = (row: IItem) => {
     const newData = [...dataSource]
-    const index = newData.findIndex((item) => row.cartoonId === item.cartoonId)
+    const index = newData.findIndex((item) => row.id === item.id)
     const item = newData[index]
     newData.splice(index, 1, {
       ...item,
@@ -447,13 +450,13 @@ export const MangaWebTable = (props: IMangaWebTableProps) => {
       <Table
         dataSource={dataSource}
         columns={columns as ColumnType<IItem>[]}
-        rowKey={'name'}
+        rowKey={'id'}
         pagination={{
-          pageSizeOptions: [5, 10, 20, 30, 50],
-          showSizeChanger: true,
           current: paginateHandle.current,
           pageSize: paginateHandle.pageSize,
           onChange: paginateHandle.onChange,
+          showSizeChanger: true,
+          pageSizeOptions: paginateHandle.pageSizeOptions,
         }}
         components={{
           body: {

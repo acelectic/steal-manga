@@ -2,11 +2,23 @@
 
 import { TablePaginationConfig } from 'antd'
 import { chain } from 'lodash'
-import { useRouter, usePathname, useSearchParams } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { stringify } from 'qs'
 import { useMemo } from 'react'
 
-export const usePaginationHandle = (prefix?: string): TablePaginationConfig => {
+interface IPaginateHandleOptions {
+  prefix?: string
+  defaultPage?: number
+  defaultPageSize?: number
+  pageSizeOptions?: number[]
+}
+export const usePaginationHandle = (options: IPaginateHandleOptions): TablePaginationConfig => {
+  const {
+    prefix,
+    defaultPage = 1,
+    defaultPageSize = 50,
+    pageSizeOptions = [5, 10, 20, 50],
+  } = options
   const router = useRouter()
   const searchParams = useSearchParams()
   const pathname = usePathname()
@@ -22,10 +34,10 @@ export const usePaginationHandle = (prefix?: string): TablePaginationConfig => {
     searchParams.forEach((v, k) => {
       query[k] = v
     })
-    const current = chain(searchParams.get(pageKey) || 1)
+    const current = chain(searchParams.get(pageKey) || defaultPage)
       .toNumber()
       .value()
-    const pageSize = chain(searchParams.get(pageSizeKey) || 50)
+    const pageSize = chain(searchParams.get(pageSizeKey) || defaultPageSize)
       .toNumber()
       .value()
 
@@ -43,6 +55,7 @@ export const usePaginationHandle = (prefix?: string): TablePaginationConfig => {
             }),
         )
       },
+      pageSizeOptions,
     }
-  }, [pathname, prefix, router, searchParams])
+  }, [defaultPage, defaultPageSize, pageSizeOptions, pathname, prefix, router, searchParams])
 }
