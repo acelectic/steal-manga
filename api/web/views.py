@@ -52,12 +52,12 @@ def google_callback(request: WSGIRequest):
     code = request.GET['code']
     state = request.GET['state']
     scope = request.GET['scope']
-    pprint({
-        "code": code,
-        "state": state,
-        "scope": scope,
-        "request.GET": request.GET,
-    })
+    # pprint({
+    #     "code": code,
+    #     "state": state,
+    #     "scope": scope,
+    #     "request.GET": request.GET,
+    # })
 
     flow = get_google_flow()
     flow.fetch_token(code=code)
@@ -81,10 +81,10 @@ def download_manga(request: WSGIRequest):
         enable_download_my_novel = False
         body = json.loads(request.body)
         types = body['types'] or request.POST.getlist('types', [])
-        pprint({
-            "data": request.POST,
-            "types": types
-        })
+        # pprint({
+        #     "data": request.POST,
+        #     "types": types
+        # })
         if 'man-mirror' in types:
             enable_download_mam_mirror = True
         if 'man-mirror-manual' in types:
@@ -111,15 +111,15 @@ def download_manga_one(request: WSGIRequest):
         downloaded = body['downloaded']
         project_name = body['project_name']
 
-        pprint({
-            "cartoon_name": cartoon_name,
-            "cartoon_id": cartoon_id,
-            "latest_chapter": latest_chapter,
-            "max_chapter": max_chapter,
-            "disabled": disabled,
-            "downloaded": downloaded,
-            "project_name": project_name,
-        })
+        # pprint({
+        #     "cartoon_name": cartoon_name,
+        #     "cartoon_id": cartoon_id,
+        #     "latest_chapter": latest_chapter,
+        #     "max_chapter": max_chapter,
+        #     "disabled": disabled,
+        #     "downloaded": downloaded,
+        #     "project_name": project_name,
+        # })
 
         d = UpdateMangaConfigData(
             cartoon_name=cartoon_name,
@@ -151,15 +151,15 @@ def manga_updated(request: WSGIRequest):
         downloaded = body['downloaded']
         project_name = body['project_name']
 
-        pprint({
-            "cartoon_name": cartoon_name,
-            "cartoon_id": cartoon_id,
-            "latest_chapter": latest_chapter,
-            "max_chapter": max_chapter,
-            "disabled": disabled,
-            "downloaded": downloaded,
-            "project_name": project_name,
-        })
+        # pprint({
+        #     "cartoon_name": cartoon_name,
+        #     "cartoon_id": cartoon_id,
+        #     "latest_chapter": latest_chapter,
+        #     "max_chapter": max_chapter,
+        #     "disabled": disabled,
+        #     "downloaded": downloaded,
+        #     "project_name": project_name,
+        # })
 
         d = UpdateMangaConfigData(
             cartoon_name=cartoon_name,
@@ -177,7 +177,7 @@ def manga_updated(request: WSGIRequest):
 
     latest_update = request.GET.get("latest_update")
 
-    print(f'latest_update: {latest_update}')
+    # print(f'latest_update: {latest_update}')
 
     results_viewed_sorted, results_yet_view_sorted, count_manga_downloaded_hash = get_manga_updated(
         latest_update=latest_update)

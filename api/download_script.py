@@ -1,7 +1,5 @@
 """ Main Module """
 import getopt
-import json
-import os
 import sys
 from time import time
 from typing import List
@@ -12,10 +10,7 @@ from libs.my_novel import MyNovel
 from libs.upload_google_drive import generate_drive_manga_exists, upload_to_drive
 from libs.upload_google_drive.interface import ManualManMirrorMangaItem
 from libs.upload_google_drive.manga_result import get_manga_updated
-from libs.utils.constants import MANGA_ROOT_DIR
-from libs.utils.db_client import StealMangaDb, get_manga_config
-from libs.utils.interface import UpdateMangaConfigData
-from pymongo import ReturnDocument
+from libs.utils.db_client import get_manga_config
 
 load_dotenv()
 
@@ -180,63 +175,6 @@ def execute_download(enable_download_mam_mirror=False,
 
     function_execute_time('show_manga_updated', get_manga_updated, debug=debug)
     print('END')
-
-
-def test_db():
-
-    data: list[UpdateMangaConfigData] = []
-
-    my_novel_cartoons = []
-    with open(os.path.join(MANGA_ROOT_DIR, 'my-novel.json'), encoding='utf-8') as f:
-        my_novel_cartoons = json.load(f)
-
-    for cartoon_name, cartoon_id, latest_chapter, disabled in my_novel_cartoons:
-        data.append(UpdateMangaConfigData(
-            cartoon_name=cartoon_name,
-            cartoon_id=cartoon_id,
-            latest_chapter=latest_chapter,
-            max_chapter=0,
-            disabled=disabled,
-            downloaded=0,
-            project_name=MyNovel.project_name,
-        ))
-
-    man_mirror_cartoons = []
-    with open(os.path.join(MANGA_ROOT_DIR, 'man-mirror.json'), encoding='utf-8') as f:
-        man_mirror_cartoons = json.load(f)
-
-    for cartoon_name, cartoon_id, latest_chapter, max_chapter, disabled in man_mirror_cartoons:
-        data.append(UpdateMangaConfigData(
-            cartoon_name=cartoon_name,
-            cartoon_id=cartoon_id,
-            latest_chapter=latest_chapter,
-            max_chapter=max_chapter,
-            disabled=disabled,
-            downloaded=0,
-            project_name=ManMirror.project_name,
-        ))
-
-    steal_manga_db = StealMangaDb()
-    for d in data:
-        steal_manga_db.table_config.find_one_and_update(
-            filter={
-                "cartoon_id": d.cartoon_id,
-            },
-            update={
-                '$set': d.to_json()
-            },
-            upsert=True,
-            return_document=ReturnDocument.AFTER
-        )
-
-    # man_mirror_manga_list =  steal_manga_db.table_config.find({
-    #     "project_name": ManMirror.project_name
-    # })
-    # my_novel_manga_list =  steal_manga_db.table_config.find({
-    #     "project_name": MyNovel.project_name
-    # })
-
-    # print(f'{ManMirror.project_name} | {[x for x in man_mirror_manga_list]}')
 
 
 if __name__ == "__main__":

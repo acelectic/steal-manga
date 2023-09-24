@@ -17,7 +17,6 @@ from __future__ import print_function
 
 import json
 import os
-import pprint
 
 from google.auth import external_account_authorized_user
 from google.auth.exceptions import RefreshError
@@ -39,7 +38,6 @@ def get_google_flow(redirect_uri=f'{APP_URL}/google-callback') -> InstalledAppFl
 
     client_config = GOOGLE_CLIENT_CONFIG
     print(f'redirect_uri: {redirect_uri}')
-    pprint.pprint(client_config)
 
     return InstalledAppFlow.from_client_config(
         client_config=client_config, scopes=SCOPES, redirect_uri=redirect_uri)
@@ -103,9 +101,8 @@ def get_google_creds():
 
 def __get_creds():
     token_json = steal_manga_db.get_google_token()
-    pprint.pprint(token_json)
     if token_json is not None:
-        with open(GOOGLE_AUTH_TOKEN_PATH, 'w', encoding='utf-8') as f:
+        with open(GOOGLE_AUTH_TOKEN_PATH, mode='w', encoding='utf-8') as f:
             f.write(json.dumps(token_json))
 
         return Credentials.from_authorized_user_file(
