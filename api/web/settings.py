@@ -27,7 +27,7 @@ SECRET_KEY = os.environ['SECRET_KEY']
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = os.getenv('APP_MODE') == 'development'
+DEBUG = os.getenv('APP_MODE') == 'development'
 
 ALLOWED_HOSTS = ['*', 'steal_manga_api', 'steal_manga_api:8000', 'localhost:8001']
 

@@ -5,6 +5,7 @@ import dayjs from 'dayjs'
 import { useRouter } from 'next/navigation'
 import { useMemo } from 'react'
 import { IGetMangaUpdatedResponse } from '../../service/manga-updated/types'
+import { AddMangaConfig } from './AddMangaConfig'
 import { ConsoleAction } from './ConsoleAction'
 import { DrivePortal } from './DrivePortal'
 import { MangaTable } from './MangaTable'
@@ -71,6 +72,9 @@ export const Home = (props: IHomeProps) => {
       </Col>
       <Col span={24}>
         <DrivePortal />
+      </Col>
+      <Col span={24}>
+        <AddMangaConfig />
       </Col>
       <Col span={24}>
         <Collapse accordion items={items} />

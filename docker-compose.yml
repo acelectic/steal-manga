@@ -16,7 +16,7 @@ services:
   #     - ./api/config:/usr/src/app/config
 
   # web2:
-  #   container_name: steal_manga_web
+  #   container_name: steal_manga_web2
   #   build:
   #     context: .
   #     dockerfile: ./web/Dockerfile.dev
@@ -26,7 +26,7 @@ services:
   #     NODE_ENV: development
   #   command: yarn dev
   #   ports:
-  #     - '8001:3000'
+  #     - '8002:3000'
   #   volumes:
   #     - ./web:/app:delegated
 

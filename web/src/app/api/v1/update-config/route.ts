@@ -8,7 +8,7 @@ import { appConfig } from '../../../../config/app-config'
 export async function POST(request: NextRequest) {
   const payload = await request.json()
   revalidateTag('manga-list')
-
+  console.log({ payload })
   const [error, responseData] = await to(
     fetch(path.join(appConfig.API_HOST, 'api', 'v1', 'manga-updated'), {
       method: 'POST',

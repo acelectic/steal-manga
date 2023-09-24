@@ -18,7 +18,7 @@ def update_manga_config(data: UpdateMangaConfigData):
             update={
                 '$set': data.to_json()
             },
-            upsert=False,
+            upsert=True,
             return_document=ReturnDocument.AFTER
         )
         success = True

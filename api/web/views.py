@@ -1,7 +1,6 @@
 import json
 from datetime import datetime
-from pprint import pprint
-from typing import Any, List
+from typing import Any
 
 from django.core.handlers.wsgi import WSGIRequest
 from django.http import HttpRequest, HttpResponse, JsonResponse
@@ -23,11 +22,11 @@ from libs.utils.db_client import get_manga_config
 from libs.utils.interface import UpdateMangaConfigData
 
 
-def health(request: HttpRequest):
+def health():
     return HttpResponse()
 
 
-def home(request: HttpRequest):
+def home():
     return HttpResponse()
 
 
@@ -50,8 +49,6 @@ def google_auth(request: HttpRequest):
 def google_callback(request: WSGIRequest):
     """ google auth callback """
     code = request.GET['code']
-    state = request.GET['state']
-    scope = request.GET['scope']
     # pprint({
     #     "code": code,
     #     "state": state,
@@ -142,24 +139,14 @@ def download_manga_one(request: WSGIRequest):
 
 def manga_updated(request: WSGIRequest):
     if request.method == 'POST':
-        body = json.loads(request.body)
-        cartoon_name = body['cartoon_name']
-        cartoon_id = body['cartoon_id']
-        latest_chapter = body['latest_chapter']
-        max_chapter = body['max_chapter']
-        disabled = body['disabled']
-        downloaded = body['downloaded']
-        project_name = body['project_name']
-
-        # pprint({
-        #     "cartoon_name": cartoon_name,
-        #     "cartoon_id": cartoon_id,
-        #     "latest_chapter": latest_chapter,
-        #     "max_chapter": max_chapter,
-        #     "disabled": disabled,
-        #     "downloaded": downloaded,
-        #     "project_name": project_name,
-        # })
+        body: dict = json.loads(request.body)
+        cartoon_name: Any = body.get('cartoon_name')
+        cartoon_id: Any = body.get('cartoon_id')
+        latest_chapter: Any = body.get('latest_chapter')
+        max_chapter: Any = body.get('max_chapter')
+        disabled: Any = body.get('disabled')
+        downloaded: Any = body.get('downloaded')
+        project_name: Any = body.get('project_name')
 
         d = UpdateMangaConfigData(
             cartoon_name=cartoon_name,

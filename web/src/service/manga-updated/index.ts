@@ -17,11 +17,6 @@ export const getMangaUpdated = async (options?: RequestInit) => {
     },
   )
   const responseData = await response.json()
-  console.log(
-    JSON.stringify({
-      responseData,
-    }),
-  )
   return camelizeKeys(responseData) as IGetMangaUpdatedResponse
 }
 

@@ -4,11 +4,12 @@ import config from 'next/config'
 const getAppConfig = <T extends any = string>(key: string, defaultValue?: T) => {
   const { serverRuntimeConfig, publicRuntimeConfig } = config as any
   // console.log({ serverRuntimeConfig, publicRuntimeConfig })
-  return (get(serverRuntimeConfig || {}, key, '') ||
-    get(publicRuntimeConfig || {}, key, '') ||
-    get(process.env || {}, key, '') ||
+  return (get(serverRuntimeConfig || {}, key) ||
+    get(publicRuntimeConfig || {}, key) ||
+    get(process.env || {}, key) ||
     defaultValue) as T
 }
+
 export const appConfig = {
   API_HOST: getAppConfig<string>('API_HOST', ''),
   NEXT_PUBLIC_LOG_ROCKET_APP_ID: getAppConfig<string>('NEXT_PUBLIC_LOG_ROCKET_APP_ID'),
