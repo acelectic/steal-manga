@@ -22,11 +22,14 @@ ROOT_DIR = BASE_DIR.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
+print('os.environ')
+print(os.environ)
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY') or ''
+# SECRET_KEY = os.environ['SECRET_KEY']
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('APP_MODE') == 'development'
+# DEBUG = os.getenv('APP_MODE') == 'development'
 
 ALLOWED_HOSTS = ['*', 'steal_manga_api', 'steal_manga_api:8000', 'localhost:8001']
 
