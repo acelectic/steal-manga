@@ -1,12 +1,12 @@
-import ReactQueryProvider from '../components/providers/ReactQueryProvider'
-import EmotionProvider from '../components/providers/EmotionProvider'
-import './globals.css'
 import { Sarabun } from 'next/font/google'
 import React from 'react'
-import AntdProvider from '../components/providers/AntdProvider'
 import AppLayout from '../components/layouts/index.'
+import AntdProvider from '../components/providers/AntdProvider'
+import EmotionProvider from '../components/providers/EmotionProvider'
 import { InitLogRocker } from '../components/providers/InitLogRocker'
+import ReactQueryProvider from '../components/providers/ReactQueryProvider'
 import { appConfig } from '../config/app-config'
+import './globals.css'
 const inter = Sarabun({ weight: '400', subsets: ['thai'] })
 
 export const metadata = {
