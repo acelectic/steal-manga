@@ -4,7 +4,7 @@ import { Col, Collapse, CollapseProps, Row, Tag, Typography } from 'antd'
 import dayjs from 'dayjs'
 import { useRouter } from 'next/navigation'
 import { useMemo } from 'react'
-import { IGetMangaUpdatedResponse } from '../../service/manga-updated/types'
+import { EnumMangaProjectName, IGetMangaUpdatedResponse } from '../../service/manga-updated/types'
 import { AddMangaConfig } from './AddMangaConfig'
 import { ConsoleAction } from './ConsoleAction'
 import { DrivePortal } from './DrivePortal'
@@ -31,12 +31,16 @@ export const Home = (props: IHomeProps) => {
       {
         key: 'man-mirror',
         label: 'Man Mirror',
-        children: <MangaTable title="man-mirror" data={manMirrorCartoons} noHeader />,
+        children: (
+          <MangaTable title={EnumMangaProjectName.MAN_MIRROR} data={manMirrorCartoons} noHeader />
+        ),
       },
       {
         key: 'my-novel',
         label: 'My Novel',
-        children: <MangaTable title="my-novel" data={myNovelCartoons} noHeader />,
+        children: (
+          <MangaTable title={EnumMangaProjectName.MY_NOVEL} data={myNovelCartoons} noHeader />
+        ),
       },
     ]
   }, [manMirrorCartoons, myNovelCartoons])

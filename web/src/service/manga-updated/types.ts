@@ -8,7 +8,7 @@ export interface IGetMangaUpdatedResponse {
 }
 
 export interface ResultsViewedSortedClass {
-  projectName: Project
+  projectName: EnumMangaProjectName
   projectDriveId: string
   cartoonId: string
   cartoonName: string
@@ -20,9 +20,9 @@ export interface ResultsViewedSortedClass {
   viewedByMe: boolean
 }
 
-export enum Project {
-  ManMirror = 'man-mirror',
-  MyNovel = 'my-novel',
+export enum EnumMangaProjectName {
+  MAN_MIRROR = 'man-mirror',
+  MY_NOVEL = 'my-novel',
 }
 
 export interface IMangaConfig {
@@ -32,7 +32,7 @@ export interface IMangaConfig {
   maxChapter: number
   disabled: boolean
   downloaded: number
-  projectName: Project
+  projectName: EnumMangaProjectName
   cartoonDriveId: string
 }
 export type ManMirrorCartoon = IMangaConfig

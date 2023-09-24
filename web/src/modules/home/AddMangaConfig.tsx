@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { InputNumber } from '../../components/common/InputNumber'
 import { updateMangaConfig } from '../../service/manga-updated'
-import { IMangaConfig, Project } from '../../service/manga-updated/types'
+import { EnumMangaProjectName, IMangaConfig } from '../../service/manga-updated/types'
 
 interface IAddMangaConfigProps {}
 export const AddMangaConfig = (props: IAddMangaConfigProps) => {
@@ -80,7 +80,7 @@ const AddMangaConfigForm = (props: IAddMangaConfigFormProps) => {
     <Form<IMangaConfig> form={form} onFinish={onFinish} layout="vertical" disabled={isLoading}>
       <Form.Item name="projectName" label="ProjectName" required>
         <Select
-          options={values(Project).map((project) => {
+          options={values(EnumMangaProjectName).map((project) => {
             return {
               value: project,
               label: pascalize(project),
@@ -108,7 +108,7 @@ const AddMangaConfigForm = (props: IAddMangaConfigFormProps) => {
       >
         <InputNumber />
       </Form.Item>
-      {projectName === Project.ManMirror && (
+      {projectName === EnumMangaProjectName.MAN_MIRROR && (
         <Form.Item
           name="maxChapter"
           label="MaxChapter"

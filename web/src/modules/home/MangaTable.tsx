@@ -24,7 +24,11 @@ import { chain } from 'lodash'
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import Highlighter from 'react-highlight-words'
 import { updateMangaConfig } from '../../service/manga-updated'
-import { IGetMangaUpdatedResponse, ManMirrorCartoon } from '../../service/manga-updated/types'
+import {
+  EnumMangaProjectName,
+  IGetMangaUpdatedResponse,
+  ManMirrorCartoon,
+} from '../../service/manga-updated/types'
 import { triggerDownloadMangaOne } from '../../service/trigger-download'
 import { usePaginationHandle } from '../../utils/custom-hook'
 import { openGoogleDrive } from '../../utils/helper'
@@ -161,7 +165,7 @@ const EditableCell: React.FC<EditableCellProps> = ({
 }
 
 interface IMangaTableProps {
-  title: 'man-mirror' | 'my-novel'
+  title: EnumMangaProjectName
   data: IGetMangaUpdatedResponse['manMirrorCartoons'] | IGetMangaUpdatedResponse['myNovelCartoons']
   noHeader?: true
 }
@@ -239,7 +243,7 @@ export const MangaTable = (props: IMangaTableProps) => {
           <Input
             ref={searchInput}
             placeholder={`Search ${dataIndex}`}
-            value={selectedKeys[0]}
+            value={selectedKeys?.[0]?.toString()}
             onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
             onPressEnter={() => handleSearch(selectedKeys as string[], confirm, dataIndex)}
             style={{ marginBottom: 8, display: 'block' }}
@@ -386,6 +390,7 @@ export const MangaTable = (props: IMangaTableProps) => {
                     maxChapter: +record.maxChapter,
                     disabled: record.disabled,
                     downloaded: record.downloaded,
+                    cartoonDriveId: record.cartoonDriveId,
                   })
                 }}
                 loading={
