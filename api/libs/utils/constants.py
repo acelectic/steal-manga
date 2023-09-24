@@ -6,7 +6,7 @@ from typing import List
 
 from dotenv import load_dotenv
 
-from .file_helper import get_env, get_env_str_array
+from .file_helper import get_env, get_env_str_array, mkdir
 
 load_dotenv()
 
@@ -15,8 +15,9 @@ cwd = os.getcwd()
 MAN_MIRROR = 'man-mirror'
 MY_NOVEL = 'my-novel'
 
-GOOGLE_AUTH_TOKEN_PATH = os.path.join(cwd, 'config/token.json')
-MANGA_ROOT_DIR = os.path.join(cwd, 'config/manga')
+APP_CONFIG = os.path.join(cwd, 'config')
+mkdir(APP_CONFIG)
+GOOGLE_AUTH_TOKEN_PATH = os.path.join(cwd, APP_CONFIG, 'token.json')
 CARTOON_DIR = os.path.join(cwd, 'files/cartoons')
 
 DRIVE_CARTOONS_DIR_ID: str = get_env('DRIVE_CARTOONS_DIR_ID') or ''

@@ -1,7 +1,8 @@
-import { Col, Divider, Layout, Row, Typography } from 'antd'
-import { IGetMangaUpdatedResponse } from '../../service/manga-updated/types'
+import { Button, Col, Divider, Layout, Row, Typography } from 'antd'
 import { join } from 'lodash'
 import { useCallback } from 'react'
+import { IGetMangaUpdatedResponse } from '../../service/manga-updated/types'
+import { makeGoogleDriveLink } from '../../utils/helper'
 
 interface IMangaUpdateListProps {
   resultsYetViewSorted: IGetMangaUpdatedResponse['resultsYetViewSorted']
@@ -20,7 +21,13 @@ export const MangaUpdateList = (props: IMangaUpdateListProps) => {
             {items.map((item) => {
               return (
                 <li key={item.projectName + item.cartoonName + item.mangaChapterName}>
-                  <Typography>{join([item.cartoonName, item.mangaChapterName], ' ')}</Typography>
+                  <Button
+                    type="link"
+                    href={makeGoogleDriveLink(item.cartoonDriveId)}
+                    target="_blank"
+                  >
+                    {join([item.cartoonName, item.mangaChapterName], ' ')}
+                  </Button>
                 </li>
               )
             })}
