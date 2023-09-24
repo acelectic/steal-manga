@@ -33,11 +33,13 @@ export const MangaWeb = (props: IMangaWebProps) => {
       return data
     },
     {
-      onSuccess() {
-        router.refresh()
-      },
       onSettled() {
         setModalVisible(false)
+        router.refresh()
+
+        setTimeout(() => {
+          router.refresh()
+        }, 1000)
       },
       onError() {
         message.error('Save Failed')

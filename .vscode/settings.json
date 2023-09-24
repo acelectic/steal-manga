@@ -50,5 +50,9 @@
     "--disable=W0718",
     "--disable=E0402"
   ],
-  "prettier.prettierPath": "./web/node_modules/prettier"
+  "prettier.prettierPath": "./web/node_modules/prettier",
+  "sonarlint.connectedMode.project": {
+    "connectionId": "",
+    "projectKey": ""
+  }
 }

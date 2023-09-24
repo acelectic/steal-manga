@@ -19,9 +19,10 @@ import {
   message,
 } from 'antd'
 import { ColumnType } from 'antd/es/table'
-import { FilterConfirmProps } from 'antd/es/table/interface'
+import { FilterConfirmProps, FilterDropdownProps } from 'antd/es/table/interface'
 import axios from 'axios'
 import { chain } from 'lodash'
+import { useRouter } from 'next/navigation'
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import Highlighter from 'react-highlight-words'
 import { usePaginationHandle } from '../../utils/custom-hook'
@@ -128,16 +129,6 @@ const EditableCell: React.FC<EditableCellProps> = ({
   // }, [dataIndex, dataType, editable, form, record])
 
   const renderChildren = useMemo(() => {
-    // if (dataType === 'boolean') {
-    //   if (Array.isArray(children)) {
-    //     return chain(children)
-    //       .map((e) => {
-    //         if (typeof e === 'boolean') return e === true ? 'True' : 'False'
-    //         return e
-    //       })
-    //       .value()
-    //   }
-    // }
     return children
   }, [children])
 
@@ -194,6 +185,7 @@ export const MangaWebTable = (props: IMangaWebTableProps) => {
   const { data } = props
   const paginateHandle = usePaginationHandle('manga-web')
   const [dataSource, setDataSource] = useState<IItem[]>([])
+  const router = useRouter()
 
   const [searchText, setSearchText] = useState('')
   const [searchedColumn, setSearchedColumn] = useState<DataIndex>('')
@@ -211,6 +203,13 @@ export const MangaWebTable = (props: IMangaWebTableProps) => {
     {
       onError() {
         message.error('Save Failed')
+      },
+      onSettled() {
+        router.refresh()
+
+        setTimeout(() => {
+          router.refresh()
+        }, 500)
       },
     },
   )
@@ -244,9 +243,15 @@ export const MangaWebTable = (props: IMangaWebTableProps) => {
     setDataSource(chain(_data).orderBy(['name'], ['asc']).value())
   }, [data])
 
-  const getColumnSearchProps = useCallback(
-    (dataIndex: DataIndex): ColumnType<IItem> => ({
-      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
+  const getFilterDropdown = useCallback(
+    (dataIndex: DataIndex) => {
+      const renderFilterDropdown = ({
+        setSelectedKeys,
+        selectedKeys,
+        confirm,
+        clearFilters,
+        close,
+      }: FilterDropdownProps) => (
         <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
           <Input
             ref={searchInput}
@@ -295,10 +300,25 @@ export const MangaWebTable = (props: IMangaWebTableProps) => {
             </Button>
           </Space>
         </div>
-      ),
-      filterIcon: (filtered: boolean) => (
-        <SearchOutlined style={{ color: filtered ? '#1677ff' : undefined }} />
-      ),
+      )
+      return renderFilterDropdown
+    },
+    [handleReset, handleSearch],
+  )
+
+  const getFilterIcon = useCallback(():
+    | React.ReactNode
+    | ((filtered: boolean) => React.ReactNode) => {
+    const renderFilterIcon = (filtered: boolean) => (
+      <SearchOutlined style={{ color: filtered ? '#1677ff' : undefined }} />
+    )
+    return renderFilterIcon
+  }, [])
+
+  const getColumnSearchProps = useCallback(
+    (dataIndex: DataIndex): ColumnType<IItem> => ({
+      filterDropdown: getFilterDropdown(dataIndex),
+      filterIcon: getFilterIcon(),
       onFilter: (value, record) =>
         record[dataIndex]
           .toString()
@@ -321,7 +341,7 @@ export const MangaWebTable = (props: IMangaWebTableProps) => {
           text
         ),
     }),
-    [handleReset, handleSearch, searchText, searchedColumn],
+    [getFilterDropdown, getFilterIcon, searchText, searchedColumn],
   )
 
   const defaultColumns = useMemo(() => {
