@@ -259,7 +259,7 @@ export const MangaWebTable = (props: IMangaWebTableProps) => {
           <Input
             ref={searchInput}
             placeholder={`Search ${dataIndex}`}
-            value={selectedKeys[0]}
+            value={selectedKeys[0]?.toString()}
             onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
             onPressEnter={() => handleSearch(selectedKeys as string[], confirm, dataIndex)}
             style={{ marginBottom: 8, display: 'block' }}
