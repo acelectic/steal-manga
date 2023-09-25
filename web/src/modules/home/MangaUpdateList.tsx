@@ -1,9 +1,14 @@
-import { Button, Col, Divider, Layout, Row, Typography } from 'antd'
+import { css } from '@emotion/css'
+import { Col, Divider, Layout, Row, Typography } from 'antd'
 import { join } from 'lodash'
 import { useCallback } from 'react'
 import { IGetMangaUpdatedResponse } from '../../service/manga-updated/types'
 import { makeGoogleDriveLink } from '../../utils/helper'
 
+const linkCss = css`
+  white-space: pre-line;
+  text-align: start;
+`
 interface IMangaUpdateListProps {
   resultsYetViewSorted: IGetMangaUpdatedResponse['resultsYetViewSorted']
   resultsViewedSorted: IGetMangaUpdatedResponse['resultsViewedSorted']
@@ -21,13 +26,13 @@ export const MangaUpdateList = (props: IMangaUpdateListProps) => {
             {items.map((item) => {
               return (
                 <li key={item.projectName + item.cartoonName + item.mangaChapterName}>
-                  <Button
-                    type="link"
+                  <Typography.Link
                     href={makeGoogleDriveLink(item.cartoonDriveId)}
                     target="_blank"
+                    className={linkCss}
                   >
                     {join([item.cartoonName, item.mangaChapterName], ' ')}
-                  </Button>
+                  </Typography.Link>
                 </li>
               )
             })}
