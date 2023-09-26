@@ -1,3 +1,4 @@
+import { ConfigModuleOptions } from '@nestjs/config'
 import 'dotenv/config'
 import Joi from 'joi'
 
@@ -12,6 +13,7 @@ const appConfig = {
   NODE_ENV: process.env.NODE_ENV as (typeof ALLOW_NODE_ENV)[number],
   APP_MODE: process.env.APP_MODE as (typeof ALLOW_NODE_ENV)[number],
   VERSION: process.env.VERSION || '',
+  PORT: +process.env.PORT || 3000,
   IS_WORKER: process.env.IS_WORKER === 'true',
   SECRET_KEY: process.env.SECRET_KEY,
   DEBUG: process.env.DEBUG === 'true',
@@ -19,8 +21,8 @@ const appConfig = {
   UPDATE_MINUTE_THRESHOLD: +process.env.UPDATE_MINUTE_THRESHOLD,
   DRIVE_CARTOONS_DIR_ID: process.env.DRIVE_CARTOONS_DIR_ID,
   DELETE_FILE_AFTER_UPLOADED: process.env.DELETE_FILE_AFTER_UPLOADED === 'true',
-  APP_URL: process.env.APP_URL,
-  WEB_URL: process.env.WEB_URL,
+  MANGA_SERVICE_API_URL: process.env.MANGA_SERVICE_API_URL,
+  MANGA_WEB_URL: process.env.MANGA_WEB_URL,
   GOOGLE_AUTH_TYPE: process.env.GOOGLE_AUTH_TYPE,
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
   GOOGLE_PROJECT_ID: process.env.GOOGLE_PROJECT_ID,
@@ -46,6 +48,7 @@ const joiObject: IJoiObject = {
   NODE_ENV: Joi.string().valid(...ALLOW_NODE_ENV),
   APP_MODE: Joi.string().valid(...ALLOW_NODE_ENV),
   VERSION: Joi.string().optional(),
+  PORT: Joi.number().optional(),
   IS_WORKER: Joi.boolean().optional(),
   SECRET_KEY: Joi.string().required(),
   DEBUG: Joi.boolean().optional(),
@@ -53,8 +56,8 @@ const joiObject: IJoiObject = {
   UPDATE_MINUTE_THRESHOLD: Joi.number().required(),
   DRIVE_CARTOONS_DIR_ID: Joi.string().required(),
   DELETE_FILE_AFTER_UPLOADED: Joi.boolean().required(),
-  APP_URL: Joi.string().required(),
-  WEB_URL: Joi.string().required(),
+  MANGA_SERVICE_API_URL: Joi.string().required(),
+  MANGA_WEB_URL: Joi.string().required(),
   GOOGLE_AUTH_TYPE: Joi.string().required(),
   GOOGLE_CLIENT_ID: Joi.string().required(),
   GOOGLE_PROJECT_ID: Joi.string().required(),
@@ -73,6 +76,8 @@ const joiObject: IJoiObject = {
   REDIS_PREFIX: Joi.string().required(),
 }
 
-export const validationEnvSchema = Joi.object<IJoiObject>(joiObject)
-
+const validationEnvSchema = Joi.object<IJoiObject>(joiObject)
+export const appConfigModuleOptions: ConfigModuleOptions = {
+  validationSchema: validationEnvSchema,
+}
 export default appConfig

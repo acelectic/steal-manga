@@ -1,4 +1,4 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
+import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { HydratedDocument } from 'mongoose'
 
 export type MangaConfigDocument = HydratedDocument<MangaConfig>
@@ -30,13 +30,14 @@ export class MangaConfig implements IMangaConfig {
   project_name: EnumMangaConfigProjectName
 
   @Prop({
+    type: String,
     required: true,
   })
   cartoon_name: string
 
   @Prop({
+    type: String,
     required: true,
-    unique: true,
   })
   cartoon_id: string
 
@@ -55,8 +56,21 @@ export class MangaConfig implements IMangaConfig {
   @Prop(Number)
   downloaded: number
 
-  @Prop()
+  @Prop(String)
   cartoon_drive_id: string
 }
 
 export const MangaConfigSchema = SchemaFactory.createForClass(MangaConfig)
+MangaConfigSchema.index(
+  {
+    project_name: 1,
+    cartoon_id: 1,
+  },
+  {
+    unique: true,
+  },
+)
+export const MangaConfigModelDefinition: ModelDefinition = {
+  name: MangaConfig.name,
+  schema: MangaConfigSchema,
+}

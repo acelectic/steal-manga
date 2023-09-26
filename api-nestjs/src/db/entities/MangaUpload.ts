@@ -1,5 +1,6 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
+import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { HydratedDocument } from 'mongoose'
+import { EnumMangaConfigProjectName } from './MangaConfig'
 
 export type MangaUploadDocument = HydratedDocument<MangaUpload>
 
@@ -22,36 +23,43 @@ export interface IMangaUpload {
 })
 export class MangaUpload implements IMangaUpload {
   @Prop({
+    enum: EnumMangaConfigProjectName,
     required: true,
   })
-  project_name: string
+  project_name: EnumMangaConfigProjectName
 
   @Prop({
+    type: String,
     required: true,
   })
   project_drive_id: string
 
   @Prop({
+    type: String,
     required: true,
   })
   cartoon_id: string
 
   @Prop({
+    type: String,
     required: true,
   })
   cartoon_name: string
 
   @Prop({
+    type: String,
     required: true,
   })
   cartoon_drive_id: string
 
   @Prop({
+    type: String,
     required: true,
   })
   manga_chapter_name: string
 
   @Prop({
+    type: String,
     required: true,
   })
   manga_chapter_drive_id: string
@@ -70,3 +78,7 @@ export class MangaUpload implements IMangaUpload {
 }
 
 export const MangaUploadSchema = SchemaFactory.createForClass(MangaUpload)
+export const MangaUploadModelDefinition: ModelDefinition = {
+  name: MangaUpload.name,
+  schema: MangaUploadSchema,
+}

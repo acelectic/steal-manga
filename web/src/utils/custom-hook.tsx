@@ -1,10 +1,11 @@
 'use client'
 
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { TablePaginationConfig } from 'antd'
 import { chain } from 'lodash'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { stringify } from 'qs'
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 
 interface IPaginateHandleOptions {
   prefix?: string
@@ -58,4 +59,26 @@ export const usePaginationHandle = (options: IPaginateHandleOptions): TablePagin
       pageSizeOptions,
     }
   }, [defaultPage, defaultPageSize, pageSizeOptions, pathname, prefix, router, searchParams])
+}
+
+export const useSse = <T extends any>(url: string) => {
+  const queryKey = useMemo(() => ['sse', url], [url])
+  const query = useQuery<T>(queryKey)
+  const queryClient = useQueryClient()
+
+  useEffect(() => {
+    let eventSource: EventSource
+    if (url) {
+      eventSource = new EventSource(url)
+      eventSource.onmessage = ({ data: dataString }) => {
+        const data = JSON.parse(dataString)
+        queryClient.setQueryData(queryKey, data)
+      }
+    }
+    return () => {
+      eventSource?.close()
+    }
+  }, [queryClient, queryKey, url])
+
+  return query
 }

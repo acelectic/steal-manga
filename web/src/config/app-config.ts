@@ -12,6 +12,7 @@ const getAppConfig = <T extends any = string>(key: string, defaultValue?: T) => 
 
 export const appConfig = {
   API_HOST: getAppConfig<string>('API_HOST', ''),
+  NESTJS_API_HOST: getAppConfig<string>('NESTJS_API_HOST', ''),
   NEXT_PUBLIC_LOG_ROCKET_APP_ID: getAppConfig<string>('NEXT_PUBLIC_LOG_ROCKET_APP_ID'),
   KOYEB_API_HOST: getAppConfig<string>('KOYEB_API_HOST', ''),
   KOYEB_API_SERVICE_ID: getAppConfig<string>('KOYEB_API_SERVICE_ID', ''),

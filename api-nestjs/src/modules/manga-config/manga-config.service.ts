@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { Model } from 'mongoose'
+import { FilterQuery, Model } from 'mongoose'
 import { MangaConfig } from '../../db/entities/MangaConfig'
 
 @Injectable()
@@ -9,7 +9,7 @@ export class MangaConfigService {
     @InjectModel(MangaConfig.name) private mangaConfigModel: Model<MangaConfig>,
   ) {}
 
-  async findAll() {
-    return await this.mangaConfigModel.find()
+  async findAll(filter?: FilterQuery<MangaConfig>) {
+    return await this.mangaConfigModel.find(filter)
   }
 }

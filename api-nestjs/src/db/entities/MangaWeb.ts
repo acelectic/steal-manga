@@ -1,4 +1,4 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
+import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { HydratedDocument } from 'mongoose'
 
 export type MangaWebDocument = HydratedDocument<MangaWeb>
@@ -24,3 +24,7 @@ export class MangaWeb implements IMangaWeb {
 }
 
 export const MangaWebSchema = SchemaFactory.createForClass(MangaWeb)
+export const MangaWebModelDefinition: ModelDefinition = {
+  name: MangaWeb.name,
+  schema: MangaWebSchema,
+}

@@ -1,13 +1,13 @@
+import { useMutation } from '@tanstack/react-query'
 import { Button, Col, Row, Typography, message } from 'antd'
+import { pascalizeKeys } from 'humps'
+import { isEqual } from 'lodash'
+import { useRouter } from 'next/navigation'
+import { PropsWithChildren, useEffect, useState } from 'react'
 import {
   ITriggerDownloadPayload,
   TriggerDownloadTypeEnum,
 } from '../../service/trigger-download/types'
-import { useMutation } from '@tanstack/react-query'
-import { useRouter } from 'next/navigation'
-import { pascalizeKeys } from 'humps'
-import { useState } from 'react'
-import { isEqual } from 'lodash'
 
 export const ConsoleAction = () => {
   const router = useRouter()
@@ -59,24 +59,40 @@ export const ConsoleAction = () => {
         </Row>
       </Col>
       <Col>
-        <Button
+        {/* <Button
           type="primary"
           onClick={triggerDownload.bind(null, [TriggerDownloadTypeEnum.MAN_MIRROR])}
           loading={isEqual(typesDownloading, [TriggerDownloadTypeEnum.MAN_MIRROR])}
           disabled={isLoading}
         >
           Man Mirror
-        </Button>
+        </Button> */}
+        <ProjectActionButton
+          projectName={TriggerDownloadTypeEnum.MAN_MIRROR}
+          onClick={triggerDownload.bind(null, [TriggerDownloadTypeEnum.MAN_MIRROR])}
+          isLoading={isEqual(typesDownloading, [TriggerDownloadTypeEnum.MAN_MIRROR])}
+          disabled={isLoading}
+        >
+          Man Mirror
+        </ProjectActionButton>
       </Col>
       <Col>
-        <Button
+        {/* <Button
           type="primary"
           onClick={triggerDownload.bind(null, [TriggerDownloadTypeEnum.MY_NOVEL])}
           loading={isEqual(typesDownloading, [TriggerDownloadTypeEnum.MY_NOVEL])}
           disabled={isLoading}
         >
           My Novel
-        </Button>
+        </Button> */}
+        <ProjectActionButton
+          projectName={TriggerDownloadTypeEnum.MY_NOVEL}
+          onClick={triggerDownload.bind(null, [TriggerDownloadTypeEnum.MY_NOVEL])}
+          isLoading={isEqual(typesDownloading, [TriggerDownloadTypeEnum.MY_NOVEL])}
+          disabled={isLoading}
+        >
+          My Novel
+        </ProjectActionButton>
       </Col>
       <Col>
         <Button
@@ -108,5 +124,44 @@ export const ConsoleAction = () => {
         </Button>
       </Col>
     </Row>
+  )
+}
+
+interface IProjectActionButtonProps {
+  projectName: TriggerDownloadTypeEnum
+  onClick: () => void
+  isLoading?: boolean
+  disabled?: boolean
+}
+const ProjectActionButton = (props: PropsWithChildren<IProjectActionButtonProps>) => {
+  const { projectName, onClick, disabled, isLoading, children } = props
+
+  const [isDownloading, setIsDownloading] = useState(false)
+
+  useEffect(() => {
+    const eventSource = new EventSource(
+      `${process.env.NEXT_PUBLIC_API_HOST}/api/v1/manga-downloads/projects-status?projectName=${projectName}`,
+    )
+    eventSource.onmessage = ({ data: dataString }) => {
+      const data = JSON.parse(dataString)
+      const { downloadRemain } = data
+
+      setIsDownloading(!!downloadRemain)
+    }
+
+    return () => {
+      eventSource.close()
+    }
+  }, [projectName])
+
+  return (
+    <Button
+      type="primary"
+      onClick={onClick}
+      loading={isLoading || isDownloading}
+      disabled={disabled || isDownloading}
+    >
+      {children}
+    </Button>
   )
 }

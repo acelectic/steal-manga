@@ -1,3 +1,9 @@
+version: '3.5'
+networks:
+  default:
+    external:
+      name: dev-services_default
+
 services:
   # api:
   #   container_name: steal_manga_api
@@ -51,13 +57,13 @@ services:
     ports:
       - '8001:3000'
 
-  api_nestjs:
-    container_name: steal_manga_api_nestjs
-    image: docker.io/acelectic/steal-manga:api-nestjs
-    env_file:
-      - ./api-nestjs/.env
-    ports:
-      - 8003:3000
-    volumes:
-      - ./api-nestjs/private:/usr/src/app/private
-      - ./api-nestjs/public:/usr/src/app/public
+  # api_nestjs:
+  #   container_name: steal_manga_api_nestjs
+  #   image: docker.io/acelectic/steal-manga:api-nestjs
+  #   env_file:
+  #     - ./api-nestjs/.env
+  #   ports:
+  #     - 8003:3000
+  #   volumes:
+  #     - ./api-nestjs/private:/usr/src/app/private
+  #     - ./api-nestjs/public:/usr/src/app/public

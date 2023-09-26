@@ -30,7 +30,7 @@ import {
   ManMirrorCartoon,
 } from '../../service/manga-updated/types'
 import { triggerDownloadMangaOne } from '../../service/trigger-download'
-import { usePaginationHandle } from '../../utils/custom-hook'
+import { usePaginationHandle, useSse } from '../../utils/custom-hook'
 import { openGoogleDrive } from '../../utils/helper'
 
 const warpCss = css`
@@ -181,6 +181,10 @@ export const MangaTable = (props: IMangaTableProps) => {
   const searchInput = useRef<InputRef>(null)
   const { colorBgMask, colorSuccessActive } = theme.getDesignToken()
   const { xs, sm } = Grid.useBreakpoint()
+  const { data: cartoonDownloadingIdsData } = useSse<{
+    cartoonDownloadingIds: string[]
+  }>(`${process.env.NEXT_PUBLIC_API_HOST}/api/v1/manga-downloads/cartoons-status`)
+  const { cartoonDownloadingIds = [] } = cartoonDownloadingIdsData || {}
 
   const {
     mutate: updateConfig,
@@ -419,7 +423,11 @@ export const MangaTable = (props: IMangaTableProps) => {
                 loading={
                   isDownloadMangaOneLoading && downloadOneParams?.cartoonId === record.cartoonId
                 }
-                disabled={isUpdateConfigLoading || isDownloadMangaOneLoading}
+                disabled={
+                  isUpdateConfigLoading ||
+                  isDownloadMangaOneLoading ||
+                  cartoonDownloadingIds.includes(record.cartoonId.toString())
+                }
               >
                 Download
               </Button>
@@ -441,6 +449,7 @@ export const MangaTable = (props: IMangaTableProps) => {
     })
     return columns
   }, [
+    cartoonDownloadingIds,
     colorBgMask,
     colorSuccessActive,
     downloadMangaOne,

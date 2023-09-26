@@ -1,4 +1,4 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
+import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { HydratedDocument } from 'mongoose'
 
 export type GoogleTokenDocument = HydratedDocument<GoogleToken>
@@ -55,3 +55,7 @@ export class GoogleToken implements IGoogleToken {
 }
 
 export const GoogleTokenSchema = SchemaFactory.createForClass(GoogleToken)
+export const GoogleTokenModelDefinition: ModelDefinition = {
+  name: GoogleToken.name,
+  schema: GoogleTokenSchema,
+}

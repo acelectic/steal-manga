@@ -1,55 +1,44 @@
 import { BullModule } from '@nestjs/bullmq'
-import { Module, RequestMethod } from '@nestjs/common'
+import { CacheModule } from '@nestjs/cache-manager'
+import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
+import { EventEmitterModule } from '@nestjs/event-emitter'
 import { MongooseModule } from '@nestjs/mongoose'
 import { ScheduleModule } from '@nestjs/schedule'
 import { LoggerModule } from 'nestjs-pino'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
-import appConfig, { validationEnvSchema } from './config/app-config'
+import { appConfigModuleOptions } from './config/app-config'
+import { bullConfig } from './config/bull-config'
+import {
+  appCacheModuleConfig,
+  cacheModuleConfig,
+} from './config/cache-module-config'
 import { dbConfig } from './config/db-config'
+import { httpLoggerConfig } from './config/http-logger-config'
 import { MangaConfigModule } from './modules/manga-config/manga-config.module'
+import { MangaDownloadModule } from './modules/manga-download/manga-download.module'
+import { MangaPythonServiceModule } from './modules/manga-python-service/manga-python-service.module'
 import { TaskModule } from './modules/task/task.module'
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      validationSchema: validationEnvSchema,
-    }),
+    ConfigModule.forRoot(appConfigModuleOptions),
     MongooseModule.forRootAsync(dbConfig),
     ScheduleModule.forRoot(),
-    BullModule.forRoot({
-      connection: {
-        host: appConfig.REDIS_HOST,
-        port: Number(appConfig.REDIS_PORT),
-      },
-      prefix: appConfig.REDIS_PREFIX,
-      defaultJobOptions: {
-        removeOnComplete: 1000,
-      },
-    }),
-    LoggerModule.forRoot({
-      pinoHttp: {
-        level: 'info',
-        redact: {
-          paths: ['req.body.password', 'req.headers.authorization'],
-          censor: '********',
-        },
-        serializers: {
-          req(req) {
-            req.body = req.raw.body
-            return req
-          },
-        },
-      },
-      exclude: [{ method: RequestMethod.GET, path: '/api/v1/health' }],
-    }),
+    BullModule.forRoot(bullConfig),
+    LoggerModule.forRoot(httpLoggerConfig),
+    CacheModule.register(cacheModuleConfig),
+    EventEmitterModule.forRoot(),
 
     // common module
     TaskModule,
+    MangaPythonServiceModule,
+    appCacheModuleConfig,
 
-    // modules
+    // service modules
     MangaConfigModule,
+    MangaDownloadModule,
   ],
   controllers: [AppController],
   providers: [AppService],

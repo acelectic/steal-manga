@@ -1,4 +1,4 @@
-export enum ExampleConstants {
-  PROCESSOR_NAME = 'example',
-  EXAMPLE_1 = 'example_1',
+export enum MangaDownloadConstants {
+  PROCESSOR_NAME = 'manga-download',
+  DOWNLOAD = 'download',
 }

@@ -48,7 +48,7 @@ export const Home = (props: IHomeProps) => {
   return (
     <Row gutter={[16, 16]}>
       <Col span={24}>
-        <Row gutter={[24, 24]} align="middle">
+        <Row gutter={[24, 24]} align="middle" wrap={false}>
           <Col flex="none">
             <Row gutter={[8, 8]} align="middle">
               <Col span={24}>

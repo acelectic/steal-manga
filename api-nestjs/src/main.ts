@@ -1,15 +1,12 @@
-import {
-  ClassSerializerInterceptor,
-  ValidationPipe,
-  VersioningType,
-} from '@nestjs/common'
-import { NestFactory, Reflector } from '@nestjs/core'
+import { ValidationPipe, VersioningType } from '@nestjs/common'
+import { NestFactory } from '@nestjs/core'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import 'dotenv/config'
 import { json, urlencoded } from 'express'
 import expressBasicAuth from 'express-basic-auth'
 import { AppModule } from './app.module'
 import appConfig from './config/app-config'
+import './config/dayjs-config'
 import { bullServerAdapter } from './modules/task/bull-board.provider'
 
 async function bootstrap() {
@@ -17,6 +14,7 @@ async function bootstrap() {
   app.enableVersioning({
     type: VersioningType.URI,
     prefix: 'v',
+    defaultVersion: '1',
   })
   app.enableCors({
     origin: '*',
@@ -30,7 +28,7 @@ async function bootstrap() {
       whitelist: true,
     }),
   )
-  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)))
+  // app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)))
 
   app.setGlobalPrefix('/api')
 
@@ -68,7 +66,7 @@ async function bootstrap() {
   )
   bullServerAdapter.setBasePath('/bull-board')
 
-  const port = 3000
+  const port = appConfig.PORT
   await app.listen(port)
 
   console.debug(
