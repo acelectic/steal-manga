@@ -1,6 +1,6 @@
 import { css } from '@emotion/css'
 import { Col, Divider, Layout, Row, Typography } from 'antd'
-import { join } from 'lodash'
+import { chain, join } from 'lodash'
 import { useCallback } from 'react'
 import { IGetMangaUpdatedResponse } from '../../service/manga-updated/types'
 import { makeGoogleDriveLink } from '../../utils/helper'
@@ -23,19 +23,22 @@ export const MangaUpdateList = (props: IMangaUpdateListProps) => {
         <Col sm={6} xs={12} md={4.8} key={updated.toString()}>
           <Typography.Title level={5}>{updated.toString()}</Typography.Title>
           <ul style={{ marginLeft: 20, maxHeight: 300, overflowY: 'auto' }}>
-            {items.map((item) => {
-              return (
-                <li key={item.projectName + item.cartoonName + item.mangaChapterName}>
-                  <Typography.Link
-                    href={makeGoogleDriveLink(item.cartoonDriveId)}
-                    target="_blank"
-                    className={linkCss}
-                  >
-                    {join([item.cartoonName, item.mangaChapterName], ' ')}
-                  </Typography.Link>
-                </li>
-              )
-            })}
+            {chain(items)
+              .orderBy(['cartoonName', 'mangaChapterName'], ['asc', 'asc'])
+              .map((item) => {
+                return (
+                  <li key={item.projectName + item.cartoonName + item.mangaChapterName}>
+                    <Typography.Link
+                      href={makeGoogleDriveLink(item.cartoonDriveId)}
+                      target="_blank"
+                      className={linkCss}
+                    >
+                      {join([item.cartoonName, item.mangaChapterName], ' ')}
+                    </Typography.Link>
+                  </li>
+                )
+              })
+              .value()}
           </ul>
         </Col>
       )

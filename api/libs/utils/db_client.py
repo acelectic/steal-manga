@@ -69,6 +69,24 @@ class StealMangaDb:
             '_id': self.google_token_id
         })
 
+    def get_manga_config(self, cartoon_id: str):
+        """ get_manga_config """
+
+        manga_config = self.table_config.find_one({
+            "cartoon_id": cartoon_id
+        })
+        if manga_config is not None:
+            return UpdateMangaConfigData(
+                cartoon_name=manga_config['cartoon_name'],
+                cartoon_id=manga_config['cartoon_id'],
+                latest_chapter=manga_config['latest_chapter'],
+                max_chapter=manga_config['max_chapter'],
+                disabled=manga_config['disabled'],
+                downloaded=manga_config['downloaded'],
+                project_name=manga_config['project_name'],
+                cartoon_drive_id=manga_config['cartoon_drive_id'],
+            )
+
 
 def get_manga_config(project_name: str = ''):
     """ get_manga_config """

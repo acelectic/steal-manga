@@ -56,8 +56,7 @@ class MyNovel:
         product_ep_list_res = self.__get_product_ep_list(product_id)
         product_ep_list = product_ep_list_res['EpTopic']
         print(f'old len: {len(product_ep_list)}')
-        product_ep_list = list(
-            filter(lambda x: x is not None, product_ep_list))
+        product_ep_list = [d for d in product_ep_list if d is not None and d.get('isPublish')]
         total_ep = len(product_ep_list)
         print(f'filter len: {total_ep}')
 
@@ -66,48 +65,18 @@ class MyNovel:
 
         print(f'download {cartoon_name}\ttotal ep: {total_ep}')
 
-        # def sub_process(args):
-        #     i, product_ep = args
-        #     ep_index = i + 1
-        #     ep_id = product_ep["EpId"]
-        #     ep_name = f'chapter-{ep_index}'
-        #     ep_dir = self.__get_ep_dir(product_name, ep_name)
-
-        #     output_pdf_path = f'{main_dir}/{ep_name}.pdf'
-        #     is_file_exists = os.path.isfile(output_pdf_path)
-
-        #     if not is_file_exists:
-        #         # Create two threads as follows
-        #         self._perform_download_ep(
-        #             product_name, ep_name,
-        #             ep_id, ep_dir, output_pdf_path)
-
-        # thread_map(sub_process, enumerate(product_ep_list),
-        #            desc=f'{product_name}',
-        #            tqdm_class=tqdm,
-        #            total=len(product_ep_list),
-        #            max_workers=2)
-
-        # create a thread pool with 2 threads
-        # tqdm(pool.map(sub_process, enumerate(
-        #     product_ep_list)),
-        #     desc=f'{product_name}',
-        #     total=len(product_ep_list))
-
         start_index = 0
         for i, product_ep in enumerate(product_ep_list):
             if str(start_ep_index) in product_ep['EpName']:
                 start_index = i
                 break
-
         product_ep_list_split = product_ep_list[start_index:]
-        # print(
-        #     f'{len(product_ep_list)} {len(product_ep_list_split)} {start_index} {start_ep_index}')
 
         with ThreadPoolExecutor(max_workers=max_workers) as pool:
             for i, product_ep in tqdm(enumerate(product_ep_list_split, start=start_ep_index),
                                       desc=f'Main | {cartoon_name}',
                                       total=len(product_ep_list_split)):
+
                 raw_ep_name = product_ep['EpName'].replace('[', '(').replace(']', ')')
                 ep_index = i
                 ep_name = raw_ep_name or f'chapter-{ep_index}'

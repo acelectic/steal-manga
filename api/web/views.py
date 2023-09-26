@@ -18,7 +18,7 @@ from libs.upload_google_drive.google_auth import (
 )
 from libs.upload_google_drive.manga_result import get_manga_updated
 from libs.utils.constants import WEB_URL
-from libs.utils.db_client import get_manga_config
+from libs.utils.db_client import StealMangaDb, get_manga_config
 from libs.utils.interface import UpdateMangaConfigData
 
 
@@ -99,24 +99,14 @@ def download_manga(request: WSGIRequest):
 
 def download_manga_one(request: WSGIRequest):
     if request.method == 'POST':
-        body = json.loads(request.body)
-        cartoon_name = body['cartoon_name']
-        cartoon_id = body['cartoon_id']
-        latest_chapter = body['latest_chapter']
-        max_chapter = body['max_chapter']
-        disabled = body['disabled']
-        downloaded = body['downloaded']
-        project_name = body['project_name']
-
-        # pprint({
-        #     "cartoon_name": cartoon_name,
-        #     "cartoon_id": cartoon_id,
-        #     "latest_chapter": latest_chapter,
-        #     "max_chapter": max_chapter,
-        #     "disabled": disabled,
-        #     "downloaded": downloaded,
-        #     "project_name": project_name,
-        # })
+        body: dict = json.loads(request.body)
+        cartoon_name: Any = body.get('cartoon_name')
+        cartoon_id: Any = body.get('cartoon_id')
+        latest_chapter: Any = body.get('latest_chapter')
+        max_chapter: Any = body.get('max_chapter')
+        disabled: Any = body.get('disabled')
+        downloaded: Any = body.get('downloaded')
+        project_name: Any = body.get('project_name')
 
         d = UpdateMangaConfigData(
             cartoon_name=cartoon_name,
@@ -135,6 +125,24 @@ def download_manga_one(request: WSGIRequest):
     return JsonResponse({
         "status":  200
     })
+
+
+def download_cartoon_by_id(request: WSGIRequest, cartoon_id: str):
+    print(f'cartoon_id: {cartoon_id}')
+    if request.method == 'POST':
+        steal_manga_db = StealMangaDb()
+        manga_config = steal_manga_db.get_manga_config(cartoon_id)
+
+        if manga_config is None:
+            return HttpResponse(status_code=404)
+
+        print(f'download: ${manga_config.cartoon_name}')
+        res = download_manga_manual(manga_config, auto_update_config=False)
+        return JsonResponse({
+            "status":  200 if res else 400
+        })
+
+    return HttpResponse(status_code=404)
 
 
 def manga_updated(request: WSGIRequest):

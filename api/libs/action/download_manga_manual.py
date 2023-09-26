@@ -5,7 +5,7 @@ from ..upload_google_drive import generate_drive_manga_exists, upload_to_drive
 from ..utils.interface import UpdateMangaConfigData
 
 
-def download_manga_manual(data: UpdateMangaConfigData):
+def download_manga_manual(data: UpdateMangaConfigData, auto_update_config: bool = True):
     success = False
     cartoon_name = data.cartoon_name
     cartoon_id = data.cartoon_id
@@ -27,7 +27,10 @@ def download_manga_manual(data: UpdateMangaConfigData):
         )
         upload_to_drive(
             project_name=man_mirror.project_name)
-        generate_drive_manga_exists(target_project_name=man_mirror.project_name)
+
+        if auto_update_config:
+            generate_drive_manga_exists(target_project_name=man_mirror.project_name)
+
         success = True
 
     if data.project_name == 'my-novel':
@@ -38,6 +41,9 @@ def download_manga_manual(data: UpdateMangaConfigData):
         my_novel.download_cartoons(str(cartoon_id), cartoon_name=cartoon_name,
                                    start_ep_index=latest_chapter, max_workers=1)
         upload_to_drive(project_name=my_novel.project_name)
-        generate_drive_manga_exists(target_project_name=my_novel.project_name)
+
+        if auto_update_config:
+            generate_drive_manga_exists(target_project_name=my_novel.project_name)
+
         success = True
     return success
