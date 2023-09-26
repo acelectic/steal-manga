@@ -148,23 +148,40 @@ def download_cartoon_by_id(request: WSGIRequest, cartoon_id: str):
 def manga_updated(request: WSGIRequest):
     if request.method == 'POST':
         body: dict = json.loads(request.body)
-        cartoon_name: Any = body.get('cartoon_name')
         cartoon_id: Any = body.get('cartoon_id')
         latest_chapter: Any = body.get('latest_chapter')
         max_chapter: Any = body.get('max_chapter')
         disabled: Any = body.get('disabled')
         downloaded: Any = body.get('downloaded')
-        project_name: Any = body.get('project_name')
+
+        steal_manga_db = StealMangaDb()
+        raw_data = steal_manga_db.table_config.find_one({
+            "cartoon_id": cartoon_id
+        })
+
+        if raw_data is None:
+            return HttpResponse(status_code=404)
 
         d = UpdateMangaConfigData(
-            cartoon_name=cartoon_name,
-            cartoon_id=cartoon_id,
-            latest_chapter=latest_chapter,
-            max_chapter=max_chapter,
-            disabled=disabled,
-            downloaded=downloaded,
-            project_name=project_name,
+            cartoon_name=raw_data['cartoon_name'],
+            cartoon_id=raw_data['cartoon_id'],
+            latest_chapter=raw_data['latest_chapter'],
+            max_chapter=raw_data['max_chapter'],
+            disabled=raw_data['disabled'],
+            downloaded=raw_data['downloaded'],
+            project_name=raw_data['project_name'],
+            cartoon_drive_id=raw_data['cartoon_drive_id'],
         )
+
+        if latest_chapter != d.latest_chapter:
+            d.latest_chapter = latest_chapter
+        if max_chapter != d.max_chapter:
+            d.max_chapter = max_chapter
+        if disabled != d.disabled:
+            d.disabled = disabled
+        if downloaded != d.downloaded:
+            d.downloaded = downloaded
+
         res = update_manga_config(d)
         return JsonResponse({
             "status":  200 if res else 400
@@ -193,8 +210,6 @@ def auth_google_drive(request: HttpRequest):
     creds = get_google_creds()
 
     if request.method == 'POST':
-        # body = json.loads(request.body)
-        # redirect_uri = body['redirect_uri']
         flow = get_google_flow()
         auth_data = flow.authorization_url(
             # Enable offline access so that you can refresh an access token without

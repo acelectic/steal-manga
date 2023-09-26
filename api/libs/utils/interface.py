@@ -36,6 +36,15 @@ class UpdateMangaConfigData:
             "cartoon_drive_id": self.cartoon_drive_id
         }
 
+    def to_json_update(self):
+        """ to json update """
+        return {
+            "latest_chapter": self.latest_chapter,
+            "max_chapter": self.max_chapter,
+            "disabled": self.disabled,
+            "downloaded": self.downloaded,
+        }
+
 
 class MangaUploadedToDrive:
     """ UpdateMangaConfigData """
