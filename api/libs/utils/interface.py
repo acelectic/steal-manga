@@ -15,7 +15,7 @@ class UpdateMangaConfigData:
                  cartoon_drive_id: str = ''
                  ) -> None:
         self.cartoon_name = cartoon_name
-        self.cartoon_id = cartoon_id
+        self.cartoon_id = str(cartoon_id)
         self.latest_chapter = latest_chapter
         self.max_chapter = max_chapter
         self.disabled = disabled

@@ -1,5 +1,8 @@
 
-from pymongo import ReturnDocument, UpdateOne
+import pprint
+
+from bson import ObjectId
+from pymongo import ReplaceOne, ReturnDocument, UpdateOne
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 
@@ -22,7 +25,7 @@ class StealMangaDb:
     """ StealMangaDb """
 
     db_name = DB_NAME
-    table_name_config = 'configs'
+    table_name_manga_config = 'manga_configs'
     table_name_manga_upload = 'manga_uploads'
     table_name_google_token = 'google_tokens'
 
@@ -33,8 +36,8 @@ class StealMangaDb:
         list_collection_names = self.steal_manga_db.list_collection_names()
 
         # create_collection if not exists
-        if self.table_name_config not in list_collection_names:
-            self.steal_manga_db.create_collection(self.table_name_config)
+        if self.table_name_manga_config not in list_collection_names:
+            self.steal_manga_db.create_collection(self.table_name_manga_config)
 
         if self.table_name_manga_upload not in list_collection_names:
             self.steal_manga_db.create_collection(self.table_name_manga_upload)
@@ -43,7 +46,7 @@ class StealMangaDb:
             self.steal_manga_db.create_collection(self.table_name_google_token)
 
         # assign collection
-        self.table_config = self.steal_manga_db[self.table_name_config]
+        self.table_manga_config = self.steal_manga_db[self.table_name_manga_config]
         self.table_manga_upload = self.steal_manga_db[self.table_name_manga_upload]
         self.table_google_token = self.steal_manga_db[self.table_name_google_token]
 
@@ -69,11 +72,11 @@ class StealMangaDb:
             '_id': self.google_token_id
         })
 
-    def get_manga_config(self, cartoon_id: str):
+    def get_manga_config(self, config_id: str):
         """ get_manga_config """
 
-        manga_config = self.table_config.find_one({
-            "cartoon_id": cartoon_id
+        manga_config = self.table_manga_config.find_one({
+            "_id": ObjectId(config_id)
         })
         if manga_config is not None:
             return UpdateMangaConfigData(
@@ -87,6 +90,34 @@ class StealMangaDb:
                 cartoon_drive_id=manga_config['cartoon_drive_id'],
             )
 
+    def __clone_manga_config(self):
+        manga_configs = self.table_manga_config.find()
+        bulk_requests = []
+        for d in manga_configs:
+            new_d = {
+                "cartoon_name": d['cartoon_name'],
+                "cartoon_id": d['cartoon_id'],
+                "latest_chapter": d['latest_chapter'],
+                "max_chapter": d['max_chapter'],
+                "disabled": d['disabled'],
+                "downloaded": d['downloaded'],
+                "project_name": d['project_name'],
+                "cartoon_drive_id": d['cartoon_drive_id'],
+            }
+            new_d['cartoon_id'] = str(new_d['cartoon_id'])
+            bulk_requests.append(
+                ReplaceOne(
+                    filter={
+                        "project_name": d['project_name'],
+                        "cartoon_id": d['cartoon_id']
+                    },
+                    replacement=new_d,
+                    upsert=True,
+                )
+            )
+        self.steal_manga_db['manga_configs'].bulk_write(bulk_requests)
+        return
+
 
 def get_manga_config(project_name: str = ''):
     """ get_manga_config """
@@ -96,7 +127,7 @@ def get_manga_config(project_name: str = ''):
             "project_name": project_name
         }
     steal_manga_db = StealMangaDb()
-    results = steal_manga_db.table_config.find(where)
+    results = steal_manga_db.table_manga_config.find(where)
     data: list[UpdateMangaConfigData] = []
     for x in results:
         data.append(UpdateMangaConfigData(

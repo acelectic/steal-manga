@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Any
 
 from django.core.handlers.wsgi import WSGIRequest
-from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseNotFound, JsonResponse
 from django.shortcuts import redirect, render
 from download_script import execute_download
 from libs.action.download_manga_manual import download_manga_manual
@@ -127,22 +127,22 @@ def download_manga_one(request: WSGIRequest):
     })
 
 
-def download_cartoon_by_id(request: WSGIRequest, cartoon_id: str):
-    print(f'cartoon_id: {cartoon_id}')
+def download_cartoon_by_id(request: WSGIRequest, config_id: str):
+    print(f'config_id: {config_id}')
     if request.method == 'POST':
         steal_manga_db = StealMangaDb()
-        manga_config = steal_manga_db.get_manga_config(cartoon_id)
+        manga_config = steal_manga_db.get_manga_config(config_id)
 
         if manga_config is None:
-            return HttpResponse(status_code=404)
+            return HttpResponseNotFound()
 
-        print(f'download: ${manga_config.cartoon_name}')
+        print(f'download: {manga_config.cartoon_name}')
         res = download_manga_manual(manga_config, auto_update_config=False)
         return JsonResponse({
             "status":  200 if res else 400
         })
 
-    return HttpResponse(status_code=404)
+    return HttpResponseNotFound()
 
 
 def manga_updated(request: WSGIRequest):
@@ -155,12 +155,12 @@ def manga_updated(request: WSGIRequest):
         downloaded: Any = body.get('downloaded')
 
         steal_manga_db = StealMangaDb()
-        raw_data = steal_manga_db.table_config.find_one({
+        raw_data = steal_manga_db.table_manga_config.find_one({
             "cartoon_id": cartoon_id
         })
 
         if raw_data is None:
-            return HttpResponse(status_code=404)
+            return HttpResponseNotFound()
 
         d = UpdateMangaConfigData(
             cartoon_name=raw_data['cartoon_name'],

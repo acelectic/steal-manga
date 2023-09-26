@@ -265,7 +265,7 @@ def generate_drive_manga_exists(target_project_name=None, target_cartoon_name=No
             },
             upsert=False,
         ) for d in manga_config_update_drive_id_list]
-        steal_manga_db.table_config.bulk_write(update_config_requests)
+        steal_manga_db.table_manga_config.bulk_write(update_config_requests)
 
         update_manga_downloaded()
 

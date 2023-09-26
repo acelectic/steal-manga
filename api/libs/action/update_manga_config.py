@@ -9,9 +9,10 @@ def update_manga_config(data: UpdateMangaConfigData):
     """ update_manga_config """
     success = False
     steal_manga_db = StealMangaDb()
+    steal_manga_db.table_manga_config.find()
 
     try:
-        steal_manga_db.table_config.find_one_and_update(
+        steal_manga_db.table_manga_config.find_one_and_update(
             filter={
                 "cartoon_id": data.cartoon_id,
             },
