@@ -1,9 +1,12 @@
 """ module mam mirror image json meta """
 
 import json
+from pprint import pprint
 from typing import Any, List, Tuple
 
 import numpy as np
+
+from ..utils.numpy_array_encoder import NumpyArrayEncoder
 
 
 class ImageJsonShuffle:
@@ -25,8 +28,10 @@ class ImageJsonShuffle:
             self.is_shuffles_not_match: bool = all_row * all_col != len(shuffles)
 
             self.must_debug: bool = self.is_shuffles_size_too_many or self.is_shuffles_not_match
-        except Exception:
-            print(
+        except Exception as error:
+            print('ImageJsonShuffle init error')
+            print(error)
+            pprint(
                 {
                     "width": width,
                     "height": height,
@@ -48,12 +53,15 @@ class ImageJsonShuffle:
         return row, col
 
     def __str__(self) -> str:
-        return json.dumps({
-            "width": self.width,
-            "height": self.height,
-            "all_row": self.all_row,
-            "all_col": self.all_col,
-            "shuffles": self.shuffles,
-            "sub_height": self.sub_height,
-            "sub_width": self.sub_width,
-        }, indent=4)
+        return json.dumps(
+            {
+                "width": self.width,
+                "height": self.height,
+                "all_row": self.all_row,
+                "all_col": self.all_col,
+                "shuffles": self.shuffles,
+                "sub_height": self.sub_height,
+                "sub_width": self.sub_width,
+            },
+            indent=4,
+            cls=NumpyArrayEncoder)

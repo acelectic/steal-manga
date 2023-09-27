@@ -93,7 +93,6 @@ class ManMirror:
                 is_file_exists = result is not None
             except Exception:
                 is_file_exists = False
-
             if not is_file_exists and not is_file_local_exists:
                 pool.submit(self.__perform_download_chapter, cartoon_name, cartoon_id,
                             chapter, chapter_dir, output_pdf_path)
@@ -111,7 +110,13 @@ class ManMirror:
     def _download_cartoon_chapter(self, cartoon_name: str, cartoon_id: str, chapter: int) -> Tuple[bool, bool]:
         """ download man mirror by post id with page"""
         chapter_dir = self.__get_chapter_dir(cartoon_name, chapter)
-        mkdir(chapter_dir)
+        try:
+            mkdir(chapter_dir)
+        except Exception as error:
+            print(error)
+            raise error
+
+        print('_download_cartoon_chapter mkdir')
 
         max_page = 0
         is_error = False
@@ -125,26 +130,25 @@ class ManMirror:
                 image_json_list.append(image_json)
                 if image_json.must_debug:
                     is_some_json_error = True
-                    with open(os.path.join(chapter_dir, 'error.txt'), '+a', encoding='utf-8') as error_file:
-                        debug_info = json.dumps({
-                            "is_shuffles_not_match": image_json.is_shuffles_not_match,
-                            "is_shuffles_radio_size_too_many": image_json.is_shuffles_radio_size_too_many,
-                            "is_shuffles_size_too_many": image_json.is_shuffles_size_too_many
-                        })
-                        error_file.write(f'{max_page} {debug_info}\n')
+                    self.write_error(chapter_dir, max_page, image_json)
                     if image_json.raw:
-                        with open(os.path.join(chapter_dir, f'{max_page}.json'), 'w', encoding='utf-8') as error_file:
-                            error_file.write(json.dumps(image_json.raw))
+                        self.write_raw_image_json(chapter_dir, max_page, image_json)
                 max_page += 1
 
-            except RequestErrorMustDebug:
-                is_error = True
-            except RequestError:
-                is_error = True
-            except Exception as error:
-                print('loop get json error')
+            except RequestErrorMustDebug as error:
+                print('RequestErrorMustDebug')
                 print(error)
                 is_error = True
+            except RequestError as error:
+                print('RequestError')
+                print(error)
+                is_error = True
+            except Exception as error:
+                print('Exception get image json')
+                print(f'chapter: {chapter}, max_page:{max_page}')
+                print(error)
+                is_error = True
+                raise error
 
         if len(image_json_list) > 0:
             is_some_page_error = self.download_manga_by_image_json(
@@ -152,8 +156,30 @@ class ManMirror:
         else:
             is_some_page_error = self.download_manga_normal(
                 cartoon_name, cartoon_id, chapter, chapter_dir)
-
         return is_some_page_error, is_some_json_error
+
+    def write_error(self, chapter_dir, max_page, image_json):
+        try:
+            with open(os.path.join(chapter_dir, 'error.txt'), '+a', encoding='utf-8') as error_file:
+                debug_info = json.dumps({
+                    "is_shuffles_not_match": image_json.is_shuffles_not_match,
+                    "is_shuffles_radio_size_too_many": image_json.is_shuffles_radio_size_too_many,
+                    "is_shuffles_size_too_many": image_json.is_shuffles_size_too_many
+                })
+                error_file.write(f'{max_page} {debug_info}\n')
+        except Exception as error:
+            print('write_error error')
+            print(error)
+            raise error
+
+    def write_raw_image_json(self, chapter_dir, max_page, image_json):
+        try:
+            with open(os.path.join(chapter_dir, f'{max_page}.json'), 'w', encoding='utf-8') as error_file:
+                error_file.write(json.dumps(image_json.raw))
+        except Exception as error:
+            print('write_raw_image_json error')
+            print(error)
+            raise error
 
     def download_manga_by_image_json(self, cartoon_name: str, cartoon_id: str, chapter: int, main_dir: str, max_page: int, image_json_list: List[ImageJsonShuffle]):
         is_some_page_error = False

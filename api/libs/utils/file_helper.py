@@ -4,9 +4,10 @@ import os
 from typing import List
 
 
-def mkdir(path: str) -> None:
+def mkdir(path: str) -> bool:
     """ make dir recursive """
     os.makedirs(path, exist_ok=True)
+    return os.path.exists(path)
 
 
 def get_env(key: str, required: bool = True) -> str | None:
