@@ -1,6 +1,7 @@
 """ Main Module """
 import getopt
 import sys
+from pprint import pprint
 from time import time
 from typing import List
 
@@ -10,6 +11,7 @@ from libs.my_novel import MyNovel
 from libs.upload_google_drive import generate_drive_manga_exists, upload_to_drive
 from libs.upload_google_drive.interface import ManualManMirrorMangaItem
 from libs.upload_google_drive.manga_result import get_manga_updated
+from libs.utils.constants import MAN_MIRROR, MY_NOVEL
 from libs.utils.db_client import get_manga_config
 
 load_dotenv()
@@ -108,6 +110,9 @@ def download_man_mirror():
         print(
             f'\ncartoon_name: {cartoon_name}\tkey: {cartoon_id}\tlatest_chapter: {latest_chapter}\tmax_chapter: {max_chapter}')
         if disabled is None or not disabled:
+            # print(type(disabled))
+            # print(disabled)
+            # pprint(d.to_json())
             man_mirror.download_cartoons(
                 cartoon_name=cartoon_name,
                 cartoon_id=cartoon_id,
@@ -132,6 +137,9 @@ def download_my_novel():
         print(
             f'\ncartoon_name: {cartoon_name}\tkey: {cartoon_id}\tlatest_chapter: {latest_chapter}')
         if disabled is None or not disabled:
+            # print(type(disabled))
+            # print(disabled)
+            # pprint(d.to_json())
             my_novel.download_cartoons(cartoon_id, cartoon_name=cartoon_name, start_ep_index=latest_chapter,
                                        max_workers=MAX_WORKERS)
     upload_to_drive(project_name=my_novel.project_name)
@@ -148,6 +156,14 @@ def execute_download(enable_download_mam_mirror=False,
                      enable_download_my_novel=False,
                      debug=False):
 
+    project_name_upload = None
+    if enable_download_my_novel and (enable_download_mam_mirror or enable_download_mam_mirror_manual):
+        project_name_upload = None
+    elif enable_download_my_novel:
+        project_name_upload = MY_NOVEL
+    elif enable_download_mam_mirror or enable_download_mam_mirror_manual:
+        project_name_upload = MAN_MIRROR
+
     if not enable_download_mam_mirror and not enable_download_mam_mirror_manual and not enable_download_my_novel:
         print('Nothing Download enabled')
         return
@@ -163,7 +179,7 @@ def execute_download(enable_download_mam_mirror=False,
 
     print('Download Finished')
 
-    function_execute_time('upload_to_drive all', upload_to_drive)
+    function_execute_time('upload_to_drive all', upload_to_drive, project_name=project_name_upload)
     print('Upload Finished')
 
     function_execute_time('generate_drive_manga_exists', generate_drive_manga_exists)

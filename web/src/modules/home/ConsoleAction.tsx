@@ -3,11 +3,13 @@ import { Button, Col, Row, Typography, message } from 'antd'
 import { pascalizeKeys } from 'humps'
 import { isEqual } from 'lodash'
 import { useRouter } from 'next/navigation'
-import { PropsWithChildren, useEffect, useState } from 'react'
+import { PropsWithChildren, useMemo, useState } from 'react'
+import { useInView } from 'react-intersection-observer'
 import {
   ITriggerDownloadPayload,
   TriggerDownloadTypeEnum,
 } from '../../service/trigger-download/types'
+import { useSse } from '../../utils/custom-hook'
 
 export const ConsoleAction = () => {
   const router = useRouter()
@@ -135,27 +137,17 @@ interface IProjectActionButtonProps {
 }
 const ProjectActionButton = (props: PropsWithChildren<IProjectActionButtonProps>) => {
   const { projectName, onClick, disabled, isLoading, children } = props
+  const { ref, inView } = useInView()
+  const { data } = useSse<{ downloadRemain: number }>(
+    `${process.env.NEXT_PUBLIC_API_HOST}/api/v1/manga-downloads/projects-status?projectName=${projectName}`,
+    inView,
+  )
 
-  const [isDownloading, setIsDownloading] = useState(false)
-
-  useEffect(() => {
-    const eventSource = new EventSource(
-      `${process.env.NEXT_PUBLIC_API_HOST}/api/v1/manga-downloads/projects-status?projectName=${projectName}`,
-    )
-    eventSource.onmessage = ({ data: dataString }) => {
-      const data = JSON.parse(dataString)
-      const { downloadRemain } = data
-
-      setIsDownloading(!!downloadRemain)
-    }
-
-    return () => {
-      eventSource.close()
-    }
-  }, [projectName])
+  const isDownloading = useMemo(() => !!data?.downloadRemain, [data?.downloadRemain])
 
   return (
     <Button
+      ref={ref}
       type="primary"
       onClick={onClick}
       loading={isLoading || isDownloading}

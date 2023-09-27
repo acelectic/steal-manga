@@ -43,7 +43,7 @@ class MyNovel:
     get_info_timeout: int = 30 * 1000
     get_image_timeout: int = 60 * 1000
 
-    def download_cartoons(self, product_id: str, cartoon_name: str, start_ep_index: int = 1, max_workers: int = 4,
+    def download_cartoons(self, cartoon_id: str, cartoon_name: str, start_ep_index: int = 1, max_workers: int = 4,
                           get_image_timeout: int = 60 * 1000,
                           ) -> None:
         """
@@ -53,12 +53,22 @@ class MyNovel:
 
         start_ep_index = max(start_ep_index, 0)
 
-        product_ep_list_res = self.__get_product_ep_list(product_id)
+        product_ep_list_res = self.__get_product_ep_list(cartoon_id)
         product_ep_list = product_ep_list_res['EpTopic']
         print(f'old len: {len(product_ep_list)}')
         product_ep_list = [d for d in product_ep_list if d is not None and d.get('isPublish')]
         total_ep = len(product_ep_list)
         print(f'filter len: {total_ep}')
+
+        steal_manga_db = StealMangaDb()
+        steal_manga_db.table_manga_config.update_one({
+            'project_name': self.project_name,
+            'cartoon_id': cartoon_id
+        }, {
+            '$set': {
+                'max_chapter': total_ep
+            }
+        })
 
         main_dir = self.__get_main_dir(cartoon_name)
         mkdir(main_dir)

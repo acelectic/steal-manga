@@ -5,7 +5,8 @@ import { TablePaginationConfig } from 'antd'
 import { chain } from 'lodash'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { stringify } from 'qs'
-import { useEffect, useMemo } from 'react'
+import { useContext, useEffect, useMemo } from 'react'
+import { SSEContext } from '../components/providers/SseProvider'
 
 interface IPaginateHandleOptions {
   prefix?: string
@@ -61,24 +62,34 @@ export const usePaginationHandle = (options: IPaginateHandleOptions): TablePagin
   }, [defaultPage, defaultPageSize, pageSizeOptions, pathname, prefix, router, searchParams])
 }
 
-export const useSse = <T extends any>(url: string) => {
+export const useSse = <T extends any>(url: string, enabled = false) => {
   const queryKey = useMemo(() => ['sse', url], [url])
   const query = useQuery<T>(queryKey)
   const queryClient = useQueryClient()
+  const [, , getEventSource, removeEventSource] = useContext(SSEContext)
 
   useEffect(() => {
     let eventSource: EventSource
-    if (url) {
-      eventSource = new EventSource(url)
+    if (url && enabled) {
+      eventSource = getEventSource(url)
       eventSource.onmessage = ({ data: dataString }) => {
         const data = JSON.parse(dataString)
         queryClient.setQueryData(queryKey, data)
       }
+      eventSource.onerror = () => {
+        eventSource.close()
+        removeEventSource(url)
+      }
+    }
+
+    if (!enabled) {
+      removeEventSource(url)
     }
     return () => {
       eventSource?.close()
+      removeEventSource(url)
     }
-  }, [queryClient, queryKey, url])
+  }, [enabled, getEventSource, queryClient, queryKey, removeEventSource, url])
 
   return query
 }

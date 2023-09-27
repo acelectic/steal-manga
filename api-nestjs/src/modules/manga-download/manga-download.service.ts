@@ -38,6 +38,7 @@ export class MangaDownloadService {
     const downloadingKey = this.getCartoonDownloadKey()
     const mangaConfigs = await this.mangaConfigModel.find({
       project_name: projectName,
+      disabled: false,
     })
 
     await this.appRedisClient.set(projectDownloadKey, mangaConfigs.length)

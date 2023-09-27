@@ -12,6 +12,9 @@ def download_manga_manual(data: UpdateMangaConfigData, auto_update_config: bool 
     latest_chapter = data.latest_chapter
     max_chapter = data.max_chapter
 
+    if data.disabled:
+        return True
+
     if data.project_name == 'man-mirror':
         man_mirror = ManMirror()
         generate_drive_manga_exists(target_project_name=man_mirror.project_name)

@@ -5,6 +5,7 @@ import AntdProvider from '../components/providers/AntdProvider'
 import EmotionProvider from '../components/providers/EmotionProvider'
 import { InitLogRocker } from '../components/providers/InitLogRocker'
 import ReactQueryProvider from '../components/providers/ReactQueryProvider'
+import SseProvider from '../components/providers/SseProvider'
 import { appConfig } from '../config/app-config'
 import './globals.css'
 const inter = Sarabun({ weight: '400', subsets: ['thai'] })
@@ -21,10 +22,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AntdProvider>
           <EmotionProvider>
             <ReactQueryProvider>
-              <InitLogRocker
-                NEXT_PUBLIC_LOG_ROCKET_APP_ID={appConfig.NEXT_PUBLIC_LOG_ROCKET_APP_ID || ''}
-              />
-              <AppLayout>{children}</AppLayout>
+              <SseProvider>
+                <InitLogRocker
+                  NEXT_PUBLIC_LOG_ROCKET_APP_ID={appConfig.NEXT_PUBLIC_LOG_ROCKET_APP_ID || ''}
+                />
+                <AppLayout>{children}</AppLayout>
+              </SseProvider>
             </ReactQueryProvider>
           </EmotionProvider>
         </AntdProvider>

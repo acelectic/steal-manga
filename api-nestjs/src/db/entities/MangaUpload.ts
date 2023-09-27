@@ -78,6 +78,13 @@ export class MangaUpload implements IMangaUpload {
 }
 
 export const MangaUploadSchema = SchemaFactory.createForClass(MangaUpload)
+MangaUploadSchema.index(
+  {
+    cartoon_id: 1,
+    manga_chapter_drive_id: 1,
+  },
+  { unique: true },
+)
 export const MangaUploadModelDefinition: ModelDefinition = {
   name: MangaUpload.name,
   schema: MangaUploadSchema,

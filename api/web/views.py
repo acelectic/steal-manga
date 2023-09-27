@@ -22,11 +22,11 @@ from libs.utils.db_client import StealMangaDb, get_manga_config
 from libs.utils.interface import UpdateMangaConfigData
 
 
-def health():
+def health(request: HttpRequest):
     return HttpResponse()
 
 
-def home():
+def home(request: HttpRequest):
     return HttpResponse()
 
 

@@ -23,6 +23,7 @@ import { FilterConfirmProps } from 'antd/es/table/interface'
 import { chain } from 'lodash'
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import Highlighter from 'react-highlight-words'
+import { useInView } from 'react-intersection-observer'
 import { updateMangaConfig } from '../../service/manga-updated'
 import {
   EnumMangaProjectName,
@@ -181,9 +182,10 @@ export const MangaTable = (props: IMangaTableProps) => {
   const searchInput = useRef<InputRef>(null)
   const { colorBgMask, colorSuccessActive } = theme.getDesignToken()
   const { xs, sm } = Grid.useBreakpoint()
+  const { ref, inView } = useInView()
   const { data: cartoonDownloadingIdsData } = useSse<{
     cartoonDownloadingIds: string[]
-  }>(`${process.env.NEXT_PUBLIC_API_HOST}/api/v1/manga-downloads/cartoons-status`)
+  }>(`${process.env.NEXT_PUBLIC_API_HOST}/api/v1/manga-downloads/cartoons-status`, inView)
   const { cartoonDownloadingIds = [] } = cartoonDownloadingIdsData || {}
 
   const {
@@ -348,18 +350,16 @@ export const MangaTable = (props: IMangaTableProps) => {
         title: 'Latest Chapter',
         key: 'latestChapter',
         dataIndex: 'latestChapter',
-        editable: title === 'my-novel',
+        editable: true,
       },
-    ]
-
-    if (title === 'man-mirror') {
-      columns.push({
+      {
         title: 'Max Chapter',
         key: 'maxChapter',
         dataIndex: 'maxChapter',
-        editable: title === 'man-mirror',
-      })
-    }
+        editable: title === EnumMangaProjectName.MAN_MIRROR,
+      },
+    ]
+
     columns.push({
       title: 'Disabled',
       key: 'disabled',
@@ -426,7 +426,8 @@ export const MangaTable = (props: IMangaTableProps) => {
                 disabled={
                   isUpdateConfigLoading ||
                   isDownloadMangaOneLoading ||
-                  cartoonDownloadingIds.includes(record.cartoonId.toString())
+                  cartoonDownloadingIds.includes(record.cartoonId.toString()) ||
+                  record.disabled
                 }
               >
                 Download
@@ -492,7 +493,7 @@ export const MangaTable = (props: IMangaTableProps) => {
   })
 
   return (
-    <Space className={warpCss} direction="vertical" size={8}>
+    <Space ref={ref} className={warpCss} direction="vertical" size={8}>
       {!noHeader && <Typography.Title level={3}>{title}</Typography.Title>}
       <Table
         dataSource={dataSource}
