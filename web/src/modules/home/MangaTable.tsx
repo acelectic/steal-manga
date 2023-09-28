@@ -31,8 +31,8 @@ import {
   ManMirrorCartoon,
 } from '../../service/manga-updated/types'
 import { triggerDownloadMangaOne } from '../../service/trigger-download'
-import { usePaginationHandle, useSse } from '../../utils/custom-hook'
-import { openGoogleDrive } from '../../utils/helper'
+import { usePaginationOptions, useSse } from '../../utils/custom-hook'
+import { openGoogleDrive, openLink } from '../../utils/helper'
 
 const warpCss = css`
   width: 100%;
@@ -172,8 +172,11 @@ interface IMangaTableProps {
 }
 export const MangaTable = (props: IMangaTableProps) => {
   const { title, data, noHeader = false } = props
-  const paginateHandle = usePaginationHandle({
+  const paginateOptions = usePaginationOptions({
     prefix: title,
+    paginationOptions: {
+      showSizeChanger: true,
+    },
   })
   const [dataSource, setDataSource] = useState<IItem[]>([])
 
@@ -322,6 +325,17 @@ export const MangaTable = (props: IMangaTableProps) => {
     [handleReset, handleSearch, searchText, searchedColumn],
   )
 
+  const onCartoonIdClick = useCallback(
+    (cartoonId: string) => {
+      const myNovelLink = `https://mynovel.co/BookPreview?Pid=${cartoonId}`
+      const manMirrorLink = `https://www.manmirror.net/readpost.php?postId=${cartoonId}`
+
+      if (title === EnumMangaProjectName.MY_NOVEL) openLink(myNovelLink)
+      if (title === EnumMangaProjectName.MAN_MIRROR) openLink(manMirrorLink)
+    },
+    [title],
+  )
+
   const defaultColumns = useMemo(() => {
     const columns: (ColumnType<IItem> &
       Partial<Pick<EditableCellProps, 'editable' | 'dataType'>>)[] = [
@@ -343,7 +357,16 @@ export const MangaTable = (props: IMangaTableProps) => {
         dataIndex: 'cartoonId',
         width: 250,
         render: (value) => {
-          return <Typography.Paragraph copyable>{value}</Typography.Paragraph>
+          return (
+            <Typography.Link
+              onClick={onCartoonIdClick.bind(null, value)}
+              copyable={{
+                text: value,
+              }}
+            >
+              {value}
+            </Typography.Link>
+          )
         },
       },
       {
@@ -458,6 +481,7 @@ export const MangaTable = (props: IMangaTableProps) => {
     getColumnSearchProps,
     isDownloadMangaOneLoading,
     isUpdateConfigLoading,
+    onCartoonIdClick,
     title,
     updateConfig,
     updateConfigParams?.cartoonId,
@@ -498,14 +522,8 @@ export const MangaTable = (props: IMangaTableProps) => {
       <Table
         dataSource={dataSource}
         columns={columns as ColumnType<IItem>[]}
-        rowKey={'cartoonId'}
-        pagination={{
-          pageSizeOptions: [5, 10, 20, 30, 50],
-          showSizeChanger: true,
-          current: paginateHandle.current,
-          pageSize: paginateHandle.pageSize,
-          onChange: paginateHandle.onChange,
-        }}
+        rowKey={(d) => d.projectName + d.cartoonId}
+        pagination={paginateOptions}
         components={{
           body: {
             row: EditableRow,

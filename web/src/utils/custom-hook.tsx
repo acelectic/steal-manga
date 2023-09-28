@@ -5,61 +5,87 @@ import { TablePaginationConfig } from 'antd'
 import { chain } from 'lodash'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { stringify } from 'qs'
-import { useContext, useEffect, useMemo } from 'react'
+import { useCallback, useContext, useEffect, useMemo } from 'react'
 import { SSEContext } from '../components/providers/SseProvider'
 
 interface IPaginateHandleOptions {
   prefix?: string
   defaultPage?: number
   defaultPageSize?: number
-  pageSizeOptions?: number[]
+  paginationOptions?: Omit<TablePaginationConfig, 'current' | 'pageSize'>
 }
-export const usePaginationHandle = (options: IPaginateHandleOptions): TablePaginationConfig => {
+export const usePaginationOptions = (options: IPaginateHandleOptions): TablePaginationConfig => {
+  const { prefix, defaultPage = 1, defaultPageSize = 50, paginationOptions } = options
   const {
-    prefix,
-    defaultPage = 1,
-    defaultPageSize = 50,
     pageSizeOptions = [5, 10, 20, 50],
-  } = options
+    onChange,
+    ...restPaginationOptions
+  } = paginationOptions || {}
+
   const router = useRouter()
   const searchParams = useSearchParams()
   const pathname = usePathname()
 
-  return useMemo(() => {
-    let pageKey = chain([prefix, 'page']).compact().join('-').value()
-    pageKey = btoa(pageKey)
+  const pageKey = useMemo(() => {
+    const rawKey = chain([prefix, 'page']).compact().join('-').value()
+    return btoa(rawKey)
+  }, [prefix])
 
-    let pageSizeKey = chain([prefix, 'page-size']).compact().join('-').value()
-    pageSizeKey = btoa(pageSizeKey)
+  const pageSizeKey = useMemo(() => {
+    const rawKey = chain([prefix, 'page-size']).compact().join('-').value()
+    return btoa(rawKey)
+  }, [prefix])
 
+  const current = useMemo(
+    () =>
+      chain(searchParams.get(pageKey) || defaultPage)
+        .toNumber()
+        .value(),
+    [defaultPage, pageKey, searchParams],
+  )
+
+  const pageSize = useMemo(
+    () =>
+      chain(searchParams.get(pageSizeKey) || defaultPageSize)
+        .toNumber()
+        .value(),
+    [defaultPageSize, pageSizeKey, searchParams],
+  )
+
+  const queryParams = useMemo(() => {
     const query: Record<string, any> = {}
     searchParams.forEach((v, k) => {
       query[k] = v
     })
-    const current = chain(searchParams.get(pageKey) || defaultPage)
-      .toNumber()
-      .value()
-    const pageSize = chain(searchParams.get(pageSizeKey) || defaultPageSize)
-      .toNumber()
-      .value()
+    return query
+  }, [searchParams])
 
+  const handleChange = useCallback(
+    (newPage: number, newPageSize: number) => {
+      router.replace(
+        pathname +
+          '?' +
+          stringify({
+            ...queryParams,
+            [pageKey]: newPageSize !== pageSize ? 1 : newPage,
+            [pageSizeKey]: newPageSize,
+          }),
+      )
+
+      onChange?.(newPage, newPageSize)
+    },
+    [onChange, pageKey, pageSize, pageSizeKey, pathname, queryParams, router],
+  )
+
+  return useMemo(() => {
     return {
       current,
       pageSize,
-      onChange(newPage, newPageSize) {
-        router.replace(
-          pathname +
-            '?' +
-            stringify({
-              ...query,
-              [pageKey]: newPageSize !== pageSize ? 1 : newPage,
-              [pageSizeKey]: newPageSize,
-            }),
-        )
-      },
       pageSizeOptions,
+      onChange: handleChange,
+      ...restPaginationOptions,
     }
-  }, [defaultPage, defaultPageSize, pageSizeOptions, pathname, prefix, router, searchParams])
+  }, [current, handleChange, pageSize, pageSizeOptions, restPaginationOptions])
 }
 
 export const useSse = <T extends any>(url: string, enabled = false) => {

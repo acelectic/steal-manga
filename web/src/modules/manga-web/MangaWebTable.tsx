@@ -25,7 +25,7 @@ import { chain } from 'lodash'
 import { useRouter } from 'next/navigation'
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import Highlighter from 'react-highlight-words'
-import { usePaginationHandle } from '../../utils/custom-hook'
+import { usePaginationOptions } from '../../utils/custom-hook'
 import { IMangaWebData, IUpdateMangaWebPayload } from '../../utils/db-client/collection-interface'
 
 const warpCss = css`
@@ -183,9 +183,12 @@ interface IMangaWebTableProps {
 
 export const MangaWebTable = (props: IMangaWebTableProps) => {
   const { data } = props
-  const paginateHandle = usePaginationHandle({
+  const paginateOptions = usePaginationOptions({
     prefix: 'manga-web',
     defaultPageSize: 5,
+    paginationOptions: {
+      showSizeChanger: true,
+    },
   })
   const [dataSource, setDataSource] = useState<IItem[]>([])
   const router = useRouter()
@@ -451,13 +454,7 @@ export const MangaWebTable = (props: IMangaWebTableProps) => {
         dataSource={dataSource}
         columns={columns as ColumnType<IItem>[]}
         rowKey={'id'}
-        pagination={{
-          current: paginateHandle.current,
-          pageSize: paginateHandle.pageSize,
-          onChange: paginateHandle.onChange,
-          showSizeChanger: true,
-          pageSizeOptions: paginateHandle.pageSizeOptions,
-        }}
+        pagination={paginateOptions}
         components={{
           body: {
             row: EditableRow,
