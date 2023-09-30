@@ -1,13 +1,13 @@
 'use client'
 
-import React, { useState } from 'react'
-import { PropsWithChildren } from 'react'
 import { StyleProvider, createCache, extractStyle } from '@ant-design/cssinjs'
+import type Entity from '@ant-design/cssinjs/es/Cache'
 import { useServerInsertedHTML } from 'next/navigation'
+import { PropsWithChildren, useMemo } from 'react'
 import '../../utils/initialize'
 
 const AntdProvider = (props: PropsWithChildren) => {
-  const [cache] = useState(() => createCache())
+  const cache = useMemo<Entity>(() => createCache(), [])
   // const key = 'custom'
   // const emotionCache = createEmotionCache({ key })
   // const dehydratedState = useDehydratedState()

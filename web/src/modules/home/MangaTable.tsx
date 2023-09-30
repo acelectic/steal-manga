@@ -21,6 +21,7 @@ import {
 import { ColumnType } from 'antd/es/table'
 import { FilterConfirmProps } from 'antd/es/table/interface'
 import { chain } from 'lodash'
+import { useRouter } from 'next/navigation'
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import Highlighter from 'react-highlight-words'
 import { useInView } from 'react-intersection-observer'
@@ -178,6 +179,7 @@ export const MangaTable = (props: IMangaTableProps) => {
       showSizeChanger: true,
     },
   })
+  const router = useRouter()
   const [dataSource, setDataSource] = useState<IItem[]>([])
 
   const [searchText, setSearchText] = useState('')
@@ -350,6 +352,17 @@ export const MangaTable = (props: IMangaTableProps) => {
           return 0
         },
         ...getColumnSearchProps('cartoonName'),
+        render: (value, record) => {
+          return (
+            <Typography.Link
+              onClick={() => {
+                router.push(`cartoons/${record.cartoonId}`)
+              }}
+            >
+              {value}
+            </Typography.Link>
+          )
+        },
       },
       {
         title: 'Cartoon Id',
@@ -482,6 +495,7 @@ export const MangaTable = (props: IMangaTableProps) => {
     isDownloadMangaOneLoading,
     isUpdateConfigLoading,
     onCartoonIdClick,
+    router,
     title,
     updateConfig,
     updateConfigParams?.cartoonId,

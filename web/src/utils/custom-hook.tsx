@@ -14,8 +14,8 @@ interface IPaginateHandleOptions {
   defaultPageSize?: number
   paginationOptions?: Omit<TablePaginationConfig, 'current' | 'pageSize'>
 }
-export const usePaginationOptions = (options: IPaginateHandleOptions): TablePaginationConfig => {
-  const { prefix, defaultPage = 1, defaultPageSize = 50, paginationOptions } = options
+export const usePaginationOptions = (options?: IPaginateHandleOptions): TablePaginationConfig => {
+  const { prefix, defaultPage = 1, defaultPageSize = 50, paginationOptions } = options || {}
   const {
     pageSizeOptions = [5, 10, 20, 50],
     onChange,

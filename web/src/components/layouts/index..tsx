@@ -15,9 +15,11 @@ const AppLayout = (props: PropsWithChildren) => {
   const { sm, md } = Grid.useBreakpoint()
 
   return (
-    <Layout className="layout">
+    <Layout className="layout"
+    style={{  minHeight: 'inherit' }}
+    >
       <Navbar />
-      <Content style={{ padding: md ? '0 50px' : sm ? '0 20px' : '0', minHeight: '100%' }}>
+      <Content style={{ padding: md ? '0 50px' : sm ? '0 20px' : '0', paddingTop: md ? '20px' : sm ? '10px' : '0' , minHeight: '100%' }}>
         {/* <Breadcrumb style={{ margin: '16px 0' }}>
           <Breadcrumb.Item>Home</Breadcrumb.Item>
           <Breadcrumb.Item>List</Breadcrumb.Item>
