@@ -18,6 +18,7 @@ export interface ResultsViewedSortedClass {
   createdTime: string
   modifiedByMeTime: string
   viewedByMe: boolean
+  latestSync: string
 }
 
 export enum EnumMangaProjectName {

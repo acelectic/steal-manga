@@ -20,9 +20,23 @@ export const getMangaUpdated = async (options?: RequestInit) => {
   return camelizeKeys(responseData) as IGetMangaUpdatedResponse
 }
 
-export const updateMangaConfig = async (payload: IUpdateMangaConfigPayload) => {
+export const postAddMangaConfig = async (payload: IUpdateMangaConfigPayload) => {
   const response = await fetch('/api/v1/update-config', {
     method: 'POST',
+    cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+    // credentials: 'same-origin', // include, *same-origin, omit
+    headers: {
+      'Content-Type': 'application/json',
+      // 'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: JSON.stringify(payload),
+  })
+  return camelizeKeys(await response.json()) as IGetMangaUpdatedResponse
+}
+
+export const updateMangaConfig = async (payload: IUpdateMangaConfigPayload) => {
+  const response = await fetch('/api/v1/update-config', {
+    method: 'PATCH',
     cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
     // credentials: 'same-origin', // include, *same-origin, omit
     headers: {

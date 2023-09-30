@@ -5,7 +5,7 @@ import { values } from 'lodash'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { InputNumber } from '../../components/common/InputNumber'
-import { updateMangaConfig } from '../../service/manga-updated'
+import { postAddMangaConfig } from '../../service/manga-updated'
 import { EnumMangaProjectName, IMangaConfig } from '../../service/manga-updated/types'
 
 interface IAddMangaConfigProps {}
@@ -14,7 +14,7 @@ export const AddMangaConfig = (props: IAddMangaConfigProps) => {
 
   const [modalVisible, setModalVisible] = useState(false)
 
-  const { mutateAsync: addMangaConfig, isLoading } = useMutation(updateMangaConfig, {
+  const { mutateAsync: addMangaConfig, isLoading } = useMutation(postAddMangaConfig, {
     onSettled() {
       setModalVisible(false)
       router.refresh()

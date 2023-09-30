@@ -1,9 +1,16 @@
 import json
 from datetime import datetime
+from pprint import pprint
 from typing import Any
 
 from django.core.handlers.wsgi import WSGIRequest
-from django.http import HttpRequest, HttpResponse, HttpResponseNotFound, JsonResponse
+from django.http import (
+    HttpRequest,
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseNotFound,
+    JsonResponse,
+)
 from django.shortcuts import redirect, render
 from download_script import execute_download
 from libs.action.download_manga_manual import download_manga_manual
@@ -146,7 +153,9 @@ def download_cartoon_by_id(request: WSGIRequest, config_id: str):
 
 
 def manga_updated(request: WSGIRequest):
-    if request.method == 'POST':
+    steal_manga_db = StealMangaDb()
+
+    if request.method == 'PATCH':
         body: dict = json.loads(request.body)
         cartoon_id: Any = body.get('cartoon_id')
         latest_chapter: Any = body.get('latest_chapter')
@@ -154,7 +163,6 @@ def manga_updated(request: WSGIRequest):
         disabled: Any = body.get('disabled')
         downloaded: Any = body.get('downloaded')
 
-        steal_manga_db = StealMangaDb()
         raw_data = steal_manga_db.table_manga_config.find_one({
             "cartoon_id": cartoon_id
         })
@@ -187,12 +195,40 @@ def manga_updated(request: WSGIRequest):
             "status":  200 if res else 400
         })
 
-    latest_update = request.GET.get("latest_update")
+    if request.method == 'POST':
+        body: dict = json.loads(request.body)
+        pprint(body)
+        project_name: Any = body.get('project_name')
+        cartoon_name: Any = body.get('cartoon_name')
+        cartoon_id: Any = body.get('cartoon_id')
+        latest_chapter: Any = body.get('latest_chapter')
+        max_chapter: Any = body.get('max_chapter')
+        disabled: Any = body.get('disabled')
 
+        manga_config = UpdateMangaConfigData(
+            cartoon_name=cartoon_name,
+            cartoon_id=cartoon_id,
+            latest_chapter=latest_chapter,
+            max_chapter=max_chapter,
+            disabled=disabled,
+            downloaded=0,
+            project_name=project_name,
+        )
+        tmp = steal_manga_db.table_manga_config.find_one(
+            {
+                "project_name": manga_config.project_name,
+                "cartoon_id": manga_config.cartoon_id,
+            }
+        )
+        if tmp is not None:
+            return HttpResponseBadRequest({
+                "error": "config already exists"
+            })
+
+        steal_manga_db.table_manga_config.insert_one(manga_config.to_json())
     # print(f'latest_update: {latest_update}')
 
-    results_viewed_sorted, results_yet_view_sorted = get_manga_updated(
-        latest_update=latest_update)
+    results_viewed_sorted, results_yet_view_sorted = get_manga_updated()
 
     man_mirror_cartoons = get_manga_config(ManMirror.project_name)
     my_novel_cartoons = get_manga_config(MyNovel.project_name)

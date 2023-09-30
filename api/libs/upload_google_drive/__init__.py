@@ -16,6 +16,7 @@
 
 from __future__ import print_function
 
+import datetime
 import glob
 import os
 import pprint
@@ -71,6 +72,7 @@ def upload_to_drive(project_name=None, cartoon_name=None, logging=False):
         #     pageSize=50, fields="nextPageToken, files(id, name)").execute()
         # items = results.get('files', [])
 
+        steal_manga_db = StealMangaDb()
         # project level
         # print('\n[Process]: START upload_to_drive\n')
         for cartoon_project in cartoon_projects[::]:
@@ -125,6 +127,15 @@ def upload_to_drive(project_name=None, cartoon_name=None, logging=False):
 
                                 upload_file(
                                     service, logging, sub_dir_id, file_name, file_path)
+                            steal_manga_db.table_manga_config.update_one(
+                                {
+                                    "cartoon_name": manga_name
+                                },
+                                {
+                                    '$set': {
+                                        "latest_sync": datetime.datetime.utcnow().isoformat()
+                                    }
+                                })
 
         # if not drive_project_dirs:
         #     print('No files found.')

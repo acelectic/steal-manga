@@ -20,6 +20,7 @@ import {
 } from 'antd'
 import { ColumnType } from 'antd/es/table'
 import { FilterConfirmProps } from 'antd/es/table/interface'
+import dayjs from 'dayjs'
 import { chain } from 'lodash'
 import { useRouter } from 'next/navigation'
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
@@ -412,6 +413,14 @@ export const MangaTable = (props: IMangaTableProps) => {
       ),
     })
     columns.push({ title: 'Downloaded', key: 'downloaded', dataIndex: 'downloaded' })
+    columns.push({
+      title: 'LatestSync',
+      key: 'latestSync',
+      dataIndex: 'latestSync',
+      render: (value) => {
+        return value ? dayjs(value).format('DD/MM/YY hh:mm:ss') : '-'
+      },
+    })
     columns.push({
       title: 'Action',
       key: 'cartoonId',

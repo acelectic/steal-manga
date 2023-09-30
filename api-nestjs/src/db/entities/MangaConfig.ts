@@ -17,6 +17,7 @@ export interface IMangaConfig {
   downloaded: number
   project_name: EnumMangaConfigProjectName
   cartoon_drive_id: string
+  latest_sync: string
 }
 
 @Schema({
@@ -58,6 +59,9 @@ export class MangaConfig implements IMangaConfig {
 
   @Prop(String)
   cartoon_drive_id: string
+
+  @Prop(String)
+  latest_sync: string
 }
 
 export const MangaConfigSchema = SchemaFactory.createForClass(MangaConfig)
