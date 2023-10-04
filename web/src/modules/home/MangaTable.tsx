@@ -233,19 +233,7 @@ export const MangaTable = (props: IMangaTableProps) => {
   }, [])
 
   useEffect(() => {
-    const _data = data.map(
-      (e): IItem => ({
-        cartoonName: e.cartoonName,
-        cartoonId: e.cartoonId,
-        latestChapter: +e.latestChapter,
-        maxChapter: +e.maxChapter,
-        disabled: !!e.disabled,
-        downloaded: +e.downloaded,
-        cartoonDriveId: e.cartoonDriveId,
-        projectName: e.projectName,
-      }),
-    )
-    setDataSource(chain(_data).orderBy(['cartoonName'], ['asc']).value())
+    setDataSource(chain(data).orderBy(['cartoonName'], ['asc']).value())
   }, [data])
 
   const getColumnSearchProps = useCallback(

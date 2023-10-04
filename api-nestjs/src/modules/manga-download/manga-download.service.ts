@@ -3,6 +3,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter'
 import { InjectModel } from '@nestjs/mongoose'
 import { Request } from 'express'
 import { chain, round } from 'lodash'
+import { AnyBulkWriteOperation } from 'mongodb'
 import { Model } from 'mongoose'
 import { Subject, map } from 'rxjs'
 import { AppRedisClient } from '../../config/cache-module-config'
@@ -10,6 +11,7 @@ import {
   EnumMangaConfigProjectName,
   MangaConfig,
 } from '../../db/entities/MangaConfig'
+import { MangaUpload } from '../../db/entities/MangaUpload'
 import { MangaPythonService } from '../manga-python-service/manga-python-service.service'
 import { TaskCommand } from '../task/task.command'
 import { DownLoadMangaOneParamsDto } from './dto/download-manga-one'
@@ -18,11 +20,55 @@ import { DownLoadMangaOneParamsDto } from './dto/download-manga-one'
 export class MangaDownloadService {
   constructor(
     @InjectModel(MangaConfig.name) private mangaConfigModel: Model<MangaConfig>,
+    @InjectModel(MangaUpload.name) private mangaUploadModel: Model<MangaUpload>,
     private readonly mangaPythonService: MangaPythonService,
     private readonly appRedisClient: AppRedisClient,
     private readonly eventService: EventEmitter2,
     private readonly taskCommand: TaskCommand,
   ) {}
+
+  async updateLatestSync() {
+    const mangaConfigs = await this.mangaConfigModel.find()
+    const bulkUpdateConfig: AnyBulkWriteOperation<MangaConfig>[] = []
+    for (const mangaConfig of mangaConfigs) {
+      const { project_name, cartoon_id } = mangaConfig
+      const latestMangaUpload = await this.mangaUploadModel.findOne(
+        {
+          project_name,
+          cartoon_id,
+        },
+        {
+          project_name: 1,
+          cartoon_id: 1,
+          created_time: 1,
+        },
+        {
+          sort: {
+            created_time: -1,
+          },
+        },
+      )
+      console.log({
+        latestMangaUpload: latestMangaUpload.toJSON(),
+      })
+      const latest_sync = latestMangaUpload.created_time
+      bulkUpdateConfig.push({
+        updateOne: {
+          filter: {
+            project_name,
+            cartoon_id,
+          },
+          update: {
+            $set: {
+              latest_sync,
+            },
+          },
+        },
+      })
+    }
+
+    await this.mangaConfigModel.bulkWrite(bulkUpdateConfig)
+  }
 
   async downloadMangaByProject(params: DownLoadMangaOneParamsDto) {
     return this.taskCommand.downloadMangaByProject(params)

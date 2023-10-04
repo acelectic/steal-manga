@@ -13,7 +13,7 @@ class UpdateMangaConfigData:
                  downloaded: int,
                  project_name: str,
                  cartoon_drive_id: str = '',
-                 latest_sync: str = ''
+                 latest_sync: str = '',
                  ) -> None:
         self.cartoon_name = cartoon_name
         self.cartoon_id = str(cartoon_id)

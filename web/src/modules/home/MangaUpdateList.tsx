@@ -24,7 +24,19 @@ export const MangaUpdateList = (props: IMangaUpdateListProps) => {
           <Typography.Title level={5}>{updated.toString()}</Typography.Title>
           <ul style={{ marginLeft: 20, maxHeight: 300, overflowY: 'auto' }}>
             {chain(items)
-              .orderBy(['cartoonName', 'mangaChapterName'], ['asc', 'asc'])
+              .orderBy(
+                [
+                  'cartoonName',
+                  (d) =>
+                    Number(
+                      d.mangaChapterName
+                        .match(/^[\d]+\.pdf/)
+                        ?.toString()
+                        ?.replace('.pdf', ''),
+                    ),
+                ],
+                ['asc', 'asc'],
+              )
               .map((item) => {
                 return (
                   <li key={item.projectName + item.cartoonName + item.mangaChapterName}>

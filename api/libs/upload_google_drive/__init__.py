@@ -23,10 +23,11 @@ import pprint
 import shutil
 from typing import List
 
+from bson import DatetimeConversion, ObjectId
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload
-from pymongo import ReplaceOne, UpdateOne
+from pymongo import ReplaceOne, ReturnDocument, UpdateOne
 from tqdm import tqdm
 
 from ..utils.constants import (
@@ -104,7 +105,12 @@ def upload_to_drive(project_name=None, cartoon_name=None, logging=False):
                     if cartoon_project_sub_dir_res is not None:
                         sub_dir_id, sub_dir = cartoon_project_sub_dir_res
                         manga_name = sub_dir.get("name")
-
+                        manga_config = steal_manga_db.table_manga_config.find_one(
+                            {
+                                "cartoon_name": manga_name
+                            },
+                        )
+                        pprint.pprint(manga_config)
                         if cartoon_name is not None and cartoon_name != manga_name:
                             # print(f'skip cartoon_name: {cartoon_name} {manga_dir["name"]}')
                             continue
@@ -127,15 +133,16 @@ def upload_to_drive(project_name=None, cartoon_name=None, logging=False):
 
                                 upload_file(
                                     service, logging, sub_dir_id, file_name, file_path)
-                            steal_manga_db.table_manga_config.update_one(
-                                {
-                                    "cartoon_name": manga_name
-                                },
-                                {
-                                    '$set': {
-                                        "latest_sync": datetime.datetime.utcnow().isoformat()
-                                    }
-                                })
+                            if manga_config is not None:
+                                steal_manga_db.table_manga_config.update_one(
+                                    {
+                                        "_id": manga_config.get('_id')
+                                    },
+                                    {
+                                        '$set': {
+                                            "latest_sync": datetime.datetime.utcnow().isoformat()
+                                        }
+                                    })
 
         # if not drive_project_dirs:
         #     print('No files found.')
@@ -479,3 +486,59 @@ def delete_file(file_path: str):
 def order_keys_in_json(data: dict) -> dict:
     """ order_keys_in_json """
     return dict(sorted(data.items(), key=lambda x: str(x[0]).zfill(30)))
+
+
+def update_latest_sync(cartoon_id: str = ''):
+    """ update_latest_sync """
+    pprint.pprint(f'update_latest_sync: {cartoon_id}')
+    where = {}
+    if cartoon_id != '':
+        where = {
+            "cartoon_id": cartoon_id
+        }
+
+    steal_manga_db = StealMangaDb()
+    manga_configs = steal_manga_db.table_manga_config.find(where)
+    for manga_config in list(manga_configs):
+        project_name = manga_config.get('project_name')
+        cartoon_id = manga_config.get('cartoon_id')
+        latest_manga_uploads = steal_manga_db.table_manga_upload.find({
+            "project_name": project_name,
+            "cartoon_id": cartoon_id,
+        })
+        latest_manga_uploads = sorted(
+            latest_manga_uploads,
+            key=lambda x: datetime.datetime.fromisoformat(str(x.get('created_time'))).timestamp(),
+            reverse=True)  # type: ignore
+        latest_manga_upload = latest_manga_uploads[0]
+        if latest_manga_upload is not None:
+            pprint.pprint({
+                "project_name": project_name,
+                "cartoon_id": cartoon_id,
+            })
+            # latest_manga_upload = steal_manga_db.table_manga_upload.find_one({
+            #     "_id": latest_manga_upload.get('_id'),
+            # })
+
+            if latest_manga_upload is not None:
+                created_time = latest_manga_upload.get('created_time')
+                pprint.pprint({
+                    "config_id": manga_config.get('_id'),
+                    "created_time": created_time,
+                    "latest_manga_upload": latest_manga_upload
+                })
+                manga_config_updated = steal_manga_db.table_manga_config.find_one_and_update(
+                    filter={
+                        "_id": manga_config.get('_id')
+                        # "project_name": project_name,
+                        # "cartoon_id": cartoon_id,
+                    },
+                    update={
+                        "$set": {
+                            "latest_sync":  datetime.datetime.fromisoformat(created_time)
+                            # "latest_sync": created_time
+                        }
+                    },
+                    return_document=ReturnDocument.AFTER,
+                )
+                pprint.pprint(manga_config_updated)

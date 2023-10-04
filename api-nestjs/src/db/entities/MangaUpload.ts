@@ -1,5 +1,5 @@
 import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { HydratedDocument } from 'mongoose'
+import { Date, HydratedDocument } from 'mongoose'
 import { EnumMangaConfigProjectName } from './MangaConfig'
 
 export type MangaUploadDocument = HydratedDocument<MangaUpload>
@@ -12,8 +12,8 @@ export interface IMangaUpload {
   cartoon_drive_id: string
   manga_chapter_name: string
   manga_chapter_drive_id: string
-  created_time: string
-  modified_by_me_time: string
+  created_time: Date
+  modified_by_me_time: Date
   viewed_by_me: boolean
   downloaded: number
 }
@@ -64,11 +64,15 @@ export class MangaUpload implements IMangaUpload {
   })
   manga_chapter_drive_id: string
 
-  @Prop(Date)
-  created_time: string
+  @Prop({
+    type: Date,
+  })
+  created_time: Date
 
-  @Prop(Date)
-  modified_by_me_time: string
+  @Prop({
+    type: Date,
+  })
+  modified_by_me_time: Date
 
   @Prop(Boolean)
   viewed_by_me: boolean

@@ -29,3 +29,28 @@ export async function POST(request: NextRequest) {
     },
   )
 }
+
+export async function PATCH(request: NextRequest) {
+  const payload = await request.json()
+  revalidateTag('manga-list')
+  console.log({ payload })
+  const [error, responseData] = await to(
+    fetch(path.join(appConfig.API_HOST, 'api', 'v1', 'manga-updated'), {
+      method: 'PATCH',
+      body: JSON.stringify(decamelizeKeys(payload)),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-store',
+    }),
+  )
+
+  const dataRes = await responseData?.json()
+
+  return NextResponse.json(
+    { ...dataRes, revalidated: true },
+    {
+      status: 200,
+    },
+  )
+}

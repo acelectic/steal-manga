@@ -8,6 +8,7 @@ export class TaskService {
 
   @Timeout(2 * 1000)
   async test() {
+    await this.mangaDownloadService.updateLatestSync()
     // await this.mangaDownloadService.downloadMangaByProject({
     //   projectName: EnumMangaConfigProjectName.MY_NOVEL,
     // })

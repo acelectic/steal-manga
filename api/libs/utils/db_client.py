@@ -129,16 +129,17 @@ def get_manga_config(project_name: str = ''):
     steal_manga_db = StealMangaDb()
     results = steal_manga_db.table_manga_config.find(where)
     data: list[UpdateMangaConfigData] = []
-    for x in results:
+    for d in results:
         data.append(UpdateMangaConfigData(
-            cartoon_name=x['cartoon_name'],
-            cartoon_id=x['cartoon_id'],
-            latest_chapter=x['latest_chapter'],
-            max_chapter=x['max_chapter'],
-            disabled=x['disabled'],
-            downloaded=x['downloaded'],
-            project_name=x['project_name'],
-            cartoon_drive_id=x['cartoon_drive_id'],
+            cartoon_name=d['cartoon_name'],
+            cartoon_id=d['cartoon_id'],
+            latest_chapter=d['latest_chapter'],
+            max_chapter=d['max_chapter'],
+            disabled=d['disabled'],
+            downloaded=d['downloaded'],
+            project_name=d['project_name'],
+            cartoon_drive_id=d['cartoon_drive_id'],
+            latest_sync=d['latest_sync'],
         ))
     return data
 

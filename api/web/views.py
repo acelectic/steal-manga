@@ -166,19 +166,19 @@ def manga_updated(request: WSGIRequest):
         raw_data = steal_manga_db.table_manga_config.find_one({
             "cartoon_id": cartoon_id
         })
-
         if raw_data is None:
             return HttpResponseNotFound()
 
         d = UpdateMangaConfigData(
-            cartoon_name=raw_data['cartoon_name'],
-            cartoon_id=raw_data['cartoon_id'],
-            latest_chapter=raw_data['latest_chapter'],
-            max_chapter=raw_data['max_chapter'],
-            disabled=raw_data['disabled'],
-            downloaded=raw_data['downloaded'],
-            project_name=raw_data['project_name'],
-            cartoon_drive_id=raw_data['cartoon_drive_id'],
+            cartoon_name=raw_data.get('cartoon_name'),
+            cartoon_id=raw_data.get('cartoon_id'),
+            latest_chapter=raw_data.get('latest_chapter'),
+            max_chapter=raw_data.get('max_chapter'),
+            disabled=raw_data.get('disabled'),
+            downloaded=raw_data.get('downloaded'),
+            project_name=raw_data.get('project_name'),
+            cartoon_drive_id=raw_data.get('cartoon_drive_id'),
+            latest_sync=raw_data.get('latest_sync'),
         )
 
         if latest_chapter != d.latest_chapter:
