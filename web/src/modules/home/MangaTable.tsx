@@ -5,6 +5,7 @@ import { useMutation } from '@tanstack/react-query'
 import {
   Button,
   Col,
+  ConfigProvider,
   Form,
   FormInstance,
   Grid,
@@ -20,12 +21,14 @@ import {
 } from 'antd'
 import { ColumnType } from 'antd/es/table'
 import { FilterConfirmProps } from 'antd/es/table/interface'
-import dayjs from 'dayjs'
-import { chain } from 'lodash'
+import dayjs, { Dayjs } from 'dayjs'
+import Gradient from 'javascript-color-gradient'
+import { chain, round } from 'lodash'
 import { useRouter } from 'next/navigation'
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import Highlighter from 'react-highlight-words'
 import { useInView } from 'react-intersection-observer'
+import { themeConfig } from '../../config/theme-config'
 import { updateMangaConfig } from '../../service/manga-updated'
 import {
   EnumMangaProjectName,
@@ -53,6 +56,10 @@ const warpCss = css`
     padding: 4px 11px;
     border: 1px solid #d9d9d9;
     border-radius: 4px;
+  }
+
+  tr.ant-table-row:hover {
+    background-color: rgb(231, 231, 231);
   }
 `
 
@@ -292,8 +299,8 @@ export const MangaTable = (props: IMangaTableProps) => {
         <SearchOutlined style={{ color: filtered ? '#1677ff' : undefined }} />
       ),
       onFilter: (value, record) =>
-        record[dataIndex]
-          .toString()
+        !!record[dataIndex]
+          ?.toString()
           .toLowerCase()
           .includes((value as string).toLowerCase()),
       onFilterDropdownOpenChange: (visible) => {
@@ -314,6 +321,56 @@ export const MangaTable = (props: IMangaTableProps) => {
         ),
     }),
     [handleReset, handleSearch, searchText, searchedColumn],
+  )
+
+  const getLatestSyncColor = useCallback(
+    (latestSync: Dayjs) => {
+      const minColor = [255, 0, 0, 1]
+      const maxColor = [0, 255, 21, 1]
+      function pickHex(color1: number[], color2: number[], weight: number) {
+        var p = weight
+        var w = p * 2 - 1
+        var w1 = (w / 1 + 1) / 2
+        var w2 = 1 - w1
+        var rgb = [
+          Math.round(color1[0] * w1 + color2[0] * w2),
+          Math.round(color1[1] * w1 + color2[1] * w2),
+          Math.round(color1[2] * w1 + color2[2] * w2),
+        ] as const
+        return rgb
+      }
+      const dataChain = chain(dataSource).map((d) =>
+        d.latestSync ? dayjs(d.latestSync).unix() : null,
+      )
+      const minLatestSync = dataChain.compact().min().value()
+      const maxLatestSync = dataChain.compact().max().value()
+      const weight = (dayjs(latestSync).unix() - minLatestSync) / (maxLatestSync - minLatestSync)
+      const target = Math.min(round(weight * 255, 0), 255)
+      const colorOpacity = target.toString(16)
+      const colorHex = pickHex(minColor, maxColor, weight)
+      const colorsSize = 20
+      const color = new Gradient().setColorGradient('#E74B4B', '#3BEE4A').setMidpoint(colorsSize)
+
+      const calIndex = colorsSize * weight
+      const colorIndex = Math.min(Math.max(round(calIndex, 0), 1), colorsSize)
+      const colors = color.getColors()
+      const finalColor = color.getColor(colorIndex)
+      console.log({
+        minLatestSync,
+        maxLatestSync,
+        weight,
+        target,
+        colorOpacity,
+        colorHex,
+        colors,
+        finalColor,
+        colorIndex,
+        calIndex,
+      })
+      return finalColor
+      // return `rgba(${colorHex.concat([target]).join()})`
+    },
+    [dataSource],
   )
 
   const onCartoonIdClick = useCallback(
@@ -406,7 +463,23 @@ export const MangaTable = (props: IMangaTableProps) => {
       key: 'latestSync',
       dataIndex: 'latestSync',
       render: (value) => {
-        return value ? dayjs(value).format('DD/MM/YY hh:mm:ss') : '-'
+        const backgroundColor = value ? getLatestSyncColor(value) : undefined
+        return (
+          <div
+            style={{
+              backgroundColor,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'baseline',
+              padding: '10px',
+              boxSizing: 'border-box',
+            }}
+          >
+            <Typography.Text>
+              {value ? dayjs(value).format('DD/MM/YY hh:mm:ss') : '-'}
+            </Typography.Text>
+          </div>
+        )
       },
     })
     columns.push({
@@ -489,6 +562,7 @@ export const MangaTable = (props: IMangaTableProps) => {
     downloadMangaOne,
     downloadOneParams?.cartoonId,
     getColumnSearchProps,
+    getLatestSyncColor,
     isDownloadMangaOneLoading,
     isUpdateConfigLoading,
     onCartoonIdClick,
@@ -528,26 +602,28 @@ export const MangaTable = (props: IMangaTableProps) => {
   })
 
   return (
-    <Space ref={ref} className={warpCss} direction="vertical" size={8}>
-      {!noHeader && <Typography.Title level={3}>{title}</Typography.Title>}
-      <Table
-        dataSource={dataSource}
-        columns={columns as ColumnType<IItem>[]}
-        rowKey={(d) => d.projectName + d.cartoonId}
-        pagination={paginateOptions}
-        components={{
-          body: {
-            row: EditableRow,
-            cell: EditableCell,
-          },
-        }}
-        scroll={{
-          x: sm || xs ? 500 : undefined,
-        }}
-        size="small"
-        showSorterTooltip
-        bordered
-      />
-    </Space>
+    <ConfigProvider theme={themeConfig}>
+      <Space ref={ref} className={warpCss} direction="vertical" size={8}>
+        {!noHeader && <Typography.Title level={3}>{title}</Typography.Title>}
+        <Table
+          dataSource={dataSource}
+          columns={columns as ColumnType<IItem>[]}
+          rowKey={(d) => d.projectName + d.cartoonId}
+          pagination={paginateOptions}
+          components={{
+            body: {
+              row: EditableRow,
+              cell: EditableCell,
+            },
+          }}
+          scroll={{
+            x: sm || xs ? 500 : undefined,
+          }}
+          size="small"
+          showSorterTooltip
+          bordered
+        />
+      </Space>
+    </ConfigProvider>
   )
 }

@@ -2,8 +2,10 @@
 
 import { StyleProvider, createCache, extractStyle } from '@ant-design/cssinjs'
 import type Entity from '@ant-design/cssinjs/es/Cache'
+import { ConfigProvider } from 'antd'
 import { useServerInsertedHTML } from 'next/navigation'
 import { PropsWithChildren, useMemo } from 'react'
+import { themeConfig } from '../../config/theme-config'
 import '../../utils/initialize'
 
 const AntdProvider = (props: PropsWithChildren) => {
@@ -21,7 +23,11 @@ const AntdProvider = (props: PropsWithChildren) => {
     )
   })
 
-  return <StyleProvider cache={cache}>{props.children}</StyleProvider>
+  return (
+    <StyleProvider cache={cache}>
+      <ConfigProvider theme={themeConfig}>{props.children}</ConfigProvider>
+    </StyleProvider>
+  )
 }
 
 export default AntdProvider

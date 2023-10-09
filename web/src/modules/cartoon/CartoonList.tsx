@@ -1,7 +1,7 @@
 'use client'
 
 import { CheckOutlined, WarningOutlined } from '@ant-design/icons'
-import { Col, Row, Table, theme, Typography } from 'antd'
+import { Col, Row, Table, Typography, theme } from 'antd'
 import { ColumnType } from 'antd/es/table'
 import { chain } from 'lodash'
 import { useMemo } from 'react'
@@ -92,16 +92,19 @@ export const CartoonList = (props: ICartoonListProps) => {
 
   const dataSource = useMemo(() => {
     return chain(data)
-      .orderBy([
-        (d) => {
-          return Number(
-            d.manga_chapter_name
-              .match(/^[\d]+\.pdf/)
-              ?.toString()
-              ?.replace('.pdf', ''),
-          )
-        },
-      ])
+      .orderBy(
+        [
+          (d) => {
+            return Number(
+              d.manga_chapter_name
+                .match(/^[\d]+\.pdf/)
+                ?.toString()
+                ?.replace('.pdf', ''),
+            )
+          },
+        ],
+        ['desc'],
+      )
       .defaultTo([])
       .value()
   }, [data])

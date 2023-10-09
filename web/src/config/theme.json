@@ -1,0 +1,7 @@
+{
+  "components": {
+    "Table": {
+      "rowHoverBg": "rgb(231, 231, 231)"
+    }
+  }
+}

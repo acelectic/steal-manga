@@ -35,6 +35,7 @@ export interface IMangaConfig {
   downloaded: number
   projectName: EnumMangaProjectName
   cartoonDriveId: string
+  latestSync?: string
 }
 export type ManMirrorCartoon = IMangaConfig
 
