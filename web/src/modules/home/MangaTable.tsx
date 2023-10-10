@@ -28,6 +28,7 @@ import { useRouter } from 'next/navigation'
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import Highlighter from 'react-highlight-words'
 import { useInView } from 'react-intersection-observer'
+import '../../config/dayjs-config'
 import { themeConfig } from '../../config/theme-config'
 import { updateMangaConfig } from '../../service/manga-updated'
 import {
@@ -322,55 +323,52 @@ export const MangaTable = (props: IMangaTableProps) => {
     }),
     [handleReset, handleSearch, searchText, searchedColumn],
   )
+  const dataChain = useMemo(() => {
+    const data = chain(dataSource)
+      .map((d) => (d.latestSync ? dayjs(d.latestSync).unix() : null))
+      .compact()
+    const min = data.min().value()
+    const max = data.max().value()
+    const mean = data.mean().value()
+    const size = data.size().value()
+    return {
+      data,
+      min,
+      max,
+      mean,
+      size,
+    }
+  }, [dataSource])
 
   const getLatestSyncColor = useCallback(
     (latestSync: Dayjs) => {
-      const minColor = [255, 0, 0, 1]
-      const maxColor = [0, 255, 21, 1]
-      function pickHex(color1: number[], color2: number[], weight: number) {
-        var p = weight
-        var w = p * 2 - 1
-        var w1 = (w / 1 + 1) / 2
-        var w2 = 1 - w1
-        var rgb = [
-          Math.round(color1[0] * w1 + color2[0] * w2),
-          Math.round(color1[1] * w1 + color2[1] * w2),
-          Math.round(color1[2] * w1 + color2[2] * w2),
-        ] as const
-        return rgb
-      }
-      const dataChain = chain(dataSource).map((d) =>
-        d.latestSync ? dayjs(d.latestSync).unix() : null,
-      )
-      const minLatestSync = dataChain.compact().min().value()
-      const maxLatestSync = dataChain.compact().max().value()
-      const weight = (dayjs(latestSync).unix() - minLatestSync) / (maxLatestSync - minLatestSync)
-      const target = Math.min(round(weight * 255, 0), 255)
-      const colorOpacity = target.toString(16)
-      const colorHex = pickHex(minColor, maxColor, weight)
-      const colorsSize = 20
-      const color = new Gradient().setColorGradient('#E74B4B', '#3BEE4A').setMidpoint(colorsSize)
+      const { min, max, size } = dataChain
 
+      const maxDaysThreshold = 30
+      const daysDiff = dayjs().diff(dayjs.utc(latestSync), 'days')
+      const syncDiff = Math.max(maxDaysThreshold - daysDiff, 0)
+      const weight = syncDiff / maxDaysThreshold
+      const colorsSize = 20
+      const color = new Gradient()
+        .setColorGradient('#e96c6c', '#e96c6c', '#fff172', '#6cf377')
+        .setMidpoint(colorsSize)
       const calIndex = colorsSize * weight
-      const colorIndex = Math.min(Math.max(round(calIndex, 0), 1), colorsSize)
-      const colors = color.getColors()
-      const finalColor = color.getColor(colorIndex)
+
       console.log({
-        minLatestSync,
-        maxLatestSync,
+        maxDaysThreshold,
+        daysDiff,
+        syncDiff,
         weight,
-        target,
-        colorOpacity,
-        colorHex,
-        colors,
-        finalColor,
-        colorIndex,
+        colorsSize,
         calIndex,
       })
+
+      const colorIndex = Math.min(Math.max(round(calIndex, 0), 1), colorsSize)
+      const finalColor = color.getColor(colorIndex)
+
       return finalColor
-      // return `rgba(${colorHex.concat([target]).join()})`
     },
-    [dataSource],
+    [dataChain],
   )
 
   const onCartoonIdClick = useCallback(
@@ -462,12 +460,16 @@ export const MangaTable = (props: IMangaTableProps) => {
       title: 'LatestSync',
       key: 'latestSync',
       dataIndex: 'latestSync',
+      width: 310,
       render: (value) => {
         const backgroundColor = value ? getLatestSyncColor(value) : undefined
+        const isSync24Hour = value ? dayjs().diff(dayjs(value), 'hour') <= 24 : false
+        const latestSync = dayjs.utc(value)
         return (
           <div
             style={{
-              backgroundColor,
+              backgroundColor: isSync24Hour ? undefined : backgroundColor,
+              border: isSync24Hour ? '2px solid pink' : undefined,
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'baseline',
@@ -475,9 +477,16 @@ export const MangaTable = (props: IMangaTableProps) => {
               boxSizing: 'border-box',
             }}
           >
-            <Typography.Text>
-              {value ? dayjs(value).format('DD/MM/YY hh:mm:ss') : '-'}
-            </Typography.Text>
+            <Row>
+              <Col span={24}>
+                <Typography.Text>
+                  {value ? latestSync.local().format('DD/MM/YY HH:mm:ss') : '-'}
+                </Typography.Text>
+              </Col>
+              <Col span={24}>
+                <Typography.Text>{value ? latestSync.fromNow() : ''}</Typography.Text>
+              </Col>
+            </Row>
           </div>
         )
       },

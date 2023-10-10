@@ -7,7 +7,9 @@ import { InitLogRocker } from '../components/providers/InitLogRocker'
 import ReactQueryProvider from '../components/providers/ReactQueryProvider'
 import SseProvider from '../components/providers/SseProvider'
 import { appConfig } from '../config/app-config'
+import '../config/dayjs-config'
 import './globals.css'
+
 const inter = Sarabun({ weight: '400', subsets: ['thai'] })
 
 export const metadata = {

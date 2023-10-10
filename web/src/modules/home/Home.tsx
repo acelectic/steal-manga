@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useMemo } from 'react'
 import { themeConfig } from '../../config/theme-config'
 import { EnumMangaProjectName, IGetMangaUpdatedResponse } from '../../service/manga-updated/types'
+import { IMangaUpload } from '../../utils/db-client/collection-interface'
 import { AddMangaConfig } from './AddMangaConfig'
 import { ConsoleAction } from './ConsoleAction'
 import { DrivePortal } from './DrivePortal'
@@ -14,18 +15,13 @@ import { MangaUpdateList } from './MangaUpdateList'
 
 export interface IHomeProps {
   data?: IGetMangaUpdatedResponse
+  mangaUploads?: IMangaUpload[]
   authGoogleStatus?: boolean
 }
 export const Home = (props: IHomeProps) => {
-  const { data, authGoogleStatus } = props
+  const { data, authGoogleStatus, mangaUploads = [] } = props
   const router = useRouter()
-  const {
-    updated,
-    manMirrorCartoons = [],
-    myNovelCartoons = [],
-    resultsViewedSorted = [],
-    resultsYetViewSorted = [],
-  } = data || {}
+  const { updated, manMirrorCartoons = [], myNovelCartoons = [] } = data || {}
 
   const items: CollapseProps['items'] = useMemo(() => {
     return [
@@ -85,10 +81,7 @@ export const Home = (props: IHomeProps) => {
         <Col span={24}>
           <Collapse accordion items={items} />
         </Col>
-        <MangaUpdateList
-          resultsViewedSorted={resultsViewedSorted}
-          resultsYetViewSorted={resultsYetViewSorted}
-        />
+        <MangaUpdateList mangaUploads={mangaUploads} />
       </Row>
     </ConfigProvider>
   )

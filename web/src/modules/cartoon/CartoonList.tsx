@@ -3,10 +3,12 @@
 import { CheckOutlined, WarningOutlined } from '@ant-design/icons'
 import { Col, Row, Table, Typography, theme } from 'antd'
 import { ColumnType } from 'antd/es/table'
+import dayjs from 'dayjs'
 import { chain } from 'lodash'
 import { useMemo } from 'react'
 import { usePaginationOptions } from '../../utils/custom-hook'
 import { IMangaUpload } from '../../utils/db-client/collection-interface'
+import { makeGoogleDriveLink } from '../../utils/helper'
 
 interface ICartoonListProps {
   cartoonId: string
@@ -15,7 +17,7 @@ interface ICartoonListProps {
   data: IMangaUpload[]
 }
 export const CartoonList = (props: ICartoonListProps) => {
-  const { cartoonId, cartoonName, projectName, data } = props
+  const { cartoonName, projectName, data } = props
   const paginationOptions = usePaginationOptions()
   const { token } = theme.useToken()
 
@@ -34,17 +36,15 @@ export const CartoonList = (props: ICartoonListProps) => {
       {
         title: 'ChapterName',
         dataIndex: 'manga_chapter_name',
-      },
-      {
-        title: 'ChapterName',
-        dataIndex: 'manga_chapter_name',
-        render: (value: string) => {
-          return value
-            .match(/^[\d]+\.pdf/)
-            ?.toString()
-            ?.replace('.pdf', '')
+        render: (value, record) => {
+          return (
+            <Typography.Link href={makeGoogleDriveLink(record.cartoon_drive_id)} target="_blank">
+              {value}
+            </Typography.Link>
+          )
         },
       },
+
       {
         title: 'DriveId',
         dataIndex: 'manga_chapter_drive_id',
@@ -52,10 +52,16 @@ export const CartoonList = (props: ICartoonListProps) => {
       {
         title: 'CreatedTime',
         dataIndex: 'created_time',
+        render: (value) => {
+          return dayjs(value).local().format()
+        },
       },
       {
         title: 'modifiedByMeTime',
         dataIndex: 'modified_by_me_time',
+        render: (value) => {
+          return dayjs(value).local().format()
+        },
       },
       {
         title: 'ViewedByMe',
@@ -70,7 +76,11 @@ export const CartoonList = (props: ICartoonListProps) => {
             value: false,
           },
         ],
-        onFilter: (value, record) => (value === true ? record.viewed_by_me === true : false),
+        onFilter: (value, record) => {
+          if (value === true) return record.viewed_by_me === true
+          if (value === false) return record.viewed_by_me === false
+          return false
+        },
         render: (value: boolean) => {
           return value === true ? (
             <CheckOutlined

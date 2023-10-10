@@ -77,12 +77,14 @@ export const usePaginationOptions = (options?: IPaginateHandleOptions): TablePag
     [onChange, pageKey, pageSize, pageSizeKey, pathname, queryParams, router],
   )
 
-  return useMemo(() => {
+  return useMemo((): TablePaginationConfig => {
     return {
       current,
       pageSize,
       pageSizeOptions,
       onChange: handleChange,
+      responsive: true,
+      showTotal: (total, [start, end]) => `${start}-${end} of ${total} items`,
       ...restPaginationOptions,
     }
   }, [current, handleChange, pageSize, pageSizeOptions, restPaginationOptions])

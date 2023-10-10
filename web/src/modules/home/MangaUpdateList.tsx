@@ -1,8 +1,11 @@
 import { css } from '@emotion/css'
-import { Col, Divider, Layout, Row, Typography } from 'antd'
+import { Layout, Table, Typography } from 'antd'
+import { ColumnsType, TableProps } from 'antd/es/table'
+import dayjs from 'dayjs'
 import { chain, join } from 'lodash'
-import { useCallback } from 'react'
-import { IGetMangaUpdatedResponse } from '../../service/manga-updated/types'
+import { useCallback, useMemo, useState } from 'react'
+import { usePaginationOptions } from '../../utils/custom-hook'
+import { IMangaUpload } from '../../utils/db-client/collection-interface'
 import { makeGoogleDriveLink } from '../../utils/helper'
 
 const linkCss = css`
@@ -10,100 +13,89 @@ const linkCss = css`
   text-align: start;
 `
 interface IMangaUpdateListProps {
-  resultsYetViewSorted: IGetMangaUpdatedResponse['resultsYetViewSorted']
-  resultsViewedSorted: IGetMangaUpdatedResponse['resultsViewedSorted']
+  mangaUploads: IMangaUpload[]
 }
 
-export const MangaUpdateList = (props: IMangaUpdateListProps) => {
-  const { resultsViewedSorted = [], resultsYetViewSorted = [] } = props
+type IItem = [string, IMangaUpload[]]
 
-  const renderData = useCallback((d: IGetMangaUpdatedResponse['resultsYetViewSorted']) => {
-    return d.map(([updated, items = []]) => {
-      return (
-        <Col sm={6} xs={12} md={4.8} key={updated.toString()}>
-          <Typography.Title level={5}>{updated.toString()}</Typography.Title>
-          <ul style={{ marginLeft: 20, maxHeight: 300, overflowY: 'auto' }}>
-            {chain(items)
-              .orderBy(
-                [
-                  'cartoonName',
-                  (d) =>
-                    Number(
-                      d.mangaChapterName
-                        .match(/^[\d]+\.pdf/)
-                        ?.toString()
-                        ?.replace('.pdf', ''),
-                    ),
-                ],
-                ['asc', 'asc'],
-              )
-              .map((item) => {
-                return (
-                  <li key={item.projectName + item.cartoonName + item.mangaChapterName}>
-                    <Typography.Link
-                      href={makeGoogleDriveLink(item.cartoonDriveId)}
-                      target="_blank"
-                      className={linkCss}
-                    >
-                      {join([item.cartoonName, item.mangaChapterName], ' ')}
-                    </Typography.Link>
-                  </li>
-                )
-              })
-              .value()}
-          </ul>
-        </Col>
-      )
-    })
+export const MangaUpdateList = (props: IMangaUpdateListProps) => {
+  const { mangaUploads = [] } = props
+  const [expandedRowKeys, setExpandedRowKeys] = useState<string[]>([])
+  const paginationOptions = usePaginationOptions({
+    prefix: 'manga-update-list',
+    defaultPageSize: 5,
+    paginationOptions: {
+      pageSizeOptions: [5, 10, 20],
+    },
+  })
+  const dataSource = useMemo(() => {
+    return chain(mangaUploads)
+      .groupBy((e) => dayjs.utc(e.created_time).local().format('YYYY/MM/DD'))
+      .entries()
+      .orderBy([([updated]) => dayjs(updated).toDate()], ['desc'])
+      .value()
+  }, [mangaUploads])
+
+  const columns = useMemo((): ColumnsType<IItem> => {
+    return [{ title: 'Uploaded At', dataIndex: '0', key: '0' }, Table.EXPAND_COLUMN]
+  }, [])
+
+  const expandedRowRender = useCallback<
+    Exclude<Exclude<TableProps<IItem>['expandable'], undefined>['expandedRowRender'], undefined>
+  >((record: IItem) => {
+    const [, items] = record
+    return (
+      <ul style={{ marginLeft: 20, maxHeight: 200, overflowY: 'auto' }}>
+        {chain(items)
+          .orderBy(
+            [
+              (d) => d.cartoon_name,
+              (d) =>
+                Number(
+                  d.manga_chapter_name
+                    .match(/^[\d]+\.pdf/)
+                    ?.toString()
+                    ?.replace('.pdf', ''),
+                ),
+            ],
+            ['asc', 'asc'],
+          )
+          .map((item) => {
+            return (
+              <li key={item.project_name + item.cartoon_name + item.manga_chapter_name}>
+                <Typography.Link
+                  href={makeGoogleDriveLink(item.cartoon_drive_id)}
+                  target="_blank"
+                  className={linkCss}
+                >
+                  {join([item.cartoon_name, item.manga_chapter_name], ' ')}
+                </Typography.Link>
+              </li>
+            )
+          })
+          .value()}
+      </ul>
+    )
   }, [])
 
   return (
     <Layout.Content style={{ backgroundColor: '#ffffff', borderRadius: '6px', padding: '20px' }}>
-      <Row
-        gutter={[18, 18]}
-        style={{
-          width: '100%',
-          padding: '10px',
-          boxSizing: 'border-box',
-          border: '1px solid black',
-          borderRadius: '8px',
+      <Table
+        rowKey={([k]) => k}
+        dataSource={dataSource}
+        columns={columns}
+        expandable={{
+          expandRowByClick: true,
+          expandedRowKeys,
+          onExpand(expanded, record) {
+            const [updated] = record
+            if (expanded) setExpandedRowKeys([updated])
+            else setExpandedRowKeys([])
+          },
+          expandedRowRender,
         }}
-      >
-        <Col span={24}>
-          <Typography
-            style={{
-              color: '#25006b',
-              fontWeight: 'bold',
-            }}
-          >
-            ยังไม่อ่าน
-          </Typography>
-        </Col>
-        {renderData(resultsYetViewSorted)}
-      </Row>
-      <Divider type="horizontal" orientationMargin="8px" />
-      {/* <Row
-        gutter={[18, 18]}
-        style={{
-          width: '100%',
-          padding: '10px',
-          boxSizing: 'border-box',
-          border: '1px solid black',
-          borderRadius: '8px',
-        }}
-      >
-        <Col span={24}>
-          <Typography
-            style={{
-              color: '#25006b',
-              fontWeight: 'bold',
-            }}
-          >
-            อ่านแล้ว
-          </Typography>
-        </Col>
-        {renderData(resultsViewedSorted)}
-      </Row> */}
+        pagination={paginationOptions}
+      />
     </Layout.Content>
   )
 }
