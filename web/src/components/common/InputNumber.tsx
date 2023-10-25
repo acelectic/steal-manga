@@ -1,4 +1,5 @@
 import { Input, InputProps } from 'antd'
+import { ForwardRefRenderFunction, forwardRef } from 'react'
 import { NumericFormat, NumericFormatProps } from 'react-number-format'
 
 interface IInputNumberProps
@@ -10,10 +11,14 @@ interface IInputNumberProps
   onChange?: (value?: number) => void
 }
 
-export const InputNumber = (props: IInputNumberProps) => {
+const InputNumberBase: ForwardRefRenderFunction<HTMLInputElement, IInputNumberProps> = (
+  props,
+  ref,
+) => {
   const { value, onChange, ...restProps } = props
   return (
     <NumericFormat
+      getInputRef={ref}
       value={value}
       onValueChange={(d) => {
         onChange?.(d.floatValue)
@@ -23,3 +28,5 @@ export const InputNumber = (props: IInputNumberProps) => {
     />
   )
 }
+
+export const InputNumber = forwardRef(InputNumberBase)

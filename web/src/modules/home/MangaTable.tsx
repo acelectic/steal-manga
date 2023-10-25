@@ -28,6 +28,7 @@ import { useRouter } from 'next/navigation'
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import Highlighter from 'react-highlight-words'
 import { useInView } from 'react-intersection-observer'
+import { InputNumber } from '../../components/common/InputNumber'
 import '../../config/dayjs-config'
 import { themeConfig } from '../../config/theme-config'
 import { updateMangaConfig } from '../../service/manga-updated'
@@ -105,7 +106,7 @@ const EditableCell: React.FC<EditableCellProps> = ({
   ...restProps
 }) => {
   const [editing, setEditing] = useState(false)
-  const inputRef = useRef<InputRef>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
   const form = useContext(EditableContext)!
 
   useEffect(() => {
@@ -153,7 +154,14 @@ const EditableCell: React.FC<EditableCellProps> = ({
             {dataType === 'boolean' ? (
               <Switch />
             ) : (
-              <Input ref={inputRef} onPressEnter={save} onBlur={save} />
+              <InputNumber
+                ref={inputRef}
+                onPressEnter={save}
+                onBlur={save}
+                decimalScale={0}
+                allowNegative={false}
+                allowClear
+              />
             )}
           </Form.Item>
         </Col>
@@ -323,53 +331,23 @@ export const MangaTable = (props: IMangaTableProps) => {
     }),
     [handleReset, handleSearch, searchText, searchedColumn],
   )
-  const dataChain = useMemo(() => {
-    const data = chain(dataSource)
-      .map((d) => (d.latestSync ? dayjs(d.latestSync).unix() : null))
-      .compact()
-    const min = data.min().value()
-    const max = data.max().value()
-    const mean = data.mean().value()
-    const size = data.size().value()
-    return {
-      data,
-      min,
-      max,
-      mean,
-      size,
-    }
-  }, [dataSource])
 
-  const getLatestSyncColor = useCallback(
-    (latestSync: Dayjs) => {
-      const { min, max, size } = dataChain
+  const getLatestSyncColor = useCallback((latestSync: Dayjs) => {
+    const maxDaysThreshold = 30
+    const daysDiff = dayjs().diff(dayjs.utc(latestSync), 'days')
+    const syncDiff = Math.max(maxDaysThreshold - daysDiff, 0)
+    const weight = syncDiff / maxDaysThreshold
+    const colorsSize = 20
+    const color = new Gradient()
+      .setColorGradient('#e96c6c', '#e96c6c', '#fff172', '#6cf377')
+      .setMidpoint(colorsSize)
+    const calIndex = colorsSize * weight
 
-      const maxDaysThreshold = 30
-      const daysDiff = dayjs().diff(dayjs.utc(latestSync), 'days')
-      const syncDiff = Math.max(maxDaysThreshold - daysDiff, 0)
-      const weight = syncDiff / maxDaysThreshold
-      const colorsSize = 20
-      const color = new Gradient()
-        .setColorGradient('#e96c6c', '#e96c6c', '#fff172', '#6cf377')
-        .setMidpoint(colorsSize)
-      const calIndex = colorsSize * weight
+    const colorIndex = Math.min(Math.max(round(calIndex, 0), 1), colorsSize)
+    const finalColor = color.getColor(colorIndex)
 
-      console.log({
-        maxDaysThreshold,
-        daysDiff,
-        syncDiff,
-        weight,
-        colorsSize,
-        calIndex,
-      })
-
-      const colorIndex = Math.min(Math.max(round(calIndex, 0), 1), colorsSize)
-      const finalColor = color.getColor(colorIndex)
-
-      return finalColor
-    },
-    [dataChain],
-  )
+    return finalColor
+  }, [])
 
   const onCartoonIdClick = useCallback(
     (cartoonId: string) => {
