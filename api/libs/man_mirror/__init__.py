@@ -6,12 +6,15 @@ import json
 import os
 import shutil
 import urllib.parse
+from ast import IsNot
+from http.client import HTTPException
 from pprint import pprint
 from typing import List, Tuple
 
 import imageio.v3 as iio
 import numpy as np
 import requests
+from django.http import HttpResponseNotFound
 from PIL import Image, ImageFile
 from tqdm import tqdm
 
@@ -469,13 +472,14 @@ class ManMirror:
         loop_target: List[Tuple[int, int]] = []
         for d1 in range(10):
             for d2 in range(25):
-                loop_target.append((d1, d2))
+                loop_target.append((d1+1, d2+1))
 
         count_error_continue = 0
         d1_error = None
+        index = 0
         for i, d in tqdm(enumerate(loop_target), desc=f'cartoon_name {cartoon_name}[{chapter}]', total=len(loop_target)):
             d1, d2 = d
-            page = i + 1
+            page = index + 1
             image_path = f'{chapter_dir}/{page}.png'
             file_with_prefix = f'{prefix}{ str(chapter).zfill(2)}-{d1}_{ str(d2).zfill(3) }'
             if prefix == 'V':
@@ -486,26 +490,38 @@ class ManMirror:
             if os.path.exists(image_path):
                 continue
 
+            if d1_error is not None and d1_error != d1:
+                d1_error = None
+
             if d1_error is not None and d1_error <= d1:
+                print(f'skip d1:{d1}\td2: {d2}')
+                print(f'skip d1_error:{d1_error}\td1_error <= d1: {d1_error <= d1}')
                 continue
 
             if count_error_continue > 4:
+                print('error continue breaking')
                 break
 
             try:
                 if debug:
-                    print(f'image_url: {image_url}')
+                    print(f'page: {page}\timage_url: {image_url}')
                 new_image = self.call_get_image(image_url)
                 if new_image is not None:
                     new_image_file = Image.fromarray(new_image)
                     new_image_file.save(image_path)
-                count_error_continue = 0
+                    index += 1
+                    count_error_continue = 0
+                else:
+                    d1_error = d1
             except Exception as e:
-                if debug:
-                    print(f'image_url: {image_url}')
-                    print(e)
                 d1_error = d1
                 count_error_continue += 1
+
+                if debug:
+                    print(f'error page: {page}\timage_url: {image_url}')
+                    print(f'count_error_continue: {count_error_continue}')
+                    print(d1_error)
+                    print(e)
                 continue
 
         self.__merge_to_pdf(chapter_dir, output_pdf_path)

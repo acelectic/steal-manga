@@ -68,6 +68,14 @@ def download_man_mirror_manual() -> None:
             chapters=[str(x) for x in range(71, 80 + 1)],
             debug=True
         ),
+        ManualManMirrorMangaItem(
+            cartoon_name="คังจินลี",
+            cartoon_id="29",
+            active=True,
+            prefix="LKJ",
+            chapters=[str(x) for x in range(1, 6 + 1)],
+            debug=True
+        ),
     ]
 
     man_mirror = ManMirror()
@@ -179,7 +187,7 @@ def execute_download(enable_download_mam_mirror=False,
 
     print('Download Finished')
 
-    function_execute_time('upload_to_drive all', upload_to_drive, project_name=project_name_upload)
+    # function_execute_time('upload_to_drive all', upload_to_drive, project_name=project_name_upload)
     print('Upload Finished')
 
     function_execute_time('generate_drive_manga_exists', generate_drive_manga_exists)
