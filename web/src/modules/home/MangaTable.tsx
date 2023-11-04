@@ -391,6 +391,7 @@ export const MangaTable = (props: IMangaTableProps) => {
         key: 'cartoonId',
         dataIndex: 'cartoonId',
         width: 250,
+        responsive: ['sm'],
         render: (value) => {
           return (
             <Typography.Link
@@ -409,6 +410,7 @@ export const MangaTable = (props: IMangaTableProps) => {
         key: 'latestChapter',
         dataIndex: 'latestChapter',
         editable: true,
+        responsive: ['sm'],
       },
       {
         title: 'Max Chapter',
@@ -433,7 +435,12 @@ export const MangaTable = (props: IMangaTableProps) => {
         </Typography.Text>
       ),
     })
-    columns.push({ title: 'Downloaded', key: 'downloaded', dataIndex: 'downloaded' })
+    columns.push({
+      title: 'Downloaded',
+      key: 'downloaded',
+      dataIndex: 'downloaded',
+      responsive: ['sm'],
+    })
     columns.push({
       title: 'LatestSync',
       key: 'latestSync',
@@ -474,10 +481,11 @@ export const MangaTable = (props: IMangaTableProps) => {
       key: 'cartoonId',
       render(value, record, index) {
         return (
-          <Row gutter={[8, 8]} wrap={false}>
-            <Col>
+          <Row gutter={[8, 8]}>
+            <Col /* sm={8} */ xs={24}>
               <Button
                 size="small"
+                block
                 onClick={() => {
                   updateConfig({
                     projectName: title,
@@ -498,10 +506,11 @@ export const MangaTable = (props: IMangaTableProps) => {
                 Save
               </Button>
             </Col>
-            <Col>
+            <Col /* sm={8} */ xs={24}>
               <Button
                 size="small"
                 type="primary"
+                block
                 onClick={async () => {
                   await downloadMangaOne({
                     projectName: title,
@@ -527,11 +536,12 @@ export const MangaTable = (props: IMangaTableProps) => {
               </Button>
             </Col>
             {!!record.cartoonDriveId && (
-              <Col>
+              <Col /* sm={8} */ xs={24}>
                 <Button
                   size="small"
                   type="link"
                   onClick={openGoogleDrive.bind(null, record.cartoonDriveId)}
+                  block
                 >
                   Drive
                 </Button>

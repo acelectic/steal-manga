@@ -46,7 +46,7 @@ export const Home = (props: IHomeProps) => {
     <ConfigProvider theme={themeConfig}>
       <Row gutter={[16, 16]}>
         <Col span={24}>
-          <Row gutter={[24, 24]} align="middle" wrap={false}>
+          <Row gutter={[24, 24]} align="middle">
             <Col flex="none">
               <Row gutter={[8, 8]} align="middle">
                 <Col span={24}>
@@ -67,7 +67,12 @@ export const Home = (props: IHomeProps) => {
                 </Col>
               </Row>
             </Col>
-            <Col flex={1}>
+            <Col
+              flex={1}
+              sm={{
+                span: 24,
+              }}
+            >
               <ConsoleAction />
             </Col>
           </Row>
