@@ -21,20 +21,20 @@ services:
   #     - ./api:/usr/src/app:delegated
   #     - ./api/config:/usr/src/app/config
 
-  # web2:
-  #   container_name: steal_manga_web2
-  #   build:
-  #     context: .
-  #     dockerfile: ./web/Dockerfile.dev
-  #   env_file:
-  #     - ./web/.env
-  #   environment:
-  #     NODE_ENV: development
-  #   command: yarn dev
-  #   ports:
-  #     - '8002:3000'
-  #   volumes:
-  #     - ./web:/app:delegated
+  web2:
+    container_name: steal_manga_web2
+    build:
+      context: .
+      dockerfile: ./web/Dockerfile.dev
+    env_file:
+      - ./web/.env
+    environment:
+      NODE_ENV: development
+    command: yarn dev
+    ports:
+      - '8002:3000'
+    volumes:
+      - ./web:/app:delegated
 
   api:
     container_name: steal_manga_api
@@ -67,3 +67,20 @@ services:
   #   volumes:
   #     - ./api-nestjs/private:/usr/src/app/private
   #     - ./api-nestjs/public:/usr/src/app/public
+
+  ngrok:
+    container_name: ngrok
+    image: ngrok/ngrok:latest
+    restart: unless-stopped
+    command:
+      - 'start'
+      - '--all'
+      - '--config'
+      - '/etc/ngrok.yml'
+    volumes:
+      - ./ngrok/ngrok.yml:/etc/ngrok.yml
+    ports:
+      - 4040:4040
+    depends_on:
+      - web
+      - api

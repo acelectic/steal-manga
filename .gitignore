@@ -168,3 +168,6 @@ api/config
 .env*.local
 
 .scannerwork
+
+# ngrok config 
+ngrok.yml
