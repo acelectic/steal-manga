@@ -23,7 +23,7 @@ import { ColumnType } from 'antd/es/table'
 import { FilterConfirmProps } from 'antd/es/table/interface'
 import dayjs, { Dayjs } from 'dayjs'
 import Gradient from 'javascript-color-gradient'
-import { chain, round } from 'lodash'
+import { capitalize, chain, round } from 'lodash'
 import { useRouter } from 'next/navigation'
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import Highlighter from 'react-highlight-words'
@@ -71,6 +71,12 @@ type IItem = ManMirrorCartoon
 
 type DataIndex = keyof IItem
 
+enum EnumLatestSyncFilter {
+  NOT_SYNC = 'not_sync',
+  MORE_1_DAYS = 'more_1_days',
+  MORE_1_WEEKS = 'more_1_weeks',
+  MORE_1_MONTHS = 'more_1_months',
+}
 interface IEditableRowProps {
   index: number
 }
@@ -446,6 +452,40 @@ export const MangaTable = (props: IMangaTableProps) => {
       key: 'latestSync',
       dataIndex: 'latestSync',
       width: 310,
+      filters: chain(EnumLatestSyncFilter)
+        .values()
+        .map((e) => {
+          return {
+            text: e
+              .split('_')
+              .map((d) => capitalize(d))
+              .join(' '),
+            value: e,
+          }
+        })
+        .value(),
+      onFilter: (value, record) => {
+        if (!record.latestSync && value === EnumLatestSyncFilter.NOT_SYNC) return true
+        if (!record.latestSync) return false
+
+        if (value === EnumLatestSyncFilter.MORE_1_DAYS)
+          return dayjs(record.latestSync).diff(dayjs(), 'days') > 1
+        if (value === EnumLatestSyncFilter.MORE_1_WEEKS)
+          return dayjs(record.latestSync).diff(dayjs(), 'weeks') <= 1
+        if (value === EnumLatestSyncFilter.MORE_1_MONTHS)
+          return dayjs(record.latestSync).diff(dayjs(), 'months') <= 1
+
+        return false
+      },
+      sorter: (a, b) => {
+        if (a.latestSync && b.latestSync && dayjs(a.latestSync) < dayjs(b.latestSync)) return -1
+        if (a.latestSync && b.latestSync && dayjs(a.latestSync) > dayjs(b.latestSync)) return 1
+
+        if (!b.latestSync) return -1
+        if (!a.latestSync) return 1
+
+        return 0
+      },
       render: (value) => {
         const backgroundColor = value ? getLatestSyncColor(value) : undefined
         const isSync24Hour = value ? dayjs().diff(dayjs(value), 'hour') <= 24 : false

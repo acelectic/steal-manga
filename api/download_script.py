@@ -71,9 +71,9 @@ def download_man_mirror_manual() -> None:
         ManualManMirrorMangaItem(
             cartoon_name="คังจินลี",
             cartoon_id="29",
-            active=True,
+            active=False,
             prefix="LKJ",
-            chapters=[str(x) for x in range(1, 6 + 1)],
+            chapters=[str(x) for x in range(1, 10 + 1)],
             debug=True
         ),
     ]
