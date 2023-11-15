@@ -1,5 +1,5 @@
 import { css } from '@emotion/css'
-import { Layout, Table, Typography } from 'antd'
+import { Col, Layout, Row, Table, Tag, Typography } from 'antd'
 import { ColumnsType, TableProps } from 'antd/es/table'
 import dayjs from 'dayjs'
 import { chain, join } from 'lodash'
@@ -37,7 +37,31 @@ export const MangaUpdateList = (props: IMangaUpdateListProps) => {
   }, [mangaUploads])
 
   const columns = useMemo((): ColumnsType<IItem> => {
-    return [{ title: 'Uploaded At', dataIndex: '0', key: '0' }, Table.EXPAND_COLUMN]
+    return [
+      {
+        title: 'Uploaded At',
+        dataIndex: '0',
+        key: '0',
+        render: (value) => {
+          const uploadedAt = dayjs(value, {
+            format: 'YYYY/MM/DD',
+          }).local()
+
+          const isNew = uploadedAt.isSameOrAfter(
+            dayjs().local().subtract(24, 'hour').startOf('hour'),
+          )
+          return (
+            <Row gutter={8}>
+              <Col>
+                <Typography.Text>{uploadedAt.format('DD-MM-YYYY')}</Typography.Text>
+              </Col>
+              <Col>{isNew && <Tag color="success">New</Tag>}</Col>
+            </Row>
+          )
+        },
+      },
+      Table.EXPAND_COLUMN,
+    ]
   }, [])
 
   const expandedRowRender = useCallback<
