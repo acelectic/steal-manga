@@ -17,3 +17,4 @@ tqdm==4.62.3
 urllib3==2.0.4
 pymongo==4.5.0
 pyhumps==3.8.0
+selenium==4.15.2

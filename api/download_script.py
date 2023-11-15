@@ -7,6 +7,7 @@ from typing import List
 
 from dotenv import load_dotenv
 from libs.man_mirror import ManMirror
+from libs.man_mirror.bot_manga_updated import get_manga_latest_chapter
 from libs.my_novel import MyNovel
 from libs.upload_google_drive import generate_drive_manga_exists, upload_to_drive
 from libs.upload_google_drive.interface import ManualManMirrorMangaItem
@@ -21,7 +22,7 @@ load_dotenv()
 argumentList = sys.argv[1:]
 
 # Options
-options = "hmond:"
+options = "hmondu:"
 
 # Long options
 long_options = []
@@ -215,6 +216,7 @@ if __name__ == "__main__":
                 print("\t -m | enable_download_mam_mirror")
                 print("\t -mm | enable_download_mam_mirror_manual")
                 print("\t -d | debug")
+                print("\t -u | get man-mirror latest manga chapter")
             elif currentArgument in ("-m"):
                 print("Enable Man Mirror")
                 enable_download_mam_mirror = True
@@ -231,12 +233,17 @@ if __name__ == "__main__":
                 debug = True
                 print("Debug mode")
 
-        function_execute_time('execute download manga', execute_download,
-                              enable_download_mam_mirror=enable_download_mam_mirror,
-                              enable_download_mam_mirror_manual=enable_download_mam_mirror_manual,
-                              enable_download_my_novel=enable_download_my_novel,
-                              debug=debug,
-                              )
+            elif currentArgument in ("-u"):
+                get_manga_latest_chapter()
+                print("Debug mode")
+
+        if enable_download_mam_mirror or enable_download_mam_mirror_manual or enable_download_my_novel:
+            function_execute_time('execute download manga', execute_download,
+                                  enable_download_mam_mirror=enable_download_mam_mirror,
+                                  enable_download_mam_mirror_manual=enable_download_mam_mirror_manual,
+                                  enable_download_my_novel=enable_download_my_novel,
+                                  debug=debug,
+                                  )
 
     except getopt.error as err:
         # output error, and return with an error code
