@@ -58,6 +58,3 @@ def get_manga_latest_chapter():
                 f'cartoon_name: {cartoon_name.strip(): <20}\thref: {href:<10}\tmanga_id: {cartoon_id}\tlatest_chapter: {latest_chapter}')
 
     driver.close()
-
-
-get_manga_latest_chapter()
