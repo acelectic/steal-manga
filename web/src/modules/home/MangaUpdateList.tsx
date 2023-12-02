@@ -77,7 +77,7 @@ export const MangaUpdateList = (props: IMangaUpdateListProps) => {
               (d) =>
                 Number(
                   d.manga_chapter_name
-                    .match(/^[\d]+\.pdf/)
+                    .match(/^[\d]+$/g)
                     ?.toString()
                     ?.replace('.pdf', ''),
                 ),

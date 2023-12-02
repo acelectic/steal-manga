@@ -59,16 +59,22 @@ services:
     ports:
       - '8001:3000'
 
-  # api_nestjs:
+  # api-nestjs:
   #   container_name: steal_manga_api_nestjs
-  #   image: docker.io/acelectic/steal-manga:api-nestjs
+  #   # image: docker.io/acelectic/steal-manga:api-nestjs-v2
+  #   build:
+  #     context: ./api-nestjs
+  #     dockerfile: ./Dockerfile.dev
   #   env_file:
   #     - ./api-nestjs/.env
+  #   environment:
+  #     - REDIS_HOST=dev_service_redis_6_2
   #   ports:
   #     - 8003:3000
   #   volumes:
   #     - ./api-nestjs/private:/usr/src/app/private
   #     - ./api-nestjs/public:/usr/src/app/public
+  #     - ./api-nestjs:/usr/src/app:delegated
 
   ngrok:
     container_name: ngrok

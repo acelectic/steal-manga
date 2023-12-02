@@ -1,14 +1,12 @@
 import { CacheModuleOptions } from '@nestjs/cache-manager'
 import { DynamicModule, Provider } from '@nestjs/common'
-import { redisStore } from 'cache-manager-redis-store'
+import * as redisStore from 'cache-manager-redis-store'
 import Redis from 'ioredis'
 import appConfig from './app-config'
 
 export const cacheModuleConfig: CacheModuleOptions = {
   isGlobal: true,
-  store: {
-    create: redisStore as any,
-  },
+  store: redisStore as any,
   host: appConfig.REDIS_HOST,
   port: Number(appConfig.REDIS_PORT),
   ttl: 5 * 60, // second

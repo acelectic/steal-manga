@@ -56,12 +56,12 @@ async function bootstrap() {
   // bull board
   app.use(
     '/bull-board',
-    expressBasicAuth({
-      users: {
-        [appConfig.BULL_BOARD_USERNAME]: appConfig.BULL_BOARD_PASSWORD,
-      },
-      challenge: true,
-    }),
+    // expressBasicAuth({
+    //   users: {
+    //     [appConfig.BULL_BOARD_USERNAME]: appConfig.BULL_BOARD_PASSWORD,
+    //   },
+    //   challenge: true,
+    // }),
     bullServerAdapter.getRouter(),
   )
   bullServerAdapter.setBasePath('/bull-board')

@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@bull-board/express": "^5.8.4",
+    "@line/bot-sdk": "^8.0.1",
     "@nestjs/bullmq": "^10.0.1",
     "@nestjs/cache-manager": "^2.1.0",
     "@nestjs/common": "^10.0.0",

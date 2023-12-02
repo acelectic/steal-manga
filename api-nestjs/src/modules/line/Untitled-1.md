@@ -1,0 +1,1 @@
+https://liff.line.me/2001515416-wnAKvZqD?branch_uuid=3e75ce34-f40c-4608-b1e9-e77fc774fcb7&qrcode=UNZG1BQZ194R6YIMXXNCLPV11YYUF8&userid=Ufb47f3af5ab669aff52466181b35c560

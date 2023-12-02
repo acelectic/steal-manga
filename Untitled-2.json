@@ -1,0 +1,17 @@
+{
+  "destination": "Ufd5c88b9101aec479235981739bf1b94",
+  "events": [
+    {
+      "type": "follow",
+      "webhookEventId": "01HEN544A788RDEY88T4PP97K5",
+      "deliveryContext": { "isRedelivery": false },
+      "timestamp": 1699369586505,
+      "source": {
+        "type": "user",
+        "userId": "U6d45ecf9590a28b65c0e5761cac7b2d5"
+      },
+      "replyToken": "94dd0ef1009b4d1eaf55956260e5441a",
+      "mode": "active"
+    }
+  ]
+}

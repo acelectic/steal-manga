@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode } from '@nestjs/common'
+import { Body, Controller, Get, HttpCode, Post } from '@nestjs/common'
 import { AppService } from './app.service'
 import appConfig from './config/app-config'
 
@@ -10,5 +10,10 @@ export class AppController {
   @HttpCode(200)
   health() {
     return { statusCode: 200, status: 'Ok !!', version: appConfig.VERSION }
+  }
+
+  @Post('qr-code/callback')
+  qrCodeCallback(@Body() params) {
+    console.log({ params })
   }
 }

@@ -39,6 +39,7 @@ const appConfig = {
   REDIS_HOST: process.env.REDIS_HOST,
   REDIS_PORT: +process.env.REDIS_PORT,
   REDIS_PREFIX: process.env.REDIS_PREFIX,
+  LINE_CHANNEL_ACCESS_TOKEN: process.env.LINE_CHANNEL_ACCESS_TOKEN,
 }
 
 type IConfigKey = keyof typeof appConfig
@@ -74,6 +75,7 @@ const joiObject: IJoiObject = {
   REDIS_HOST: Joi.string().required(),
   REDIS_PORT: Joi.number().required(),
   REDIS_PREFIX: Joi.string().required(),
+  LINE_CHANNEL_ACCESS_TOKEN: Joi.string().required(),
 }
 
 const validationEnvSchema = Joi.object<IJoiObject>(joiObject)

@@ -16,6 +16,7 @@ import {
 } from './config/cache-module-config'
 import { dbConfig } from './config/db-config'
 import { httpLoggerConfig } from './config/http-logger-config'
+import { LineModule } from './modules/line/line.module'
 import { MangaConfigModule } from './modules/manga-config/manga-config.module'
 import { MangaDownloadModule } from './modules/manga-download/manga-download.module'
 import { MangaPythonServiceModule } from './modules/manga-python-service/manga-python-service.module'
@@ -39,6 +40,7 @@ import { TaskModule } from './modules/task/task.module'
     // service modules
     MangaConfigModule,
     MangaDownloadModule,
+    LineModule,
   ],
   controllers: [AppController],
   providers: [AppService],
