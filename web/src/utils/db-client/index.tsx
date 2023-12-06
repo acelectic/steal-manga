@@ -17,7 +17,7 @@ export class DbClient {
   table_manga_upload: Collection<IMangaUpload>
 
   constructor(dbUsername: string, dbPassword: string) {
-    this._uri = `mongodb+srv://${dbUsername}:${dbPassword}@steal-manga.nlqv7lj.mongodb.net/?retryWrites=true&w=majority`
+    this._uri = `mongodb+srv://${dbUsername}:${dbPassword}@${appConfig.DB_NAME}.nlqv7lj.mongodb.net/?retryWrites=true&w=majority`
     const client = new MongoClient(this._uri, {
       serverApi: {
         version: ServerApiVersion.v1,
