@@ -1,0 +1,22 @@
+authtoken: 1VZKxXVvgHxO1ptOis9rGTwam90_3LLCzJYi2bTYN1kWYamGR
+version: 2
+tunnels:
+  # ubuntu_local:
+  #   proto: http
+  #   hostname: endless-friendly-herring.ngrok-free.app
+  #   addr: 192.168.1.135:8001
+  #   basic_auth:
+  #     - "bob:bobpassword"
+
+  ubuntu_edge:
+    labels:
+      - edge=edghts_2ZWISTtWpkPoITEpWyuKWFFmvbj
+    addr: 192.168.1.135:8001
+
+    # -------------------------
+    # Additional options
+    # -------------------------
+    # auth: "username:password"
+    # host_header: rewrite
+    # inspect: true
+    # bind_tls: true

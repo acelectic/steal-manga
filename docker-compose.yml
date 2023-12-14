@@ -1,8 +1,8 @@
-version: '3.5'
-networks:
-  default:
-    external: true
-    name: dev-services_default
+version: "3.5"
+# networks:
+#   default:
+#     external: true
+#     name: dev-services_default
 
 services:
   # api:
@@ -21,20 +21,20 @@ services:
   #     - ./api:/usr/src/app:delegated
   #     - ./api/config:/usr/src/app/config
 
-  # web2:
-  #   container_name: steal_manga_web2
-  #   build:
-  #     context: .
-  #     dockerfile: ./web/Dockerfile.dev
-  #   env_file:
-  #     - ./web/.env
-  #   environment:
-  #     NODE_ENV: development
-  #   command: yarn dev
-  #   ports:
-  #     - '8002:3000'
-  #   volumes:
-  #     - ./web:/app:delegated
+  web2:
+    container_name: steal_manga_web2
+    build:
+      context: .
+      dockerfile: ./web/Dockerfile.dev
+    env_file:
+      - ./web/.env
+    environment:
+      NODE_ENV: development
+    command: yarn dev
+    ports:
+      - "8002:3000"
+    volumes:
+      - ./web:/app:delegated
 
   api:
     container_name: steal_manga_api
@@ -45,7 +45,7 @@ services:
     environment:
       - PORT=8000
     ports:
-      - '8000:8000'
+      - "8000:8000"
     volumes:
       - ./api:/usr/src/app:delegated
       # - ./api/config:/usr/src/app/config
@@ -57,7 +57,7 @@ services:
     env_file:
       - ./web/.env
     ports:
-      - '8001:3000'
+      - "8001:3000"
 
   # api_nestjs:
   #   container_name: steal_manga_api_nestjs
@@ -75,10 +75,10 @@ services:
     image: ngrok/ngrok:latest
     restart: always
     command:
-      - 'start'
-      - '--all'
-      - '--config'
-      - '/etc/ngrok.yml'
+      - "start"
+      - "--all"
+      - "--config"
+      - "/etc/ngrok.yml"
     volumes:
       - ./ngrok/ngrok.yml:/etc/ngrok.yml
     ports:

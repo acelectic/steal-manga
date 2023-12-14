@@ -120,13 +120,13 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
+# .env
 .venv
 env/
 venv/
 ENV/
-env.bak/
-venv.bak/
+# env.bak/
+# venv.bak/
 
 # Spyder project settings
 .spyderproject
@@ -165,9 +165,9 @@ api/config
 !api/config/manga
 !api/config/credentials.json
 
-.env*.local
+# .env*.local
 
 .scannerwork
 
 # ngrok config 
-ngrok.yml
+# ngrok.yml
