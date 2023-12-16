@@ -177,7 +177,7 @@ def upload_file(service, logging: bool, sub_dir_id: str, file_name: str, file_pa
         })
 
 
-def generate_drive_manga_exists(target_project_name=None, target_cartoon_name=None, logging=False) -> list[MangaUploadedToDrive]:
+def generate_drive_manga_exists(target_project_name=None, target_cartoon_name=None, logging=False, removeRecordUploadRemove = False) -> list[MangaUploadedToDrive]:
     """
         get and generate manga in drive
     """
@@ -273,41 +273,42 @@ def generate_drive_manga_exists(target_project_name=None, target_cartoon_name=No
         ) for d in manga_uploaded_to_drive]
         steal_manga_db.table_manga_upload.bulk_write(requests)
 
-        # remove cartoon deleted from drive
-        remove_hash = {}
-        for d in manga_uploaded_to_drive:
-            key = f'{d.project_name}_{d.cartoon_id}'
+        if removeRecordUploadRemove:
+            # remove cartoon deleted from drive
+            remove_hash = {}
+            for d in manga_uploaded_to_drive:
+                key = f'{d.project_name}_{d.cartoon_id}'
+                
+                if remove_hash.get(key) is None:
+                    remove_hash[key] = {
+                        "project_name": d.project_name,
+                        "cartoon_id": d.cartoon_id,
+                        "manga_chapter_names": []
+                    }
+                
+                remove_hash[key]["manga_chapter_names"].append(d.manga_chapter_name)
             
-            if remove_hash.get(key) is None:
-                remove_hash[key] = {
-                    "project_name": d.project_name,
-                    "cartoon_id": d.cartoon_id,
-                    "manga_chapter_names": []
-                }
-            
-            remove_hash[key]["manga_chapter_names"].append(d.manga_chapter_name)
-        
 
-        for d in list(remove_hash.values()):
+            for d in list(remove_hash.values()):
 
-            should_delete_list = steal_manga_db.table_manga_upload.find({
-                "project_name": d["project_name"],
-                "cartoon_id": d["cartoon_id"],
-                "manga_chapter_name": {
-                    "$nin": d["manga_chapter_names"]
-                },
-            })
+                should_delete_list = steal_manga_db.table_manga_upload.find({
+                    "project_name": d["project_name"],
+                    "cartoon_id": d["cartoon_id"],
+                    "manga_chapter_name": {
+                        "$nin": d["manga_chapter_names"]
+                    },
+                })
 
-            for should_delete_item in should_delete_list:
-                pprint.pprint({
-                    "should_delete_item": should_delete_item
-                })
-                deleted_item = steal_manga_db.table_manga_upload.delete_one({
-                    "_id": ObjectId(should_delete_item["_id"])
-                })
-                pprint.pprint({
-                    "deleted_item": deleted_item
-                })
+                for should_delete_item in should_delete_list:
+                    pprint.pprint({
+                        "should_delete_item": should_delete_item
+                    })
+                    deleted_item = steal_manga_db.table_manga_upload.delete_one({
+                        "_id": ObjectId(should_delete_item["_id"])
+                    })
+                    pprint.pprint({
+                        "deleted_item": deleted_item
+                    })
 
         
         # update manga config
