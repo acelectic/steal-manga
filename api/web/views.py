@@ -269,7 +269,7 @@ def fetch_manga_updated(request: WSGIRequest):
     """ fetch manga updated """
 
     if request.method == 'POST':
-        generate_drive_manga_exists()
+        generate_drive_manga_exists(removeRecordUploadRemove=True)
 
     return JsonResponse({
         "success": True
