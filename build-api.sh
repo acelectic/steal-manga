@@ -16,8 +16,8 @@ fi
 if [ $deploy_service ]:
 then 
 echo "deploy_service: $deploy_service"
-docker-compose stop api \
-    && docker-compose up -d --force-recreate api
+docker compose stop api \
+    && docker compose up -d --force-recreate api
 fi
 
 # && koyeb service redeploy steal-manga-web/api \

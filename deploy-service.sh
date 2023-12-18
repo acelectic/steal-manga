@@ -36,6 +36,8 @@ fi
 
 
 if [ $deploy_api ]; then 
+    echo 'build api'
+
     cd api \
     && docker buildx build -f Dockerfile -t acelectic/steal-manga:api . \
     && cd ..
@@ -43,11 +45,13 @@ if [ $deploy_api ]; then
     if [ $push_image ]; then docker push acelectic/steal-manga:api 
     fi
 
-    docker-compose stop api \
-    && docker-compose up -d --force-recreate api
+    docker compose stop api \
+    && docker compose up -d --force-recreate api
 fi
 
 if [ $deploy_web ]; then 
+    echo 'build web'
+
     cd web \
     && docker buildx build -f Dockerfile -t acelectic/steal-manga:web . \
     && cd ..
@@ -55,11 +59,13 @@ if [ $deploy_web ]; then
     if [ $push_image ]; then docker push acelectic/steal-manga:web 
     fi
 
-    docker-compose stop web \
-    && docker-compose up -d --force-recreate web
+    docker compose stop web \
+    && docker compose up -d --force-recreate web
 fi
 
 if [ $deploy_api_nestjs ]; then 
+    echo 'build api-nestjs'
+
     cd api-nestjs \
     && docker buildx build -f Dockerfile -t acelectic/steal-manga:api-nestjs . \
     && cd ..
@@ -68,8 +74,8 @@ if [ $deploy_api_nestjs ]; then
      push acelectic/steal-manga:api-nestjs 
     fi
 
-    docker-compose stop api_nestjs \
-    && docker-compose up -d --force-recreate api_nestjs
+    docker compose stop api_nestjs \
+    && docker compose up -d --force-recreate api_nestjs
 fi
 
 

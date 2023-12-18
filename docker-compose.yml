@@ -21,20 +21,20 @@ services:
   #     - ./api:/usr/src/app:delegated
   #     - ./api/config:/usr/src/app/config
 
-  web2:
-    container_name: steal_manga_web2
-    build:
-      context: .
-      dockerfile: ./web/Dockerfile.dev
-    env_file:
-      - ./web/.env
-    environment:
-      NODE_ENV: development
-    command: yarn dev
-    ports:
-      - "8002:3000"
-    volumes:
-      - ./web:/app:delegated
+  # web2:
+  #   container_name: steal_manga_web2
+  #   build:
+  #     context: .
+  #     dockerfile: ./web/Dockerfile.dev
+  #   env_file:
+  #     - ./web/.env
+  #   environment:
+  #     NODE_ENV: development
+  #   command: yarn dev
+  #   ports:
+  #     - "8002:3000"
+  #   volumes:
+  #     - ./web:/app:delegated
 
   api:
     container_name: steal_manga_api
@@ -49,6 +49,12 @@ services:
     volumes:
       - ./api:/usr/src/app:delegated
       # - ./api/config:/usr/src/app/config
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
   web:
     container_name: steal_manga_web
@@ -58,6 +64,12 @@ services:
       - ./web/.env
     ports:
       - "8001:3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/v1/health"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
   # api_nestjs:
   #   container_name: steal_manga_api_nestjs

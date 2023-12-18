@@ -31,6 +31,8 @@ ENV PIP_DISABLE_PIP_VERSION_CHECK 1
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
+RUN apt-get -y update; apt-get -y install curl
+
 WORKDIR /usr/src/app
 
 # copy only the dependencies installation from the 1st stage image
