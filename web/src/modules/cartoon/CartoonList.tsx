@@ -20,7 +20,7 @@ export const CartoonList = (props: ICartoonListProps) => {
   const { cartoonName, projectName, data } = props
   const paginationOptions = usePaginationOptions()
   const { token } = theme.useToken()
-
+  //  xxx
   const columns = useMemo((): ColumnType<IMangaUpload>[] => {
     return [
       {
