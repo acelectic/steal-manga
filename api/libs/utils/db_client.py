@@ -18,7 +18,6 @@ uri: str = f"mongodb+srv://{DB_USERNAME}:{DB_PASSWORD}@{DB_NAME}.nlqv7lj.mongodb
 
 db_client: MongoClient | None = None
 
-
 def get_db_client() -> MongoClient:
     """Create a MongoDB client lazily."""
     global db_client
@@ -33,6 +32,7 @@ def get_db_client() -> MongoClient:
         except Exception as e:  # pragma: no cover - connection may fail in CI
             logger.error(e)
     return db_client
+
 
 
 class StealMangaDb:
