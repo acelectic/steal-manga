@@ -9,4 +9,4 @@ class NumpyArrayEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, np.ndarray):
             return o.tolist()
-        return json.JSONEncoder.default(self, o)
+        return super().default(o)
