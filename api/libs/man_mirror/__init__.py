@@ -4,11 +4,11 @@ import concurrent.futures
 import glob
 import json
 import os
+import logging
 import shutil
 import urllib.parse
 from ast import IsNot
 from http.client import HTTPException
-from pprint import pprint
 from typing import List, Tuple
 
 import imageio.v3 as iio
@@ -18,16 +18,20 @@ from django.http import HttpResponseNotFound
 from PIL import Image, ImageFile
 from tqdm import tqdm
 
-from ..utils.constants import CARTOON_DIR, MAN_MIRROR
+from ..utils.constants import CARTOON_DIR, MAN_MIRROR, LOG_LEVEL, MAN_MIRROR_HOST
 from ..utils.db_client import StealMangaDb
 from ..utils.file_helper import mkdir
 from ..utils.interface import MangaUploadedToDrive
 from ..utils.pdf_helper import merge_images_to_pdf
 from .image_json_shuffle import ImageJsonShuffle
+from ..utils.logging_helper import setup_logging
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
-HOST = 'https://www.manmirror.net'
+setup_logging()
+logger = logging.getLogger(__name__)
+
+HOST = MAN_MIRROR_HOST
 
 
 class RequestError(Exception):
@@ -116,10 +120,10 @@ class ManMirror:
         try:
             mkdir(chapter_dir)
         except Exception as error:
-            print(error)
+            logger.error(error)
             raise error
 
-        print('_download_cartoon_chapter mkdir')
+        logger.debug('_download_cartoon_chapter mkdir')
 
         max_page = 0
         is_error = False
@@ -139,17 +143,17 @@ class ManMirror:
                 max_page += 1
 
             except RequestErrorMustDebug as error:
-                print('RequestErrorMustDebug')
-                print(error)
+                logger.error('RequestErrorMustDebug')
+                logger.error(error)
                 is_error = True
             except RequestError as error:
-                print('RequestError')
-                print(error)
+                logger.error('RequestError')
+                logger.error(error)
                 is_error = True
             except Exception as error:
-                print('Exception get image json')
-                print(f'chapter: {chapter}, max_page:{max_page}')
-                print(error)
+                logger.error('Exception get image json')
+                logger.error('chapter: %s, max_page:%s', chapter, max_page)
+                logger.error(error)
                 is_error = True
                 raise error
 
@@ -171,8 +175,8 @@ class ManMirror:
                 })
                 error_file.write(f'{max_page} {debug_info}\n')
         except Exception as error:
-            print('write_error error')
-            print(error)
+            logger.error('write_error error')
+            logger.error(error)
             raise error
 
     def write_raw_image_json(self, chapter_dir, max_page, image_json):
@@ -180,8 +184,8 @@ class ManMirror:
             with open(os.path.join(chapter_dir, f'{max_page}.json'), 'w', encoding='utf-8') as error_file:
                 error_file.write(json.dumps(image_json.raw))
         except Exception as error:
-            print('write_raw_image_json error')
-            print(error)
+            logger.error('write_raw_image_json error')
+            logger.error(error)
             raise error
 
     def download_manga_by_image_json(self, cartoon_name: str, cartoon_id: str, chapter: int, main_dir: str, max_page: int, image_json_list: List[ImageJsonShuffle]):
@@ -201,10 +205,10 @@ class ManMirror:
             except RequestError:
                 continue
             except AppError as error:
-                print(f'app error: {error}')
+                logger.error('app error: %s', error)
             except Exception as error:
-                print('loop download_cartoon_chapter_page error')
-                print(error)
+                logger.error('loop download_cartoon_chapter_page error')
+                logger.error(error)
 
         return is_some_page_error
 
@@ -226,11 +230,11 @@ class ManMirror:
                 is_error = True
                 continue
             except AppError as error:
-                print(f'app error: {error}')
+                logger.error('app error: %s', error)
                 is_error = True
             except Exception as error:
-                print('loop download_cartoon_chapter_page error')
-                print(error)
+                logger.error('loop download_cartoon_chapter_page error')
+                logger.error(error)
                 is_error = True
 
         return is_some_page_error
@@ -368,7 +372,7 @@ class ManMirror:
         has_some_error = False
         new_image = np.zeros_like(image)
         if image_json.must_debug:
-            pprint(image_json)
+            logger.debug(image_json)
 
         for new_row in range(1, image_json.all_row + 1):
             for new_col in range(1, image_json.all_col + 1):
@@ -420,19 +424,17 @@ class ManMirror:
                 except Exception as error:
                     has_some_error = True
 
-                    print('error')
-                    print('error')
-                    print('error')
-                    print(error)
-                    pprint(image_info, indent=2)
-                    print({
+                    logger.error('error re_order_images')
+                    logger.error(error)
+                    logger.debug(image_info)
+                    logger.debug({
                         "old_top": old_top,
                         "old_bottom": old_bottom,
                         "old_left": old_left,
-                        "old_right": old_right
+                        "old_right": old_right,
+                        "image_shape": image.shape,
+                        "new_image_shape": new_image.shape,
                     })
-                    print(f'image.shape: {image.shape}')
-                    print(f'new_image.shape: {new_image.shape}')
 
                     raise AppError({
                         "message": "re_order_images error",
@@ -489,17 +491,17 @@ class ManMirror:
                 d1_error = None
 
             if d1_error is not None and d1_error <= d1:
-                print(f'skip d1:{d1}\td2: {d2}')
-                print(f'skip d1_error:{d1_error}\td1_error <= d1: {d1_error <= d1}')
+                logger.debug('skip d1:%s\td2:%s', d1, d2)
+                logger.debug('skip d1_error:%s\td1_error <= d1: %s', d1_error, d1_error <= d1)
                 continue
 
             if count_error_continue > 4:
-                print('error continue breaking')
+                logger.error('error continue breaking')
                 break
 
             try:
                 if debug:
-                    print(f'page: {page}\timage_url: {image_url}')
+                    logger.debug('page: %s\timage_url: %s', page, image_url)
                 new_image = self.call_get_image(image_url)
                 if new_image is not None:
                     new_image_file = Image.fromarray(new_image)
@@ -513,10 +515,10 @@ class ManMirror:
                 count_error_continue += 1
 
                 if debug:
-                    print(f'error page: {page}\timage_url: {image_url}')
-                    print(f'count_error_continue: {count_error_continue}')
-                    print(d1_error)
-                    print(e)
+                    logger.debug('error page: %s\timage_url: %s', page, image_url)
+                    logger.debug('count_error_continue: %s', count_error_continue)
+                    logger.debug(d1_error)
+                    logger.debug(e)
                 continue
 
         self.__merge_to_pdf(chapter_dir, output_pdf_path)

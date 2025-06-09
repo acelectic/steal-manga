@@ -1,13 +1,16 @@
 """ module mam mirror image json meta """
 
 import json
-from pprint import pprint
+import logging
 from typing import Any, List, Tuple
 
 import numpy as np
 
 from ..utils.numpy_array_encoder import NumpyArrayEncoder
+from ..utils.logging_helper import setup_logging
 
+setup_logging()
+logger = logging.getLogger(__name__)
 
 class ImageJsonShuffle:
     """ interface of man mirror image json """
@@ -29,17 +32,15 @@ class ImageJsonShuffle:
 
             self.must_debug: bool = self.is_shuffles_size_too_many or self.is_shuffles_not_match
         except Exception as error:
-            print('ImageJsonShuffle init error')
-            print(error)
-            pprint(
-                {
-                    "width": width,
-                    "height": height,
-                    "all_row": all_row,
-                    "all_col": all_col,
-                    "shuffles": shuffles
-                }
-            )
+            logger.error('ImageJsonShuffle init error')
+            logger.error(error)
+            logger.error({
+                "width": width,
+                "height": height,
+                "all_row": all_row,
+                "all_col": all_col,
+                "shuffles": shuffles,
+            })
 
     def get_coord_from_index(self, sort_index: int) -> Tuple[int, int]:
         """ for get new coordinates from index """

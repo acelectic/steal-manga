@@ -15,6 +15,8 @@
 # [START drive_quickstart]
 from __future__ import print_function
 
+import logging
+
 import json
 import os
 
@@ -24,20 +26,23 @@ from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 
-from ..utils.constants import APP_URL, GOOGLE_AUTH_TOKEN_PATH, GOOGLE_CLIENT_CONFIG
+from ..utils.constants import APP_URL, GOOGLE_AUTH_TOKEN_PATH, GOOGLE_CLIENT_CONFIG, LOG_LEVEL
+from ..utils.logging_helper import setup_logging
 from ..utils.db_client import StealMangaDb
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/drive']
 
 steal_manga_db = StealMangaDb()
+setup_logging()
+logger = logging.getLogger(__name__)
 
 
 def get_google_flow(redirect_uri=f'{APP_URL}/google-callback') -> InstalledAppFlow:
     """ get_google_flow """
 
     client_config = GOOGLE_CLIENT_CONFIG
-    print(f'redirect_uri: {redirect_uri}')
+    logger.debug('redirect_uri: %s', redirect_uri)
 
     return InstalledAppFlow.from_client_config(
         client_config=client_config, scopes=SCOPES, redirect_uri=redirect_uri)

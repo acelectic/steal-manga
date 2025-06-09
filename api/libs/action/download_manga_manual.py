@@ -1,9 +1,13 @@
 
+import logging
 from ..man_mirror import ManMirror
 from ..my_novel import MyNovel
 from ..upload_google_drive import generate_drive_manga_exists, upload_to_drive
 from ..utils.interface import UpdateMangaConfigData
+from ..utils.logging_helper import setup_logging
 
+setup_logging()
+logger = logging.getLogger(__name__)
 
 def download_manga_manual(data: UpdateMangaConfigData, auto_update_config: bool = True):
     success = False
@@ -19,8 +23,7 @@ def download_manga_manual(data: UpdateMangaConfigData, auto_update_config: bool 
         man_mirror = ManMirror()
         generate_drive_manga_exists(target_project_name=man_mirror.project_name)
 
-        print(
-            f'\ncartoon_name: {cartoon_name}\tkey: {cartoon_id}\tlatest_chapter: {latest_chapter}\tmax_chapter: {max_chapter}')
+        logger.info('\ncartoon_name: %s\tkey: %s\tlatest_chapter: %s\tmax_chapter: %s', cartoon_name, cartoon_id, latest_chapter, max_chapter)
         man_mirror.download_cartoons(
             cartoon_name,
             cartoon_id,
@@ -39,8 +42,7 @@ def download_manga_manual(data: UpdateMangaConfigData, auto_update_config: bool 
     if data.project_name == 'my-novel':
         my_novel = MyNovel()
         generate_drive_manga_exists(target_project_name=my_novel.project_name)
-        print(
-            f'\ncartoon_name: {cartoon_name}\tkey: {cartoon_id}\tlatest_chapter: {latest_chapter}')
+        logger.info('\ncartoon_name: %s\tkey: %s\tlatest_chapter: %s', cartoon_name, cartoon_id, latest_chapter)
         my_novel.download_cartoons(str(cartoon_id), cartoon_name=cartoon_name,
                                    start_ep_index=latest_chapter, max_workers=1)
         upload_to_drive(project_name=my_novel.project_name)

@@ -39,6 +39,14 @@ DB_USERNAME: str = get_env('DB_USERNAME') or ''
 DB_PASSWORD: str = get_env('DB_PASSWORD') or ''
 DB_NAME: str = get_env('DB_NAME') or ''
 
+# logging config
+LOG_LEVEL: str = get_env('LOG_LEVEL', required=False) or 'INFO'
+
+# external service configs
+MY_NOVEL_APP_KEY: str = get_env('MY_NOVEL_APP_KEY', required=False) or ''
+MY_NOVEL_HOST: str = get_env('MY_NOVEL_HOST', required=False) or 'https://www.manmirror.net'
+MAN_MIRROR_HOST: str = get_env('MAN_MIRROR_HOST', required=False) or 'https://www.manmirror.net'
+
 GOOGLE_CLIENT_CONFIG = {}
 GOOGLE_CLIENT_CONFIG[GOOGLE_AUTH_TYPE] = {
     'client_id': GOOGLE_CLIENT_ID,
