@@ -10,15 +10,24 @@ from .constants import DB_NAME, DB_PASSWORD, DB_USERNAME
 from .interface import MangaUploadedToDrive, UpdateMangaConfigData
 
 uri: str = f"mongodb+srv://{DB_USERNAME}:{DB_PASSWORD}@{DB_NAME}.nlqv7lj.mongodb.net/?retryWrites=true&w=majority"
-# Create a new client and connect to the server
-db_client = MongoClient(uri, server_api=ServerApi('1'), connectTimeoutMS=60*1000, )
-# Send a ping to confirm a successful connection
 
-try:
-    db_client.admin.command('ping')
-    print("Pinged your deployment. You successfully connected to MongoDB!")
-except Exception as e:
-    print(e)
+db_client: MongoClient | None = None
+
+
+def get_db_client() -> MongoClient:
+    """Create a MongoDB client lazily."""
+    global db_client
+    if db_client is None:
+        db_client = MongoClient(
+            uri,
+            server_api=ServerApi('1'),
+            connectTimeoutMS=60 * 1000,
+        )
+        try:
+            db_client.admin.command('ping')
+        except Exception as e:  # pragma: no cover - connection may fail in CI
+            print(e)
+    return db_client
 
 
 class StealMangaDb:
@@ -32,7 +41,8 @@ class StealMangaDb:
     google_token_id = 'google_token'
 
     def __init__(self) -> None:
-        self.steal_manga_db = db_client.get_database(self.db_name)
+        client = get_db_client()
+        self.steal_manga_db = client.get_database(self.db_name)
         list_collection_names = self.steal_manga_db.list_collection_names()
 
         # create_collection if not exists
