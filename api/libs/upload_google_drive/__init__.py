@@ -16,10 +16,10 @@
 
 from __future__ import print_function
 
+import logging
 import datetime
 import glob
 import os
-import pprint
 import shutil
 from typing import List
 
@@ -34,6 +34,7 @@ from ..utils.constants import (
     CARTOON_DIR,
     DELETE_FILE_AFTER_UPLOADED,
     DRIVE_CARTOONS_DIR_ID,
+    LOG_LEVEL,
 )
 from ..utils.db_client import (
     StealMangaDb,
@@ -41,6 +42,7 @@ from ..utils.db_client import (
     get_manga_uploaded,
     update_manga_downloaded,
 )
+from ..utils.logging_helper import setup_logging
 from ..utils.file_helper import mkdir
 from ..utils.interface import MangaUploadedToDrive, UpdateMangaConfigData
 from .google_auth import authen
@@ -55,6 +57,9 @@ from .interface import ProjectCartoonItem, ProjectItem
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly']
+
+setup_logging()
+logger = logging.getLogger(__name__)
 
 
 def upload_to_drive(project_name=None, cartoon_name=None, logging=False):
@@ -88,7 +93,7 @@ def upload_to_drive(project_name=None, cartoon_name=None, logging=False):
                     continue
 
                 if logging:
-                    print(f'dir_id: {cartoon_project_id}, dir: {cartoon_project_dir.get("name")}')
+                    logger.info('dir_id: %s, dir: %s', cartoon_project_id, cartoon_project_dir.get("name"))
 
                 sub_dir_list = cartoon_project.sub_dirs[::]
                 sub_dir_files = [
@@ -96,7 +101,7 @@ def upload_to_drive(project_name=None, cartoon_name=None, logging=False):
                 if len(sub_dir_list) <= 0 or len(sub_dir_files) <= 0:
                     continue
 
-                print(f'[Process]: UPLOAD Project {cartoon_project_dir.get("name")}')
+                logger.info('[Process]: UPLOAD Project %s', cartoon_project_dir.get("name"))
                 # manga level
                 for cartoon_project_sub_dir in sub_dir_list:
                     cartoon_project_sub_dir_res = find_or_init_dir(
@@ -110,15 +115,15 @@ def upload_to_drive(project_name=None, cartoon_name=None, logging=False):
                                 "cartoon_name": manga_name
                             },
                         )
-                        pprint.pprint(manga_config)
+                        logger.debug(manga_config)
                         if cartoon_name is not None and cartoon_name != manga_name:
                             # print(f'skip cartoon_name: {cartoon_name} {manga_dir["name"]}')
                             continue
 
                         if logging:
-                            print(f'\tdir_id: {sub_dir_id}, dir: {manga_name}')
+                            logger.info('\tdir_id: %s, dir: %s', sub_dir_id, manga_name)
                         else:
-                            print(f'[Process]: UPLOAD Manga {manga_name}')
+                            logger.info('[Process]: UPLOAD Manga %s', manga_name)
 
                         manga_files = cartoon_project_sub_dir.image_pdf_list[::]
                         total_files = len(manga_files)
@@ -159,7 +164,7 @@ def upload_to_drive(project_name=None, cartoon_name=None, logging=False):
 
     except HttpError as error:
         # TODO(developer) - Handle errors from drive API.
-        print(f'An error occurred: {error}')
+        logger.error('An error occurred: %s', error)
 
 
 def upload_file(service, logging: bool, sub_dir_id: str, file_name: str, file_path: str) -> None:
@@ -169,20 +174,21 @@ def upload_file(service, logging: bool, sub_dir_id: str, file_name: str, file_pa
     if upload_manga_res is not None:
         file_id, file = upload_manga_res
         if logging:
-            print(f'\t\tfile_id: {file_id}, file: {file.get("name")}')
+            logger.info('\t\tfile_id: %s, file: %s', file_id, file.get("name"))
         delete_file(file_path)
     else:
-        pprint.pprint({
-            "tag": "upload_file error"
-        })
+        logger.error({'tag': 'upload_file error'})
 
 
 def generate_drive_manga_exists(target_project_name=None, target_cartoon_name=None, logging=False) -> list[MangaUploadedToDrive]:
     """
         get and generate manga in drive
     """
-    print(
-        f'generate_drive_manga_exists | {target_project_name or "all"} {target_cartoon_name or ""}')
+    logger.info(
+        'generate_drive_manga_exists | %s %s',
+        target_project_name or 'all',
+        target_cartoon_name or ''
+    )
 
     try:
         steal_manga_db = StealMangaDb()
@@ -199,18 +205,18 @@ def generate_drive_manga_exists(target_project_name=None, target_cartoon_name=No
             all_manga_config_hash[d.cartoon_name] = d
 
         if not drive_project_dirs:
-            print('No files found.')
+            logger.info('No files found.')
             return []
 
         if logging:
-            print('Files:')
+            logger.info('Files:')
         for project_dir in drive_project_dirs[::]:
             if target_project_name is not None and target_project_name != project_dir['name']:
                 # print(f'skip project_name: {project_name} {project_dir["name"]}')
                 continue
 
             if logging:
-                print('{0} ({1})'.format(project_dir['name'], project_dir['id']))
+                logger.info('%s (%s)', project_dir['name'], project_dir['id'])
 
             project_name = project_dir['name']
             project_drive_id = project_dir['id']
@@ -230,15 +236,14 @@ def generate_drive_manga_exists(target_project_name=None, target_cartoon_name=No
                     manga_config_update_drive_id_list.append(manga_config)
 
                 if logging:
-                    print('\t{0} ({1})'.format(
-                        manga_dir['name'], manga_dir['id']))
+                    logger.info('\t%s (%s)', manga_dir['name'], manga_dir['id'])
 
                 drive_manga_chapters = list_drive_manga(
                     service, manga_dir['id'])
 
                 for drive_manga_chapter in drive_manga_chapters[::]:
                     if logging:
-                        print(f'\t\t{drive_manga_chapter["name"]} ({drive_manga_chapter["id"]})')
+                        logger.info('\t\t%s (%s)', drive_manga_chapter["name"], drive_manga_chapter["id"])
 
                     manga_chapter_name = drive_manga_chapter['name']
                     manga_chapter_drive_id = drive_manga_chapter['id']
@@ -259,7 +264,7 @@ def generate_drive_manga_exists(target_project_name=None, target_cartoon_name=No
                         viewed_by_me=viewed_by_me,
                     ))
 
-        print(f'manga_uploaded_to_drive: {len(manga_uploaded_to_drive)}')
+        logger.info('manga_uploaded_to_drive: %s', len(manga_uploaded_to_drive))
 
         # update manga uploaded
         requests = [ReplaceOne(
@@ -299,15 +304,11 @@ def generate_drive_manga_exists(target_project_name=None, target_cartoon_name=No
             })
 
             for should_delete_item in should_delete_list:
-                pprint.pprint({
-                    "should_delete_item": should_delete_item
-                })
+                logger.debug({"should_delete_item": should_delete_item})
                 deleted_item = steal_manga_db.table_manga_upload.delete_one({
                     "_id": ObjectId(should_delete_item["_id"])
                 })
-                pprint.pprint({
-                    "deleted_item": deleted_item
-                })
+                logger.debug({"deleted_item": deleted_item})
 
         
         # update manga config
@@ -329,16 +330,16 @@ def generate_drive_manga_exists(target_project_name=None, target_cartoon_name=No
 
     except HttpError as error:
         # TODO(developer) - Handle errors from drive API.
-        print(f'An error occurred: {error}')
+        logger.error('An error occurred: %s', error)
 
-    print('generate_drive_manga_exists completed')
+    logger.info('generate_drive_manga_exists completed')
     return get_manga_uploaded()
 
 
 def get_drive_service():
     creds = authen()
     if creds is None:
-        print('not authen')
+        logger.error('not authen')
         return
 
     service = build('drive', 'v3', credentials=creds)
@@ -403,10 +404,7 @@ def upload_file_to_drive_if_not_exists(service, file_name: str, file_path: str, 
             return upload_file_to_drive(service, file_name, file_path, folder_id)
         return dir_result.get('id'), dir_result
     except Exception as error:
-        pprint.pprint({
-            "tag": "upload_file_to_drive_if_not_exists",
-            "error": error
-        })
+        logger.error({'tag': 'upload_file_to_drive_if_not_exists', 'error': error})
         return None
 
 
@@ -500,7 +498,7 @@ def create_folder(service, parent_dir_id: str, dir_name: str):
         return file.get('id'), file
 
     except HttpError as error:
-        print(F'An error occurred: {error}')
+        logger.error('An error occurred: %s', error)
         return None
 
 
@@ -527,7 +525,7 @@ def order_keys_in_json(data: dict) -> dict:
 
 def update_latest_sync(cartoon_id: str = ''):
     """ update_latest_sync """
-    pprint.pprint(f'update_latest_sync: {cartoon_id}')
+    logger.info('update_latest_sync: %s', cartoon_id)
     where = {}
     if cartoon_id != '':
         where = {
@@ -549,7 +547,7 @@ def update_latest_sync(cartoon_id: str = ''):
             reverse=True)  # type: ignore
         latest_manga_upload = latest_manga_uploads[0]
         if latest_manga_upload is not None:
-            pprint.pprint({
+            logger.debug({
                 "project_name": project_name,
                 "cartoon_id": cartoon_id,
             })
@@ -559,7 +557,7 @@ def update_latest_sync(cartoon_id: str = ''):
 
             if latest_manga_upload is not None:
                 created_time = latest_manga_upload.get('created_time')
-                pprint.pprint({
+                logger.debug({
                     "config_id": manga_config.get('_id'),
                     "created_time": created_time,
                     "latest_manga_upload": latest_manga_upload
@@ -578,4 +576,4 @@ def update_latest_sync(cartoon_id: str = ''):
                     },
                     return_document=ReturnDocument.AFTER,
                 )
-                pprint.pprint(manga_config_updated)
+                logger.debug(manga_config_updated)

@@ -1,9 +1,14 @@
 
 from pymongo import ReturnDocument
+import logging
+from ..utils.logging_helper import setup_logging
 
 from ..upload_google_drive import update_latest_sync
 from ..utils.db_client import StealMangaDb
 from ..utils.interface import UpdateMangaConfigData
+
+setup_logging()
+logger = logging.getLogger(__name__)
 
 
 def update_manga_config(data: UpdateMangaConfigData):
@@ -27,7 +32,7 @@ def update_manga_config(data: UpdateMangaConfigData):
 
         success = True
     except Exception as e:
-        print(e)
+        logger.error(e)
         raise e
 
     return success
