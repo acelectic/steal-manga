@@ -256,15 +256,10 @@ class ManMirror:
                 if image_json.must_debug:
                     old_image_file = Image.fromarray(image)
                     old_image_file.save(f'{main_dir}/{page}-debug.png')
-                else:
-                    new_image, has_some_order_error = self.__re_order_images(
-                        image, image_json)
-                    if has_some_order_error:
-                        has_some_error = has_some_order_error
-                        old_image_file = Image.fromarray(image)
-                        old_image_file.save(f'{main_dir}/{page}-before-order.png')
+
                 new_image, has_some_order_error = self.__re_order_images(
                     image, image_json)
+
                 if has_some_order_error:
                     has_some_error = has_some_order_error
                     old_image_file = Image.fromarray(image)
