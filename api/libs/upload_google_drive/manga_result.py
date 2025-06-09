@@ -1,6 +1,10 @@
 import datetime
 from collections import defaultdict
-from pprint import pprint
+import logging
+from ..utils.logging_helper import setup_logging
+
+setup_logging()
+logger = logging.getLogger(__name__)
 
 from ..utils.db_client import get_count_manga_downloaded, get_manga_uploaded
 from ..utils.interface import MangaUploadedToDrive
@@ -20,7 +24,7 @@ def get_manga_updated(latest_update=None, debug=False):
     })
     count_manga_downloaded_hash = get_count_manga_downloaded()
     if debug:
-        pprint(count_manga_downloaded_hash)
+        logger.debug(count_manga_downloaded_hash)
 
     def transform_data(data: list[MangaUploadedToDrive]):
         results = defaultdict(list)

@@ -1,4 +1,5 @@
 
+import logging
 import pprint
 
 from bson import ObjectId
@@ -6,8 +7,12 @@ from pymongo import ReplaceOne, ReturnDocument, UpdateOne
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 
-from .constants import DB_NAME, DB_PASSWORD, DB_USERNAME
+from .constants import DB_NAME, DB_PASSWORD, DB_USERNAME, LOG_LEVEL
+from .logging_helper import setup_logging
 from .interface import MangaUploadedToDrive, UpdateMangaConfigData
+
+setup_logging()
+logger = logging.getLogger(__name__)
 
 uri: str = f"mongodb+srv://{DB_USERNAME}:{DB_PASSWORD}@{DB_NAME}.nlqv7lj.mongodb.net/?retryWrites=true&w=majority"
 
@@ -26,7 +31,7 @@ def get_db_client() -> MongoClient:
         try:
             db_client.admin.command('ping')
         except Exception as e:  # pragma: no cover - connection may fail in CI
-            print(e)
+            logger.error(e)
     return db_client
 
 
@@ -188,7 +193,7 @@ def get_count_manga_downloaded():
 
 
 def update_manga_downloaded():
-    print('update_manga_downloaded')
+    logger.info('update_manga_downloaded')
     steal_manga_db = StealMangaDb()
     count_manga_downloaded = steal_manga_db.table_manga_upload.aggregate([
         {"$group": {"_id": "$cartoon_id", "downloaded": {"$sum": 1}}}
@@ -206,6 +211,6 @@ def update_manga_downloaded():
         upsert=False
     ) for d in count_manga_downloaded]
     results = steal_manga_db.table_manga_upload.bulk_write(requests)
-    print('update_manga_downloaded end')
+    logger.info('update_manga_downloaded end')
 
     return results

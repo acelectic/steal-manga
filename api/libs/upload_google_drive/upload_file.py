@@ -1,5 +1,8 @@
 from __future__ import print_function
 
+import logging
+from ..utils.logging_helper import setup_logging
+
 import google.auth
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -15,6 +18,8 @@ def upload_to_folder(folder_id, file_name: str, file_path: str, mimetype='applic
     TODO(developer) - See https://developers.google.com/identity
     for guides on implementing OAuth2 for the application.
     """
+    setup_logging()
+    logger = logging.getLogger(__name__)
     creds, _ = google.auth.default()
 
     try:
@@ -30,9 +35,9 @@ def upload_to_folder(folder_id, file_name: str, file_path: str, mimetype='applic
         # pylint: disable=maybe-no-member
         file = service.files().create(body=file_metadata, media_body=media,
                                       fields='id').execute()
-        print(F'File ID: "{file.get("id")}".')
+        logger.info('File ID: "%s".', file.get("id"))
         return file.get('id')
 
     except HttpError as error:
-        print(F'An error occurred: {error}')
+        logger.error('An error occurred: %s', error)
         return None

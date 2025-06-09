@@ -1,9 +1,9 @@
 """Module providingFunction printing python version."""
 import glob
 import os
+import logging
 import shutil
 from concurrent.futures import ThreadPoolExecutor
-from pprint import pprint
 from typing import Any, Dict, List, Tuple
 from urllib.parse import unquote
 
@@ -14,11 +14,18 @@ from PIL import Image, ImageFile
 from tqdm import tqdm
 from tqdm.contrib.concurrent import thread_map
 
-from ..utils.constants import CARTOON_DIR, MY_NOVEL
+from ..utils.constants import (
+    CARTOON_DIR,
+    MY_NOVEL,
+    MY_NOVEL_APP_KEY,
+    MY_NOVEL_HOST,
+    LOG_LEVEL,
+)
 from ..utils.db_client import StealMangaDb
 from ..utils.file_helper import mkdir
 from ..utils.interface import MangaUploadedToDrive
 from ..utils.pdf_helper import merge_images_to_pdf
+from ..utils.logging_helper import setup_logging
 
 # sys.path.append("../utils")  # Adds higher directory to python modules path.
 # sys.path.append("../../libs")  # Adds higher directory to python modules path.
@@ -26,7 +33,10 @@ from ..utils.pdf_helper import merge_images_to_pdf
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
-HOST = 'https://www.manmirror.net'
+setup_logging()
+logger = logging.getLogger(__name__)
+
+HOST = MY_NOVEL_HOST
 
 
 class RequestError(Exception):
@@ -39,7 +49,7 @@ class RequestError(Exception):
 class MyNovel:
     """ class """
     project_name = MY_NOVEL
-    app_key = "xdde8cNN5k7AuVTMgz7b"
+    app_key = MY_NOVEL_APP_KEY
     get_info_timeout: int = 30 * 1000
     get_image_timeout: int = 60 * 1000
 
@@ -55,10 +65,10 @@ class MyNovel:
 
         product_ep_list_res = self.__get_product_ep_list(cartoon_id)
         product_ep_list = product_ep_list_res['EpTopic']
-        print(f'old len: {len(product_ep_list)}')
+        logger.info('old len: %s', len(product_ep_list))
         product_ep_list = [d for d in product_ep_list if d is not None and d.get('isPublish')]
         total_ep = len(product_ep_list)
-        print(f'filter len: {total_ep}')
+        logger.info('filter len: %s', total_ep)
 
         steal_manga_db = StealMangaDb()
         steal_manga_db.table_manga_config.update_one({
@@ -73,7 +83,7 @@ class MyNovel:
         main_dir = self.__get_main_dir(cartoon_name)
         mkdir(main_dir)
 
-        print(f'download {cartoon_name}\ttotal ep: {total_ep}')
+        logger.info('download %s\ttotal ep: %s', cartoon_name, total_ep)
 
         start_index = 0
         for i, product_ep in enumerate(product_ep_list):
@@ -130,14 +140,16 @@ class MyNovel:
         self._download_cartoon_ep(product_name, ep_name, ep_id, ep_dir)
         error, success = self.__merge_to_pdf(ep_dir, output_pdf_path)
         if not success:
-            pprint({
-                "tag": '__merge_to_pdf error',
-                "error": error,
-                "product_name": product_name,
-                "ep_name": ep_name,
-                "ep_dir": ep_dir,
-                "output_pdf_path": output_pdf_path
-            })
+            logger.error(
+                "__merge_to_pdf error",
+                extra={
+                    "error": error,
+                    "product_name": product_name,
+                    "ep_name": ep_name,
+                    "ep_dir": ep_dir,
+                    "output_pdf_path": output_pdf_path,
+                },
+            )
         # print(f'output_pdf_path: {output_pdf_path} error: {error}, success: {success}')
         self.__remove_chapter_dir(ep_dir, output_pdf_path)
 
@@ -166,8 +178,8 @@ class MyNovel:
                 new_image_file = Image.fromarray(image)
                 new_image_file.save(image_path)
             except Exception as error:
-                print(f'ep_image_url: {ep_image_url}')
-                print(f'{image_path}: error {error}')
+                logger.error('ep_image_url: %s', ep_image_url)
+                logger.error('%s: error %s', image_path, error)
                 raise error
 
     def __merge_to_pdf(self, target_image_dir: str, output_pdf_path: str) -> Tuple[Any, bool]:

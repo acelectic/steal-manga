@@ -1,8 +1,14 @@
 from __future__ import print_function
 
+import logging
+from ..utils.logging_helper import setup_logging
+
 import google.auth
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+
+setup_logging()
+logger = logging.getLogger(__name__)
 
 
 def search_file():
@@ -28,14 +34,14 @@ def search_file():
                                             pageToken=page_token).execute()
             for file in response.get('files', []):
                 # Process change
-                print(F'Found file: {file.get("name")}, {file.get("id")}')
+                logger.info('Found file: %s, %s', file.get("name"), file.get("id"))
             files.extend(response.get('files', []))
             page_token = response.get('nextPageToken', None)
             if page_token is None:
                 break
 
     except HttpError as error:
-        print(F'An error occurred: {error}')
+        logger.error('An error occurred: %s', error)
         files = None
 
     return files
